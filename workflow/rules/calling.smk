@@ -27,3 +27,20 @@ rule varlociraptor_call:
     shell:
         "varlociraptor call variants generic --obs sample={input.obs} "
         "--scenario {input.scenario} > {output} 2> {log}"
+
+rule orthanq_call:
+    input:
+        calls = "results/calls/{sample}.bcf",
+        candidate_variants = "resources/hla-allele-variants_v3.vcf.gz",
+        counts = "results/kallisto/quant_results_{sample}"
+    output:
+        report(
+            "results/orthanq/{sample}.tsv",
+            caption="../report/haplotype_abundances.rst",
+        )
+    log:
+        "logs/orthanq/{sample}.log"
+    shell:
+        "~/orthanq/target/debug/orthanq --haplotype-calls {input.calls} "
+        "--haplotype-variants {input.candidate_variants} --haplotype-counts {input.counts}/abundance.h5 "
+        "--output {output} 2> {log}"
