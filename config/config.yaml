@@ -1,6 +1,9 @@
 #alleles
 hla: "config/alleles.tsv"
 
+#number of total reads in the sample
+n_reads: 2000
+
 ##tool configurations
 #art simulation
 f_coverage: 50

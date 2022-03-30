@@ -1,5 +1,6 @@
 name: concatenation
 channels:
    - bioconda
+   - conda-forge
 dependencies:
    - seqtk=1.3

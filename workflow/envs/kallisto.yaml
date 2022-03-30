@@ -1,5 +1,6 @@
 name: kallisto
 channels:
    - bioconda
+   - conda-forge
 dependencies:
    - kallisto=0.48.0

@@ -1,3 +1,6 @@
 name: varlociraptor
+channels:
+   - bioconda
+   - conda-forge
 dependencies:
    - varlociraptor=4.11.1
