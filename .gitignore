@@ -1,1 +1,7 @@
 /target
+resources/*
+!resources/scenarios/*
+.snakemake/
+logs/
+results/
+playground/
