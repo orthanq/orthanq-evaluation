@@ -41,6 +41,6 @@ rule orthanq_call:
     log:
         "logs/orthanq/{sample}.log"
     shell:
-        "~/orthanq/target/debug/orthanq --haplotype-calls {input.calls} "
+        "~/orthanq/target/release/orthanq --haplotype-calls {input.calls} "
         "--haplotype-variants {input.candidate_variants} --haplotype-counts {input.counts}/abundance.h5 "
         "--output {output} 2> {log}"
