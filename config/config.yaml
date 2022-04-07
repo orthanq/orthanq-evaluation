@@ -3,6 +3,7 @@ hla: "config/alleles.tsv"
 
 #number of total reads in the sample
 n_reads: 2000
+n_nonhla_reads: 500
 
 ##tool configurations
 #art simulation

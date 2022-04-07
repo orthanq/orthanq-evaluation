@@ -2,8 +2,8 @@ import pandas as pd
 
 configfile: "config/config.yaml"
 n_reads = config["n_reads"]
-
 alleles = pd.read_csv(config["hla"], sep ="\t")
+
 def create_sample(): #n: number of samples in the end, k: number of fractions
     alleles['sample_name'] = "Sample" + "_" + '_'.join(str(row['hla']) + "-" + str(row['fraction']) for _, row in alleles.iterrows())
     print(alleles)
