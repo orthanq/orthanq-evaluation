@@ -3,7 +3,11 @@ import pandas as pd
 configfile: "config/config.yaml"
 n_reads = config["n_reads"]
 alleles = pd.read_csv(config["hla"], sep ="\t")
+samples = pd.read_csv(config["samples"], sep="\t").set_index(
+    ["sample_name"], drop=False
+)
 
+# input function for simulation sample
 def create_sample(): #n: number of samples in the end, k: number of fractions
     alleles['sample_name'] = "Sample" + "_" + '_'.join(str(row['hla']) + "-" + str(row['fraction']) for _, row in alleles.iterrows())
     print(alleles)
@@ -12,5 +16,15 @@ def create_sample(): #n: number of samples in the end, k: number of fractions
     del alleles['fraction'] 
     return alleles
 
-sample_table = create_sample()
-print(sample_table)
+simulated_sample = create_sample()
+print(simulated_sample)
+
+# input function to retrieve fastq samples
+def get_fastq_input(wildcards):
+    if config["simulation"] == False:
+        sample = samples.loc[wildcards.sample]
+        return [sample["fq1"], sample["fq2"]]
+    else:
+        sample = wildcards.sample
+        simulated = ["results/mixed/{sample}_1.fq", "results/mixed/{sample}_2.fq"]
+        return simulated

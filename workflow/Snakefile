@@ -1,13 +1,23 @@
 configfile: "config/config.yaml"
 
-include: "rules/common.smk"
-include: "rules/simulation.smk"
-include: "rules/quantification-mapping.smk"
-include: "rules/calling.smk"
+if config["simulation"] == True:
 
-rule all:
-    input:
-        [f"results/fractions/{row['sample_name']}-{row['hla']}-{row['num_reads']}_1.fq" for _, row in sample_table.iterrows()],
-        expand("results/orthanq/{sample}.tsv", sample=sample_table.sample_name.unique())
+    include: "rules/common.smk"
+    include: "rules/simulation.smk"
+    include: "rules/quantification-mapping.smk"
+    include: "rules/calling.smk"
 
+    rule all:
+        input:
+            [f"results/fractions/{row['sample_name']}-{row['hla']}-{row['num_reads']}_1.fq" for _, row in sample_table.iterrows()],
+            expand("results/orthanq/{sample}.tsv", sample=simulated_sample.sample_name.unique())
 
+if config["simulation"] == False:
+
+    include: "rules/common.smk"
+    include: "rules/quantification-mapping.smk"
+    include: "rules/calling.smk"
+
+    rule all:
+        input:
+            expand("results/orthanq/{sample}.tsv", sample=samples.sample_name)

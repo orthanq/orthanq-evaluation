@@ -1,9 +1,15 @@
+#simulate reads or call for HLA types given a sample
+simulation: False
+
+#samples
+samples: config/samples.tsv
+
 #alleles
-hla: "config/alleles.tsv"
+hla: config/alleles.tsv
 
 #number of total reads in the sample
 n_reads: 2000
-n_nonhla_reads: 500
+n_nonhla_reads: 5000
 
 ##tool configurations
 #art simulation

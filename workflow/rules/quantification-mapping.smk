@@ -13,7 +13,8 @@ rule kallisto_index:
 
 rule kallisto_quant:
     input:
-        fastq = ["results/mixed/{sample}_1.fq", "results/mixed/{sample}_2.fq"],
+        fastq = get_fastq_input,
+        #fastq = ["results/mixed/{sample}_1.fq", "results/mixed/{sample}_2.fq"],
         index = "results/kallisto-index/hla_gen.idx"
     output:
         directory('results/kallisto/quant_results_{sample}')
@@ -40,7 +41,8 @@ rule bwa_index:
 
 rule bwa_mem:
     input:
-        reads = ["results/mixed/{sample}_1.fq", "results/mixed/{sample}_2.fq"],
+        reads = get_fastq_input,
+        #reads = ["results/mixed/{sample}_1.fq", "results/mixed/{sample}_2.fq"],
         index = multiext("results/bwa-index/hs_genome", ".amb", ".ann", ".bwt", ".pac", ".sa")
     output:
         "results/mapped/{sample}.bam"
