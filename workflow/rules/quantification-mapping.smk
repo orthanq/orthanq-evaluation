@@ -1,3 +1,17 @@
+rule get_hs_genome:
+    output:
+        "results/refs/hs_genome.fasta",
+    params:
+        species="homo_sapiens",
+        datatype="dna",
+        build="GRCh38",
+        release="106",
+    log:
+        "logs/ensembl/get_genome.log",
+    cache: True  # save space and time with between workflow caching (see docs)
+    wrapper:
+        "0.72.0/bio/reference/ensembl-sequence"
+        
 rule kallisto_index:
     input:
         fasta = "resources/HLA-alleles/hla_gen.fasta"
@@ -7,7 +21,7 @@ rule kallisto_index:
         extra = "--kmer-size=31"
     log:
         "logs/kallisto/index/hla_gen.log"
-    threads: 8
+    threads: 2
     wrapper:
         "v0.86.0/bio/kallisto/index"
 
@@ -28,7 +42,7 @@ rule kallisto_quant:
 
 rule bwa_index:
     input:
-        "resources/hs_genome/hs_genome.fasta"
+        "results/refs/hs_genome.fasta"
     output:
         multiext("results/bwa-index/hs_genome", ".amb", ".ann", ".bwt", ".pac", ".sa")
     log:
@@ -53,7 +67,7 @@ rule bwa_mem:
         extra=r"-R '@RG\tID:{sample}\tSM:{sample}'",
         sorting="samtools",             
         sort_order="coordinate", 
-    threads: 10
+    threads: 16
     wrapper:
         "v0.86.0/bio/bwa/mem"
 

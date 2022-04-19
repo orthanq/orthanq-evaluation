@@ -20,4 +20,5 @@ if config["simulation"] == False:
 
     rule all:
         input:
+            "results/refs/hs_genome.fasta",
             expand("results/orthanq/{sample}.tsv", sample=samples.sample_name)

@@ -1,7 +1,7 @@
 rule varlociraptor_preprocess:
     input:
-        ref="resources/hs_genome/hs_genome.fasta",
-        candidates="resources/hla-allele-variants_v3.vcf.gz",
+        ref="results/refs/hs_genome.fasta",
+        candidates="resources/hla-allele-variants_v4.vcf.gz",
         bam="results/mapped/{sample}.bam",
         bai="results/mapped/{sample}.bam.bai"
     output:
@@ -31,7 +31,7 @@ rule varlociraptor_call:
 rule orthanq_call:
     input:
         calls = "results/calls/{sample}.bcf",
-        candidate_variants = "resources/hla-allele-variants_v3.vcf.gz",
+        candidate_variants = "resources/hla-allele-variants_v4.vcf.gz",
         counts = "results/kallisto/quant_results_{sample}"
     output:
         report(
