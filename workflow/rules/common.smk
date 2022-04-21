@@ -6,6 +6,7 @@ alleles = pd.read_csv(config["hla"], sep ="\t")
 samples = pd.read_csv(config["samples"], sep="\t").set_index(
     ["sample_name"], drop=False
 )
+loci = ["A","DPA1","DRB4","V","B","DPB1","DRB5", "N","W","C","DQA1", "E", "P", "DQA2", "F", "S", "DMA", "DQB1", "G", "TAP1", "DMB", "DRA", "HFE", "TAP2", "DOA", "DRB1", "T", "DOB", "DRB3", "MICA", "U"]
 
 # input function for simulation sample
 def create_sample(): #n: number of samples in the end, k: number of fractions

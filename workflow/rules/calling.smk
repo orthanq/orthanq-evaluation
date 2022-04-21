@@ -32,14 +32,14 @@ rule orthanq_call:
     input:
         calls = "results/calls/{sample}.bcf",
         candidate_variants = "resources/hla-allele-variants_v4.vcf.gz",
-        counts = "results/kallisto/quant_results_{sample}"
+        counts = "results/kallisto/quant_results_{sample}_{hla}"
     output:
         report(
-            "results/orthanq/{sample}.tsv",
+            "results/orthanq/{sample}_{hla}.tsv",
             caption="../report/haplotype_abundances.rst",
         )
     log:
-        "logs/orthanq/{sample}.log"
+        "logs/orthanq/{sample}_{hla}.log"
     shell:
         "~/orthanq/target/release/orthanq --haplotype-calls {input.calls} "
         "--haplotype-variants {input.candidate_variants} --haplotype-counts {input.counts}/abundance.h5 "
