@@ -11,7 +11,19 @@ rule get_hs_genome:
     cache: True  # save space and time with between workflow caching (see docs)
     wrapper:
         "0.72.0/bio/reference/ensembl-sequence"
-        
+
+
+rule genome_index:
+    input:
+        "results/refs/hs_genome.fasta"
+    output:
+        "results/refs/hs_genome.fasta.fai"
+    log:
+        "logs/genome_index/hs_genome.log"
+    threads: 4
+    wrapper:
+        "v1.3.2/bio/samtools/faidx"
+
 rule kallisto_index:
     input:
         fasta = "resources/HLA-alleles/{hla}_gen.fasta"
@@ -33,7 +45,7 @@ rule kallisto_quant:
     output:
         directory('results/kallisto/quant_results_{sample}_{hla}')
     params:
-        extra = "-b 100 --seed=42 --pseudobam"
+        extra = "-b 10 --seed=42"
     log:
         "logs/kallisto/kallisto_quant_{sample}_{hla}.log"
     threads: 10

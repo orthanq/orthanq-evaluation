@@ -1,6 +1,7 @@
 rule varlociraptor_preprocess:
     input:
         ref="results/refs/hs_genome.fasta",
+        fai = "results/refs/hs_genome.fasta.fai",
         candidates="resources/hla-allele-variants_v4.vcf.gz",
         bam="results/mapped/{sample}.bam",
         bai="results/mapped/{sample}.bam.bai"
@@ -43,4 +44,4 @@ rule orthanq_call:
     shell:
         "~/orthanq/target/release/orthanq --haplotype-calls {input.calls} "
         "--haplotype-variants {input.candidate_variants} --haplotype-counts {input.counts}/abundance.h5 "
-        "--output {output} 2> {log}"
+        "--min-norm counts 0.01 --max-haplotypes 2 --output {output} 2> {log}"
