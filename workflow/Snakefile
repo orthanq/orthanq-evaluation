@@ -9,7 +9,7 @@ if config["simulation"] == True:
 
     rule all:
         input:
-            [f"results/fractions/{row['sample_name']}-{row['hla']}-{row['num_reads']}_1.fq" for _, row in sample_table.iterrows()],
+            [f"results/fractions/{row['sample_name']}-{row['hla']}-{row['num_reads']}_1.fq" for _, row in simulated_sample.iterrows()],
             expand("results/orthanq/{sample}.tsv", sample=simulated_sample.sample_name.unique())
 
 if config["simulation"] == False:

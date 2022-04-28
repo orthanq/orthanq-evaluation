@@ -12,7 +12,6 @@ rule get_hs_genome:
     wrapper:
         "0.72.0/bio/reference/ensembl-sequence"
 
-
 rule genome_index:
     input:
         "results/refs/hs_genome.fasta"
@@ -26,13 +25,13 @@ rule genome_index:
 
 rule kallisto_index:
     input:
-        fasta = "resources/HLA-alleles/{hla}_gen.fasta"
+        fasta = "resources/HLA-alleles/{hla}_nuc.fasta"
     output:
-        index = "results/kallisto-index/{hla}_gen.idx"
+        index = "results/kallisto-index/{hla}_nuc.idx"
     params:
-        extra = "--kmer-size=11"
+        extra = "--kmer-size=31"
     log:
-        "logs/kallisto/index/{hla}_gen.log"
+        "logs/kallisto/index/{hla}_nuc.log"
     threads: 2
     wrapper:
         "v0.86.0/bio/kallisto/index"
@@ -41,14 +40,14 @@ rule kallisto_quant:
     input:
         fastq = get_fastq_input,
         #fastq = ["results/mixed/{sample}_1.fq", "results/mixed/{sample}_2.fq"],
-        index = "results/kallisto-index/{hla}_gen.idx"
+        index = "results/kallisto-index/{hla}_nuc.idx"
     output:
         directory('results/kallisto/quant_results_{sample}_{hla}')
     params:
-        extra = "-b 10 --seed=42"
+        extra = "-b 100 --seed=42"
     log:
         "logs/kallisto/kallisto_quant_{sample}_{hla}.log"
-    threads: 10
+    threads: 20
     wrapper:
         "v0.86.0/bio/kallisto/quant"
 

@@ -1,6 +1,6 @@
 rule art_simulation:
     input:
-        "resources/HLA-alleles/{allele}.fasta"
+        "resources/HLA-alleles/{allele}_nuc.fasta"
     output:
         "results/art/{allele}_1.fq",
         "results/art/{allele}_2.fq"
@@ -67,13 +67,13 @@ rule concat_fractions:
     input:
         fq1=lambda wc: expand("results/fractions/{{sample}}-{allele}-{num}_1.fq",
             zip,
-            allele=sample_table.loc[sample_table['sample_name'] == wc.sample]['hla'],
-            num=sample_table.loc[sample_table['sample_name'] == wc.sample]['num_reads']
+            allele=simulated_sample.loc[simulated_sample['sample_name'] == wc.sample]['hla'],
+            num=simulated_sample.loc[simulated_sample['sample_name'] == wc.sample]['num_reads']
             ),
         fq2=lambda wc: expand("results/fractions/{{sample}}-{allele}-{num}_2.fq",
             zip,
-            allele=sample_table.loc[sample_table['sample_name'] == wc.sample]['hla'],
-            num=sample_table.loc[sample_table['sample_name'] == wc.sample]['num_reads']
+            allele=simulated_sample.loc[simulated_sample['sample_name'] == wc.sample]['hla'],
+            num=simulated_sample.loc[simulated_sample['sample_name'] == wc.sample]['num_reads']
             ),
         nonhla_fq1 = "results/fraction_nonhla/chr21_1.fq",
         nonhla_fq2 = "results/fraction_nonhla/chr21_2.fq"
