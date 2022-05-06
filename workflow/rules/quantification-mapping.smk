@@ -10,7 +10,7 @@ rule get_hs_genome:
         "logs/ensembl/get_genome.log",
     cache: True  # save space and time with between workflow caching (see docs)
     wrapper:
-        "0.72.0/bio/reference/ensembl-sequence"
+        "v1.3.2/bio/reference/ensembl-sequence"
 
 rule genome_index:
     input:
@@ -25,31 +25,31 @@ rule genome_index:
 
 rule kallisto_index:
     input:
-        fasta = "resources/HLA-alleles/{hla}_nuc.fasta"
+        fasta = "resources/HLA-alleles/{hla}_filtered.fasta"
     output:
-        index = "results/kallisto-index/{hla}_nuc.idx"
+        index = "results/kallisto-index/{hla}_filtered.idx"
     params:
         extra = "--kmer-size=31"
     log:
-        "logs/kallisto/index/{hla}_nuc.log"
+        "logs/kallisto/index/{hla}_filtered.log"
     threads: 2
     wrapper:
-        "v0.86.0/bio/kallisto/index"
+        "v1.3.2/bio/kallisto/index"
 
 rule kallisto_quant:
     input:
         fastq = get_fastq_input,
         #fastq = ["results/mixed/{sample}_1.fq", "results/mixed/{sample}_2.fq"],
-        index = "results/kallisto-index/{hla}_nuc.idx"
+        index = "results/kallisto-index/{hla}_filtered.idx"
     output:
         directory('results/kallisto/quant_results_{sample}_{hla}')
     params:
-        extra = "-b 100 --seed=42"
+        extra = "-b 10 --seed=42"
     log:
         "logs/kallisto/kallisto_quant_{sample}_{hla}.log"
     threads: 20
     wrapper:
-        "v0.86.0/bio/kallisto/quant"
+        "v1.3.2/bio/kallisto/quant"
 
 rule bwa_index:
     input:
@@ -62,13 +62,13 @@ rule bwa_index:
         prefix="results/bwa-index/hs_genome",
         algorithm="bwtsw",
     wrapper:
-        "v0.86.0/bio/bwa/index"
+        "v1.4.0/bio/bwa/index"
 
 rule bwa_mem:
     input:
         reads = get_fastq_input,
         #reads = ["results/mixed/{sample}_1.fq", "results/mixed/{sample}_2.fq"],
-        index = multiext("results/bwa-index/hs_genome", ".amb", ".ann", ".bwt", ".pac", ".sa")
+        idx = multiext("results/bwa-index/hs_genome", ".amb", ".ann", ".bwt", ".pac", ".sa")
     output:
         "results/mapped/{sample}.bam"
     log:
@@ -80,7 +80,7 @@ rule bwa_mem:
         sort_order="coordinate", 
     threads: 16
     wrapper:
-        "v0.86.0/bio/bwa/mem"
+        "v1.4.0/bio/bwa/mem"
 
 rule samtools_index:
     input:
@@ -91,4 +91,4 @@ rule samtools_index:
         "logs/samtools_index/{sample}.log"
     threads: 4
     wrapper:
-        "v0.86.0/bio/samtools/index"
+        "v1.4.0/bio/samtools/index"

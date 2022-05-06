@@ -2,7 +2,7 @@ rule varlociraptor_preprocess:
     input:
         ref="results/refs/hs_genome.fasta",
         fai = "results/refs/hs_genome.fasta.fai",
-        candidates="resources/hla-allele-variants_v5_nuc.vcf.gz",
+        candidates="resources/hla-allele-variants_v4.vcf.gz",
         bam="results/mapped/{sample}.bam",
         bai="results/mapped/{sample}.bam.bai"
     output:
@@ -32,7 +32,7 @@ rule varlociraptor_call:
 rule orthanq_call:
     input:
         calls = "results/calls/{sample}.bcf",
-        candidate_variants = "resources/hla-allele-variants_v5_nuc.vcf.gz",
+        candidate_variants = "resources/hla-allele-variants_v4.vcf.gz",
         counts = "results/kallisto/quant_results_{sample}_{hla}"
     output:
         report(
@@ -44,4 +44,4 @@ rule orthanq_call:
     shell:
         "~/orthanq/target/release/orthanq call --haplotype-calls {input.calls} "
         "--haplotype-variants {input.candidate_variants} --haplotype-counts {input.counts}/abundance.h5 "
-        "--min-norm-counts 0.01 --max-haplotypes 2 --output {output} 2> {log}"
+        "--min-norm-counts 0.01 --max-haplotypes 2 --use-evidence kallisto --output {output} 2> {log}" #--use-evidence, for easier debugging (available options: varlociraptor, kallisto or both.)
