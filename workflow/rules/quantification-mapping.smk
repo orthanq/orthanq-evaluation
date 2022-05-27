@@ -39,7 +39,6 @@ rule kallisto_index:
 rule kallisto_quant:
     input:
         fastq = get_fastq_input,
-        #fastq = ["results/mixed/{sample}_1.fq", "results/mixed/{sample}_2.fq"],
         index = "results/kallisto-index/{hla}_filtered.idx"
     output:
         directory('results/kallisto/quant_results_{sample}_{hla}')

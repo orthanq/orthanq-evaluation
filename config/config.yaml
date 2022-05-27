@@ -1,5 +1,5 @@
 #simulate reads or call for HLA types given a sample
-simulation: False
+simulation: True
 
 #samples
 samples: config/samples2.tsv
