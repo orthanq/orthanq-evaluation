@@ -6,7 +6,7 @@ rule varlociraptor_preprocess:
         bam="results/mapped/{sample}.bam",
         bai="results/mapped/{sample}.bam.bai"
     output:
-        "results/observations/{sample}_wreadids.bcf"
+        "results/observations/{sample}.bcf"
     log:
         "logs/varlociraptor/preprocess/{sample}.log",
     conda:
@@ -31,7 +31,8 @@ rule varlociraptor_call:
 
 rule orthanq_call:
     input:
-        calls = "results/calls/{sample}_wreadids.bcf",
+        calls = "results/calls/{sample}.bcf",
+        obs = "results/observations/{sample}.bcf",
         candidate_variants = "resources/hla-allele-variants_v4.vcf.gz",
         counts = "results/kallisto/quant_results_{sample}_{hla}"
     output:
@@ -42,6 +43,6 @@ rule orthanq_call:
     log:
         "logs/orthanq/{sample}_{hla}.log"
     shell:
-        "~/orthanq/target/release/orthanq call --haplotype-calls {input.calls} "
+        "~/orthanq/target/release/orthanq call --haplotype-calls {input.calls} --observations {input.obs} "
         "--haplotype-variants {input.candidate_variants} --haplotype-counts {input.counts}/abundance.h5 "
         "--min-norm-counts 0.01 --max-haplotypes 2 --use-evidence both --output {output} 2> {log}" #--use-evidence, for easier debugging (available options: varlociraptor, kallisto or both.)
