@@ -6,13 +6,13 @@ rule varlociraptor_preprocess:
         bam="results/mapped/{sample}.bam",
         bai="results/mapped/{sample}.bam.bai"
     output:
-        "results/observations/{sample}.bcf"
+        "results/observations/{sample}_wreadids.bcf"
     log:
         "logs/varlociraptor/preprocess/{sample}.log",
     conda:
         "../envs/varlociraptor.yaml"
     shell:
-        "varlociraptor preprocess variants --candidates {input.candidates} "
+        "varlociraptor/target/release/varlociraptor preprocess variants --report-fragment-ids --candidates {input.candidates} "
         "{input.ref} --bam {input.bam} --output {output} 2> {log}"
 
 rule varlociraptor_call:
@@ -26,17 +26,17 @@ rule varlociraptor_call:
     conda:
         "../envs/varlociraptor.yaml"
     shell:
-        "varlociraptor call variants generic --obs sample={input.obs} "
+        "varlociraptor/target/release/varlociraptor call variants generic --obs sample={input.obs} "
         "--scenario {input.scenario} > {output} 2> {log}"
 
 rule orthanq_call:
     input:
-        calls = "results/calls/{sample}.bcf",
+        calls = "results/calls/{sample}_wreadids.bcf",
         candidate_variants = "resources/hla-allele-variants_v4.vcf.gz",
         counts = "results/kallisto/quant_results_{sample}_{hla}"
     output:
         report(
-            "results/orthanq/{sample}_{hla}.tsv",
+            "results/orthanq/{sample}_{hla}_yeni_debug_only_varlo_max2_varlociraptor_preprocess_change.tsv",
             caption="../report/haplotype_abundances.rst",
         )
     log:
@@ -44,4 +44,4 @@ rule orthanq_call:
     shell:
         "~/orthanq/target/release/orthanq call --haplotype-calls {input.calls} "
         "--haplotype-variants {input.candidate_variants} --haplotype-counts {input.counts}/abundance.h5 "
-        "--min-norm-counts 0.01 --max-haplotypes 2 --use-evidence kallisto --output {output} 2> {log}" #--use-evidence, for easier debugging (available options: varlociraptor, kallisto or both.)
+        "--min-norm-counts 0.01 --max-haplotypes 2 --use-evidence varlociraptor --output {output} 2> {log}" #--use-evidence, for easier debugging (available options: varlociraptor, kallisto or both.)
