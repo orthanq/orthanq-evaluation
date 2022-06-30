@@ -29,20 +29,31 @@ rule varlociraptor_call:
         "varlociraptor/target/release/varlociraptor call variants generic --obs sample={input.obs} "
         "--scenario {input.scenario} > {output} 2> {log}"
 
+rule orthanq_candidates:
+    input:
+        alleles = "resources/HLA-alleles/hla_all/hla_gen.fasta",
+        genome = "results/refs/hs_genome.fasta",
+    output:
+        candidate_variants = "results/orthanq-candidates/{hla}.vcf" #to be changed later
+    log:
+        "logs/orthanq-candidates/{hla}.log"
+    shell:
+        "~/orthanq/target/release/orthanq candidates --alleles {input.alleles} "
+        "--genome {input.genome} --wes --output results/orthanq-candidates" # --wes option for protein level hla type variant generation, --wgs for individual types 
+
 rule orthanq_call:
     input:
         calls = "results/calls/{sample}.bcf",
         obs = "results/observations/{sample}.bcf",
-        candidate_variants = "resources/hla-allele-variants_v4.vcf.gz",
-        counts = "results/kallisto/quant_results_{sample}_{hla}"
+        candidate_variants = "results/orthanq-candidates/{hla}.vcf",
     output:
         report(
             "results/orthanq/{sample}_{hla}.tsv",
             caption="../report/haplotype_abundances.rst",
         )
     log:
-        "logs/orthanq/{sample}_{hla}.log"
+        "logs/orthanq-call/{sample}_{hla}.log"
     shell:
         "~/orthanq/target/release/orthanq call --haplotype-calls {input.calls} --observations {input.obs} "
-        "--haplotype-variants {input.candidate_variants} --haplotype-counts {input.counts}/abundance.h5 "
-        "--min-norm-counts 0.01 --max-haplotypes 2 --use-evidence both --output {output} 2> {log}" #--use-evidence, for easier debugging (available options: varlociraptor, kallisto or both.)
+        "--haplotype-variants {input.candidate_variants} "
+        "--max-haplotypes 5 --output {output} 2> {log}"
