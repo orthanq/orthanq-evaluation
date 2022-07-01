@@ -1,5 +1,7 @@
 configfile: "config/config.yaml"
 
+ruleorder: orthanq_candidates > orthanq_call
+
 if config["simulation"] == True:
 
     include: "rules/common.smk"
@@ -9,8 +11,16 @@ if config["simulation"] == True:
 
     rule all:
         input:
-            [f"results/fractions/{row['sample_name']}-{row['hla']}-{row['num_reads']}_1.fq" for _, row in simulated_sample.iterrows()],
-            expand("results/orthanq/{sample}_{hla}.tsv", sample=simulated_sample.sample_name.unique(), hla=loci)
+            [
+                f"results/fractions/{row['sample_name']}-{row['hla']}-{row['num_reads']}_1.fq"
+                for _, row in simulated_sample.iterrows()
+            ],
+            expand(
+                "results/orthanq/{sample}_{hla}.tsv",
+                sample=simulated_sample.sample_name.unique(),
+                hla=loci,
+            ),
+
 
 if config["simulation"] == False:
 
@@ -21,4 +31,12 @@ if config["simulation"] == False:
     rule all:
         input:
             "results/refs/hs_genome.fasta",
-            expand("results/orthanq/{sample}_{hla}.tsv", sample=samples.sample_name, hla=loci)
+            expand(
+                "results/orthanq/{sample}_{hla}.tsv",
+                sample=samples.sample_name,
+                hla=loci,
+            ),
+            expand(
+                "results/arcasHLA/{sample}/{sample}.genotype.json",
+                sample=samples.sample_name,
+            ),

@@ -1,3 +1,5 @@
+ruleorder: orthanq_candidates > orthanq_call
+
 rule varlociraptor_preprocess:
     input:
         ref="results/refs/hs_genome.fasta",
@@ -55,5 +57,37 @@ rule orthanq_call:
         "logs/orthanq-call/{sample}_{hla}.log"
     shell:
         "~/orthanq/target/release/orthanq call --haplotype-calls {input.calls} --observations {input.obs} "
-        "--haplotype-variants {input.candidate_variants} "
-        "--max-haplotypes 5 --output {output} 2> {log}"
+        "--haplotype-variants {input.candidate_variants} --max-haplotypes 5 --output {output} 2> {log}"
+
+rule arcasHLA_extract:
+    input:
+        bam="results/mapped/{sample}.bam",
+    output:
+        extracted_read1="results/arcasHLA/{sample}/{sample}.extracted.1.fq.gz",
+        extracted_read2="results/arcasHLA/{sample}/{sample}.extracted.2.fq.gz",
+    log:
+        "logs/arcashla/extract/{sample}.log"
+    conda:
+        "../envs/arcasHLA.yaml"
+    threads: 8
+    shell:
+        "arcasHLA reference --version 3.24.0 && "
+        "arcasHLA extract {input} -o results/arcasHLA/{wildcards.sample} -t {threads} -v"
+
+rule arcasHLA_genotype:
+    input:
+        extracted_read1="results/arcasHLA/{sample}/{sample}.extracted.1.fq.gz",
+        extracted_read2="results/arcasHLA/{sample}/{sample}.extracted.2.fq.gz",
+    output:
+        "results/arcasHLA/{sample}/{sample}.genotype.json"
+    log:
+        "logs/arcashla/genotype/{sample}.log",
+    conda:
+        "../envs/arcasHLA.yaml"
+    threads: 4
+    params:
+        locus = "DQA1"
+    shell:
+        "arcasHLA genotype {input} -g {params} -o results/arcasHLA/{wildcards.sample} -t {threads}"
+
+
