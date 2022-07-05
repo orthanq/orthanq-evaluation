@@ -1,10 +1,22 @@
-ruleorder: orthanq_candidates > orthanq_call
+ruleorder: orthanq_candidates > varlociraptor_preprocess
+
+rule orthanq_candidates:
+    input:
+        alleles = "/vol/compute/hamdiyes_project/orthanq-evaluation/resources/HLA-alleles/hla_all/hla_gen.fasta",
+        genome = "results/refs/hs_genome.fasta",
+    output:
+        candidate_variants = "results/orthanq-candidates/{hla}.vcf" #to be changed later
+    log:
+        "logs/orthanq-candidates/{hla}.log"
+    shell:
+        "~/orthanq/target/release/orthanq candidates --alleles {input.alleles} "
+        "--genome {input.genome} --wes --output results/orthanq-candidates" # --wes option for protein level hla type variant generation, --wgs for individual types 
 
 rule varlociraptor_preprocess:
     input:
         ref="results/refs/hs_genome.fasta",
         fai = "results/refs/hs_genome.fasta.fai",
-        candidates="resources/hla-allele-variants_v4.vcf.gz",
+        candidates = expand("results/orthanq-candidates/{hla}.vcf", hla=loci),
         bam="results/mapped/{sample}.bam",
         bai="results/mapped/{sample}.bam.bai"
     output:
@@ -30,18 +42,6 @@ rule varlociraptor_call:
     shell:
         "varlociraptor/target/release/varlociraptor call variants generic --obs sample={input.obs} "
         "--scenario {input.scenario} > {output} 2> {log}"
-
-rule orthanq_candidates:
-    input:
-        alleles = "resources/HLA-alleles/hla_all/hla_gen.fasta",
-        genome = "results/refs/hs_genome.fasta",
-    output:
-        candidate_variants = "results/orthanq-candidates/{hla}.vcf" #to be changed later
-    log:
-        "logs/orthanq-candidates/{hla}.log"
-    shell:
-        "~/orthanq/target/release/orthanq candidates --alleles {input.alleles} "
-        "--genome {input.genome} --wes --output results/orthanq-candidates" # --wes option for protein level hla type variant generation, --wgs for individual types 
 
 rule orthanq_call:
     input:
@@ -72,7 +72,7 @@ rule arcasHLA_extract:
     threads: 8
     shell:
         "arcasHLA reference --version 3.24.0 && "
-        "arcasHLA extract {input} -o results/arcasHLA/{wildcards.sample} -t {threads} -v"
+        "arcasHLA extract {input} -o results/arcasHLA/{wildcards.sample} -t {threads} -v 2> {log}"
 
 rule arcasHLA_genotype:
     input:
@@ -88,6 +88,6 @@ rule arcasHLA_genotype:
     params:
         locus = "DQA1"
     shell:
-        "arcasHLA genotype {input} -g {params} -o results/arcasHLA/{wildcards.sample} -t {threads}"
+        "arcasHLA genotype {input} -g {params} -o results/arcasHLA/{wildcards.sample} -t {threads} 2> {log}"
 
 
