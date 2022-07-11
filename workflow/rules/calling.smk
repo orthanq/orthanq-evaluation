@@ -70,8 +70,10 @@ rule arcasHLA_extract:
     conda:
         "../envs/arcasHLA.yaml"
     threads: 8
+    params:
+        version = "3.24.0"
     shell:
-        "arcasHLA reference --version 3.24.0 && "
+        "arcasHLA reference --version {params}; "
         "arcasHLA extract {input} -o results/arcasHLA/{wildcards.sample} -t {threads} -v 2> {log}"
 
 rule arcasHLA_genotype:
