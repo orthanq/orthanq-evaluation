@@ -1,3 +1,6 @@
+#full path for the genomic HLA sequences. (for now IMGT v3.33 is used.)
+allele_db: /vol/compute/hamdiyes_project/orthanq-evaluation/resources/HLA-alleles/IMGT-3.33.0/IMGTHLA-3.33.0-alpha/hla_gen.fasta
+
 #simulate reads or call for HLA types given a sample
 simulation: False
 

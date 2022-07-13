@@ -2,7 +2,7 @@ ruleorder: orthanq_candidates > varlociraptor_preprocess
 
 rule orthanq_candidates:
     input:
-        alleles = "/vol/compute/hamdiyes_project/orthanq-evaluation/resources/HLA-alleles/hla_all/hla_gen.fasta",
+        alleles = config["allele_db"],
         genome = "results/refs/hs_genome.fasta",
     output:
         candidate_variants = "results/orthanq-candidates/{hla}.vcf" #to be changed later
@@ -10,7 +10,7 @@ rule orthanq_candidates:
         "logs/orthanq-candidates/{hla}.log"
     shell:
         "~/orthanq/target/release/orthanq candidates --alleles {input.alleles} "
-        "--genome {input.genome} --wes --output results/orthanq-candidates" # --wes option for protein level hla type variant generation, --wgs for individual types 
+        "--genome {input.genome} --wes --output results/orthanq-candidates 2> {log}" # --wes option for protein level hla type variant generation, --wgs for individual types 
 
 rule varlociraptor_preprocess:
     input:
@@ -46,7 +46,6 @@ rule varlociraptor_call:
 rule orthanq_call:
     input:
         calls = "results/calls/{sample}.bcf",
-        obs = "results/observations/{sample}.bcf",
         candidate_variants = "results/orthanq-candidates/{hla}.vcf",
     output:
         report(
@@ -56,7 +55,7 @@ rule orthanq_call:
     log:
         "logs/orthanq-call/{sample}_{hla}.log"
     shell:
-        "~/orthanq/target/release/orthanq call --haplotype-calls {input.calls} --observations {input.obs} "
+        "~/orthanq/target/release/orthanq call --haplotype-calls {input.calls} "
         "--haplotype-variants {input.candidate_variants} --max-haplotypes 5 --output {output} 2> {log}"
 
 rule arcasHLA_extract:
