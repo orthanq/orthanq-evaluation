@@ -31,6 +31,7 @@ if config["simulation"] == False:
     rule all:
         input:
             "results/refs/hs_genome.fasta",
+            expand("results/orthanq-candidates/{hla}.vcf", hla=loci),
             expand(
                 "results/orthanq/{sample}_{hla}.tsv",
                 sample=samples.sample_name,

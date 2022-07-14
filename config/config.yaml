@@ -5,7 +5,7 @@ allele_db: /vol/compute/hamdiyes_project/orthanq-evaluation/resources/HLA-allele
 simulation: False
 
 #samples
-samples: config/samples.tsv
+samples: config/samples2.tsv
 
 #alleles
 hla: config/alleles.tsv

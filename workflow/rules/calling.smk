@@ -16,13 +16,13 @@ rule varlociraptor_preprocess:
     input:
         ref="results/refs/hs_genome.fasta",
         fai = "results/refs/hs_genome.fasta.fai",
-        candidates = expand("results/orthanq-candidates/{hla}.vcf", hla=loci),
+        candidates = "results/orthanq-candidates/{hla}.vcf",
         bam="results/mapped/{sample}.bam",
         bai="results/mapped/{sample}.bam.bai"
     output:
-        "results/observations/{sample}.bcf"
+        "results/observations/{sample}_{hla}.bcf"
     log:
-        "logs/varlociraptor/preprocess/{sample}.log",
+        "logs/varlociraptor/preprocess/{sample}_{hla}.log",
     conda:
         "../envs/varlociraptor.yaml"
     shell:
@@ -31,12 +31,12 @@ rule varlociraptor_preprocess:
 
 rule varlociraptor_call:
     input:
-        obs="results/observations/{sample}.bcf",
+        obs="results/observations/{sample}_{hla}.bcf",
         scenario="resources/scenarios/scenario.yaml",
     output:
-        "results/calls/{sample}.bcf"
+        "results/calls/{sample}_{hla}.bcf"
     log:
-        "logs/varlociraptor/call/{sample}.log",
+        "logs/varlociraptor/call/{sample}_{hla}.log",
     conda:
         "../envs/varlociraptor.yaml"
     shell:
@@ -45,7 +45,7 @@ rule varlociraptor_call:
 
 rule orthanq_call:
     input:
-        calls = "results/calls/{sample}.bcf",
+        calls = "results/calls/{sample}_{hla}.bcf",
         candidate_variants = "results/orthanq-candidates/{hla}.vcf",
     output:
         report(
