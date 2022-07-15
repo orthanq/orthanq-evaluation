@@ -58,8 +58,22 @@ rule orthanq_call:
         "~/orthanq/target/release/orthanq call --haplotype-calls {input.calls} "
         "--haplotype-variants {input.candidate_variants} --max-haplotypes 5 --output {output} 2> {log}"
 
+rule arcasHLA_reference:
+    output:
+        "foo.txt"
+    log:
+        "logs/arcashla/reference.log"
+    conda:
+        "../envs/arcasHLA.yaml"
+    params:
+        version = config["arcasHLA_version"]
+    shell:
+        "touch foo.txt; "
+        "arcasHLA reference --version {params}"
+
 rule arcasHLA_extract:
     input:
+        "foo.txt",
         bam="results/mapped/{sample}.bam",
     output:
         extracted_read1="results/arcasHLA/{sample}/{sample}.extracted.1.fq.gz",
@@ -69,26 +83,23 @@ rule arcasHLA_extract:
     conda:
         "../envs/arcasHLA.yaml"
     threads: 8
-    params:
-        version = "3.24.0"
     shell:
-        "arcasHLA reference --version {params}; "
-        "arcasHLA extract {input} -o results/arcasHLA/{wildcards.sample} -t {threads} -v 2> {log}"
+        "arcasHLA extract {input.bam} -o results/arcasHLA/{wildcards.sample} -t {threads} -v 2> {log}"
 
 rule arcasHLA_genotype:
     input:
         extracted_read1="results/arcasHLA/{sample}/{sample}.extracted.1.fq.gz",
         extracted_read2="results/arcasHLA/{sample}/{sample}.extracted.2.fq.gz",
     output:
-        "results/arcasHLA/{sample}/{sample}.genotype.json"
+        "results/arcasHLA/{sample}_{hla}/{sample}.genotype.json"
     log:
-        "logs/arcashla/genotype/{sample}.log",
+        "logs/arcashla/genotype/{sample}_{hla}.log",
     conda:
         "../envs/arcasHLA.yaml"
     threads: 4
     params:
-        locus = "DQA1"
+        locus = "{hla}"
     shell:
-        "arcasHLA genotype {input} -g {params} -o results/arcasHLA/{wildcards.sample} -t {threads} 2> {log}"
+        "arcasHLA genotype {input} -g {params} -o results/arcasHLA/{wildcards.sample}_{wildcards.hla} -t {threads} 2> {log}"
 
 

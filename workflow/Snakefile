@@ -38,6 +38,7 @@ if config["simulation"] == False:
                 hla=loci,
             ),
             expand(
-                "results/arcasHLA/{sample}/{sample}.genotype.json",
+                "results/arcasHLA/{sample}_{hla}/{sample}.genotype.json",
                 sample=samples.sample_name,
+                hla=loci,
             ),
