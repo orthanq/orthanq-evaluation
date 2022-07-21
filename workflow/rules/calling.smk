@@ -5,9 +5,9 @@ rule orthanq_candidates:
         alleles = config["allele_db"],
         genome = "results/refs/hs_genome.fasta",
     output:
-        candidate_variants = "results/orthanq-candidates/{hla}.vcf" #to be changed later
+        candidate_variants = expand("results/orthanq-candidates/{hla}.vcf",hla=loci) #to be changed later
     log:
-        "logs/orthanq-candidates/{hla}.log"
+        "logs/orthanq-candidates/candidates.log"
     shell:
         "~/orthanq/target/release/orthanq candidates --alleles {input.alleles} "
         "--genome {input.genome} --wes --output results/orthanq-candidates 2> {log}" # --wes option for protein level hla type variant generation, --wgs for individual types 
@@ -38,9 +38,9 @@ rule varlociraptor_call:
     log:
         "logs/varlociraptor/call/{sample}_{hla}.log",
     conda:
-        "../envs/varlociraptor.yaml"
+        "../envs/varlociraptor.yaml" 
     shell:
-        "varlociraptor/target/release/varlociraptor call variants generic --obs sample={input.obs} "
+        "varlociraptor/target/release/varlociraptor call variants --omit-alt-locus-bias generic --obs sample={input.obs} " ##varlociraptor v5.3.0
         "--scenario {input.scenario} > {output} 2> {log}"
 
 rule orthanq_call:
