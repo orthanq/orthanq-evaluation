@@ -23,32 +23,32 @@ rule genome_index:
     wrapper:
         "v1.3.2/bio/samtools/faidx"
 
-rule kallisto_index:
-    input:
-        fasta = "resources/HLA-alleles/{hla}_filtered.fasta"
-    output:
-        index = "results/kallisto-index/{hla}_filtered.idx"
-    params:
-        extra = "--kmer-size=31"
-    log:
-        "logs/kallisto/index/{hla}_filtered.log"
-    threads: 2
-    wrapper:
-        "v1.3.2/bio/kallisto/index"
+# rule kallisto_index:
+#     input:
+#         fasta = "resources/HLA-alleles/IMGTHLA-3.14.0-alpha/fasta/{hla}_gen.fasta"
+#     output:
+#         index = "results/kallisto-index/{hla}_gen.idx"
+#     params:
+#         extra = "--kmer-size=31"
+#     log:
+#         "logs/kallisto/index/{hla}_gen.log"
+#     threads: 2
+#     wrapper:
+#         "v1.3.2/bio/kallisto/index"
 
-rule kallisto_quant:
-    input:
-        fastq = get_fastq_input,
-        index = "results/kallisto-index/{hla}_filtered.idx"
-    output:
-        directory('results/kallisto/quant_results_{sample}_{hla}')
-    params:
-        extra = "-b 10 --seed=42"
-    log:
-        "logs/kallisto/kallisto_quant_{sample}_{hla}.log"
-    threads: 20
-    wrapper:
-        "v1.3.2/bio/kallisto/quant"
+# rule kallisto_quant:
+#     input:
+#         fastq = get_fastq_input,
+#         index = "results/kallisto-index/{hla}_gen.idx"
+#     output:
+#         directory('results/kallisto/quant_results_{sample}_{hla}')
+#     params:
+#         extra = "--seed=42"
+#     log:
+#         "logs/kallisto/kallisto_quant_{sample}_{hla}.log"
+#     threads: 20
+#     wrapper:
+#         "v1.3.2/bio/kallisto/quant"
 
 rule bwa_index:
     input:

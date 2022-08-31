@@ -9,7 +9,7 @@ samples = pd.read_csv(config["samples"], sep="\t").set_index(
 #loci = ["A","DPA1","DRB4","V","B","DPB1","DRB5","W","C","DQA1", "E", "DQA2", "F", "S", "DMA", "DQB1", "G", "TAP1", "DMB", "DRA", "HFE", "TAP2", "DOA", "DRB1", "T", "DOB", "DRB3", "MICA", "U"]
 #removed N
 #loci = ["DQA1", "DQB1", "DRB1"] #homozygous alleles found in the genotype of SRR702070. also C
-loci = ["A", "DQA1"]
+loci = ["A", "DQA1", "DRB1" ,"C"]
 
 # input function for simulation sample
 def create_sample(): #n: number of samples in the end, k: number of fractions

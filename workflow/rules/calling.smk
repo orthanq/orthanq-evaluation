@@ -26,7 +26,7 @@ rule varlociraptor_preprocess:
     conda:
         "../envs/varlociraptor.yaml"
     shell:
-        "varlociraptor/target/release/varlociraptor preprocess variants --report-fragment-ids --candidates {input.candidates} "
+        "varlociraptor preprocess variants --report-fragment-ids --candidates {input.candidates} "
         "{input.ref} --bam {input.bam} --output {output} 2> {log}"
 
 rule varlociraptor_call:
@@ -40,7 +40,7 @@ rule varlociraptor_call:
     conda:
         "../envs/varlociraptor.yaml" 
     shell:
-        "varlociraptor/target/release/varlociraptor call variants --omit-alt-locus-bias generic --obs sample={input.obs} " ##varlociraptor v5.3.0
+        "varlociraptor call variants --omit-strand-bias --omit-alt-locus-bias generic --obs sample={input.obs} " ##varlociraptor v5.3.0
         "--scenario {input.scenario} > {output} 2> {log}"
 
 rule orthanq_call:

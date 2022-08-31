@@ -1,5 +1,5 @@
 #full path for the genomic HLA sequences. (for now IMGT v3.33 is used.)
-allele_db: /vol/compute/hamdiyes_project/orthanq-evaluation/resources/HLA-alleles/IMGT-3.33.0/IMGTHLA-3.33.0-alpha/hla_gen.fasta
+allele_db: /vol/compute/hamdiyes_project/orthanq-evaluation/resources/HLA-alleles/IMGTHLA-3.14.0-alpha/fasta/hla_gen.fasta
 
 #arcasHLA database version
 arcasHLA_version: "3.24.0"
@@ -8,7 +8,7 @@ arcasHLA_version: "3.24.0"
 simulation: False
 
 #samples
-samples: config/samples.tsv
+samples: config/samples2.tsv
 
 #alleles
 hla: config/alleles.tsv
