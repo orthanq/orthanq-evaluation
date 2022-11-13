@@ -16,10 +16,15 @@ if config["simulation"] == True:
                 for _, row in simulated_sample.iterrows()
             ],
             expand(
-                "results/orthanq/{sample}_{hla}.tsv",
+                "results/calls/{sample}_{hla}.bcf",
                 sample=simulated_sample.sample_name.unique(),
                 hla=loci,
             ),
+            # expand(
+            #     "results/orthanq/{sample}_{hla}.tsv",
+            #     sample=simulated_sample.sample_name.unique(),
+            #     hla=loci,
+            # )
 
 
 if config["simulation"] == False:
@@ -33,7 +38,7 @@ if config["simulation"] == False:
             "results/refs/hs_genome.fasta",
             expand("results/orthanq-candidates/{hla}.vcf", hla=loci),
             expand(
-                "results/orthanq/{sample}_{hla}.tsv",
+                "results/calls/{sample}_{hla}.bcf",
                 sample=samples.sample_name,
                 hla=loci,
             ),
@@ -42,3 +47,8 @@ if config["simulation"] == False:
                 sample=samples.sample_name,
                 hla=loci,
             ),
+            # expand(
+            #     "results/orthanq/{sample}_{hla}.tsv",
+            #     sample=samples.sample_name,
+            #     hla=loci,
+            # )

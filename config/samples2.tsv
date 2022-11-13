@@ -1,2 +1,4 @@
 sample_name	fq1	fq2
+SRR2962669	/vol/compute/hamdiyes_project/orthanq-benchmark/SRR2962669/SRR2962669_1.fastq	/vol/compute/hamdiyes_project/orthanq-benchmark/SRR2962669/SRR2962669_2.fastq
 SRR702070	/vol/compute/hamdiyes_project/orthanq-benchmark/HapMap/SRR702070_1.fastq.gz	/vol/compute/hamdiyes_project/orthanq-benchmark/HapMap/SRR702070_2.fastq.gz
+SRR707191	/vol/compute/hamdiyes_project/orthanq-benchmark/HapMap/SRR707191_1.fastq.gz	/vol/compute/hamdiyes_project/orthanq-benchmark/HapMap/SRR707191_2.fastq.gz

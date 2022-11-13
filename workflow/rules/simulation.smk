@@ -1,6 +1,6 @@
 rule art_simulation:
     input:
-        "resources/HLA-alleles/{allele}_nuc.fasta"
+        "resources/HLA-alleles/{allele}.fasta"
     output:
         "results/art/{allele}_1.fq",
         "results/art/{allele}_2.fq"
