@@ -7,9 +7,7 @@ samples = pd.read_csv(config["samples"], sep="\t").set_index(
     ["sample_name"], drop=False
 )
 #loci = ["A","DPA1","DRB4","V","B","DPB1","DRB5","W","C","DQA1", "E", "DQA2", "F", "S", "DMA", "DQB1", "G", "TAP1", "DMB", "DRA", "HFE", "TAP2", "DOA", "DRB1", "T", "DOB", "DRB3", "MICA", "U"]
-#removed N
-#loci = ["DQA1", "DQB1", "DRB1"] #homozygous alleles found in the genotype of SRR702070. also C
-loci = ["A", "DQA1", "DRB1" ,"C"]
+loci = ["A","B","C","DQA1","DQB1"]
 
 # input function for simulation sample
 def create_sample(): #n: number of samples in the end, k: number of fractions
@@ -32,3 +30,22 @@ def get_fastq_input(wildcards):
         sample = wildcards.sample
         simulated = ["results/mixed/{sample}_1.fq", "results/mixed/{sample}_2.fq"]
         return simulated
+
+def get_fastq_input_1(wildcards):
+    if config["simulation"] == False:
+        sample = samples.loc[wildcards.sample]
+        return sample["fq1"]
+    else:
+        sample = wildcards.sample
+        simulated = "results/mixed/{sample}_1.fq"
+        return simulated
+
+def get_fastq_input_2(wildcards):
+    if config["simulation"] == False:
+        sample = samples.loc[wildcards.sample]
+        return sample["fq2"]
+    else:
+        sample = wildcards.sample
+        simulated = "results/mixed/{sample}_2.fq"
+        return simulated
+

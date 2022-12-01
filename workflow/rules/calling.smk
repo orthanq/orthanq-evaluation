@@ -1,17 +1,3 @@
-ruleorder: orthanq_candidates > varlociraptor_preprocess
-
-rule orthanq_candidates:
-    input:
-        alleles = config["allele_db"],
-        genome = "results/refs/hs_genome.fasta",
-    output:
-        candidate_variants = expand("results/orthanq-candidates/{hla}.vcf",hla=loci) #to be changed later
-    log:
-        "logs/orthanq-candidates/candidates.log"
-    shell:
-        "~/orthanq/target/release/orthanq candidates --alleles {input.alleles} "
-        "--genome {input.genome} --wes --output results/orthanq-candidates 2> {log}" # --wes option for protein level hla type variant generation, --wgs for individual types 
-
 rule varlociraptor_preprocess:
     input:
         ref="results/refs/hs_genome.fasta",
@@ -46,17 +32,18 @@ rule varlociraptor_call:
 rule orthanq_call:
     input:
         calls = "results/calls/{sample}_{hla}.bcf",
+        counts = "results/kallisto/quant_results_{sample}_{hla}",
         candidate_variants = "results/orthanq-candidates/{hla}.vcf",
     output:
         report(
-            "results/orthanq/{sample}_{hla}.tsv",
+            "results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv",
             caption="../report/haplotype_abundances.rst",
-        )
+        ) #this directory also contains json files for solutions
     log:
         "logs/orthanq-call/{sample}_{hla}.log"
     shell:
-        "~/orthanq/target/release/orthanq call --haplotype-calls {input.calls} "
-        "--haplotype-variants {input.candidate_variants} --max-haplotypes 5 --output {output} 2> {log}"
+        "~/orthanq/target/release/orthanq call --haplotype-counts {input.counts}/abundance.h5 --haplotype-calls {input.calls} "
+        "--haplotype-variants {input.candidate_variants} --min-norm-counts 0.0 --max-haplotypes 5 --output {output} 2> {log}"
 
 rule arcasHLA_reference:
     output:

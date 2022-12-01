@@ -37,6 +37,8 @@ if config["simulation"] == False:
         input:
             "results/refs/hs_genome.fasta",
             expand("results/orthanq-candidates/{hla}.vcf", hla=loci),
+            expand("results/kallisto/quant_results_{sample}_{hla}", sample=samples.sample_name, hla=loci),
+            # expand("results/salmon-quant/{sample}_{hla}/quant.sf", sample=samples.sample_name, hla=loci),
             expand(
                 "results/calls/{sample}_{hla}.bcf",
                 sample=samples.sample_name,
@@ -47,8 +49,8 @@ if config["simulation"] == False:
                 sample=samples.sample_name,
                 hla=loci,
             ),
-            # expand(
-            #     "results/orthanq/{sample}_{hla}.tsv",
-            #     sample=samples.sample_name,
-            #     hla=loci,
-            # )
+            expand(
+                "results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv",
+                sample=samples.sample_name,
+                hla=loci,
+            )
