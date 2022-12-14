@@ -32,7 +32,7 @@ rule orthanq_candidates:
         genome = "results/refs/hs_genome.fasta",
     output:
         candidate_variants = expand("results/orthanq-candidates/{hla}.vcf",hla=loci),
-        fasta = expand("results/orthanq-candidates/{hla}.fasta",hla=loci)
+        #fasta = expand("results/orthanq-candidates/{hla}.fasta",hla=loci)
     log:
         "logs/orthanq-candidates/candidates.log"
     shell:

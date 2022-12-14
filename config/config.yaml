@@ -2,7 +2,7 @@
 allele_db: /vol/compute/hamdiyes_project/orthanq-evaluation/resources/HLA-alleles/IMGT-3.33.0/IMGTHLA-3.33.0-alpha/hla_gen.fasta
 
 #arcasHLA database version
-arcasHLA_version: "3.24.0"
+arcasHLA_version: "3.33.0"
 
 #simulate reads or call for HLA types given a sample
 simulation: False

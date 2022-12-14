@@ -38,12 +38,12 @@ rule orthanq_call:
         report(
             "results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv",
             caption="../report/haplotype_abundances.rst",
-        ) #this directory also contains json files for solutions
+        ), #this directory also contains json files for solutions
     log:
         "logs/orthanq-call/{sample}_{hla}.log"
     shell:
         "~/orthanq/target/release/orthanq call --haplotype-counts {input.counts}/abundance.h5 --haplotype-calls {input.calls} "
-        "--haplotype-variants {input.candidate_variants} --min-norm-counts 0.0 --max-haplotypes 5 --output {output} 2> {log}"
+        "--haplotype-variants {input.candidate_variants} --min-norm-counts 0.0 --max-haplotypes 5 --use-evidence varlociraptor --prior diploid --output {output} 2> {log}"
 
 rule arcasHLA_reference:
     output:
@@ -89,4 +89,30 @@ rule arcasHLA_genotype:
     shell:
         "arcasHLA genotype {input} -g {params} -o results/arcasHLA/{wildcards.sample}_{wildcards.hla} -t {threads} 2> {log}"
 
+rule datavzrd_config:
+    input:
+        template="resources/datavzrd.yaml",
+        table="results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv"
+    output:
+        "resources/datavzrd/{sample}.{hla}.datavzrd.yaml"
+    log:
+        "logs/datavzrd-config/{sample}.{hla}.log"
+    template_engine:
+        "yte"
 
+rule datavzrd:
+    input:
+        config="resources/datavzrd/{sample}.{hla}.datavzrd.yaml",
+        # optional files required for rendering the given config
+        table="results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv"
+    output:
+        report(
+            directory("results/datavzrd-report/{sample}_{hla}"),
+            htmlindex="index.html",
+            # see https://snakemake.readthedocs.io/en/stable/snakefiles/reporting.html
+            # for additional options like caption, categories and labels
+        ),
+    log:
+        "logs/datavzrd_report/{sample}_{hla}.log",
+    wrapper:
+        "v1.16.0/utils/datavzrd"
