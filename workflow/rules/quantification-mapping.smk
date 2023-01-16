@@ -30,6 +30,7 @@ rule orthanq_candidates:
     input:
         alleles = config["allele_db"],
         genome = "results/refs/hs_genome.fasta",
+        xml = config["allele_db_xml"]
     output:
         candidate_variants = expand("results/orthanq-candidates/{hla}.vcf",hla=loci),
         #fasta = expand("results/orthanq-candidates/{hla}.fasta",hla=loci)
@@ -37,66 +38,66 @@ rule orthanq_candidates:
         "logs/orthanq-candidates/candidates.log"
     shell:
         "~/orthanq/target/release/orthanq candidates --alleles {input.alleles} "
-        "--genome {input.genome} --wes --output results/orthanq-candidates 2> {log}" # --wes option for protein level hla type variant generation, --wgs for individual types 
+        "--genome {input.genome} --xml {input.xml} --wes --output results/orthanq-candidates 2> {log}" # --wes option for protein level hla type variant generation, --wgs for individual types 
 
-rule kallisto_index:
-    input:
-        fasta = "results/orthanq-candidates/{hla}.fasta"
-    output:
-        index = "results/kallisto-index/{hla}.idx"
-    params:
-        extra = "--kmer-size=31"
-    log:
-        "logs/kallisto/index/{hla}.log"
-    threads: 2
-    wrapper:
-        "v1.3.2/bio/kallisto/index"
+# rule kallisto_index:
+#     input:
+#         fasta = "results/orthanq-candidates/{hla}.fasta"
+#     output:
+#         index = "results/kallisto-index/{hla}.idx"
+#     params:
+#         extra = "--kmer-size=31"
+#     log:
+#         "logs/kallisto/index/{hla}.log"
+#     threads: 2
+#     wrapper:
+#         "v1.3.2/bio/kallisto/index"
 
-rule kallisto_quant:
-    input:
-        fastq = get_fastq_input,
-        index = "results/kallisto-index/{hla}.idx"
-    output:
-        directory('results/kallisto/quant_results_{sample}_{hla}')
-    params:
-        extra = "-b 20 --seed=42"
-    log:
-        "logs/kallisto/kallisto_quant_{sample}_{hla}.log"
-    threads: 20
-    wrapper:
-        "v1.3.2/bio/kallisto/quant"
+# rule kallisto_quant:
+#     input:
+#         fastq = get_fastq_input,
+#         index = "results/kallisto-index/{hla}.idx"
+#     output:
+#         directory('results/kallisto/quant_results_{sample}_{hla}')
+#     params:
+#         extra = "-b 20 --seed=42"
+#     log:
+#         "logs/kallisto/kallisto_quant_{sample}_{hla}.log"
+#     threads: 20
+#     wrapper:
+#         "v1.3.2/bio/kallisto/quant"
 
-rule salmon_index:
-    input:
-        sequences="results/orthanq-candidates/{hla}.fasta",
-    output:
-        directory("results/salmon-index/{hla}")
-    log:
-        "logs/salmon-index/{hla}.log",
-    threads: 10
-    params:
-        # optional parameters
-        extra="",
-    wrapper:
-        "v1.19.1-1-g03532856/bio/salmon/index"
+# rule salmon_index:
+#     input:
+#         sequences="results/orthanq-candidates/{hla}.fasta",
+#     output:
+#         directory("results/salmon-index/{hla}")
+#     log:
+#         "logs/salmon-index/{hla}.log",
+#     threads: 10
+#     params:
+#         # optional parameters
+#         extra="",
+#     wrapper:
+#         "v1.19.1-1-g03532856/bio/salmon/index"
 
-rule salmon_quant_reads:
-    input:
-        index="results/salmon-index/{hla}",
-        r1=get_fastq_input_1,
-        r2=get_fastq_input_2,
-    output:
-        quant="results/salmon-quant/{sample}_{hla}/quant.sf",
-        lib="results/salmon-quant/{sample}_{hla}/lib_format_counts.json",
-    log:
-        "logs/salmon-quant/{sample}_{hla}.log",
-    params:
-        # optional parameters
-        libtype="A",
-        numBootstraps=20
-    threads: 10
-    wrapper:
-        "v1.19.1-1-g03532856/bio/salmon/quant"
+# rule salmon_quant_reads:
+#     input:
+#         index="results/salmon-index/{hla}",
+#         r1=get_fastq_input_1,
+#         r2=get_fastq_input_2,
+#     output:
+#         quant="results/salmon-quant/{sample}_{hla}/quant.sf",
+#         lib="results/salmon-quant/{sample}_{hla}/lib_format_counts.json",
+#     log:
+#         "logs/salmon-quant/{sample}_{hla}.log",
+#     params:
+#         # optional parameters
+#         libtype="A",
+#         numBootstraps=20
+#     threads: 10
+#     wrapper:
+#         "v1.19.1-1-g03532856/bio/salmon/quant"
 
 rule bwa_index:
     input:

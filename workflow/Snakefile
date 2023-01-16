@@ -54,8 +54,8 @@ if config["simulation"] == False:
                 sample=samples.sample_name,
                 hla=loci,
             ),
-            expand("resources/datavzrd/{sample}.{hla}.datavzrd.yaml",sample=samples.sample_name,
-                hla=loci),
-            expand("results/datavzrd-report/{sample}_{hla}", sample=samples.sample_name,
-                hla=loci)
+            # expand("resources/datavzrd/{sample}.{hla}.datavzrd.yaml",sample=samples.sample_name,
+            #     hla=loci),
+            # expand("results/datavzrd-report/{sample}_{hla}", sample=samples.sample_name,
+            #     hla=loci)
 
