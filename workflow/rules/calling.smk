@@ -42,7 +42,7 @@ rule orthanq_call:
         "logs/orthanq-call/{sample}_{hla}.log"
     shell:
         "~/orthanq/target/release/orthanq call --haplotype-calls {input.calls} --haplotype-variants {input.candidate_variants}"
-        " --min-norm-counts 0.0 --max-haplotypes 5 --use-evidence varlociraptor --prior diploid --output {output} 2> {log}"
+        " --max-haplotypes 5 --prior diploid --output {output} 2> {log}"
 
 rule arcasHLA_reference:
     output:
