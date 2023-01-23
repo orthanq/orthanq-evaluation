@@ -88,6 +88,27 @@ rule arcasHLA_genotype:
     shell:
         "arcasHLA genotype {input} -g {params} -o results/arcasHLA/{wildcards.sample}_{wildcards.hla} -t {threads} 2> {log}"
 
+rule HLA_LA:
+    input:
+        bam="results/mapped/{sample}.bam",
+        bai="results/mapped/{sample}.bam.bai",
+        index="resources/graphs/PRG_MHC_GRCh38_withIMGT/serializedGRAPH", #V3.32
+    output:
+        "results/HLA-LA/{sample}/hla/R1_bestguess_G.txt",
+    threads: 20
+    log:
+        "logs/HLA-LA/{sample}.log",
+    params:
+        graph=lambda w, input: os.path.basename(os.path.dirname(input.index)),
+        graphdir=lambda w, input: os.path.dirname(os.path.dirname(input.index)),
+        workdir=lambda w, output: os.path.dirname(
+            os.path.dirname(os.path.dirname(output[0]))
+        )
+    conda:
+        "../envs/hla-la.yaml"
+    shell:
+        "HLA-LA.pl --bam {input.bam} --sampleID {wildcards.sample} --graph {params.graph} --customGraphDir {params.graphdir} --workingDir {params.workdir} --maxThreads {threads} > {log} 2>&1"
+
 rule datavzrd_config:
     input:
         template="resources/datavzrd.yaml",

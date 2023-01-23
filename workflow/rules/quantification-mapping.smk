@@ -23,7 +23,7 @@ rule genome_index:
         "logs/genome_index/hs_genome.log"
     threads: 4
     wrapper:
-        "v1.3.2/bio/samtools/faidx"
+        "v1.3.2/bio/samtools/faidx" #update wrapper version
 
 ##orthanq_candidates generates both candidate variants and individual genome sequences for each locus(to be used for quantification indices in the downstream processing)
 rule orthanq_candidates:
@@ -110,7 +110,7 @@ rule bwa_index:
         prefix="results/bwa-index/hs_genome",
         algorithm="bwtsw",
     wrapper:
-        "v1.4.0/bio/bwa/index"
+        "v1.4.0/bio/bwa/index" #update wrapper version
 
 rule bwa_mem:
     input:
@@ -128,7 +128,7 @@ rule bwa_mem:
         sort_order="coordinate", 
     threads: 16
     wrapper:
-        "v1.4.0/bio/bwa/mem"
+        "v1.4.0/bio/bwa/mem" #update wrapper version
 
 rule samtools_index:
     input:

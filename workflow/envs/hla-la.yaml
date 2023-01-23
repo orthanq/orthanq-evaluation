@@ -1,0 +1,7 @@
+name: hla-la2
+channels:
+  - bioconda
+  - conda-forge
+  - nodefaults
+dependencies:
+  - hla-la=1.0.3
