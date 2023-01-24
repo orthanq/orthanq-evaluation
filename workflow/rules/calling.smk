@@ -33,6 +33,7 @@ rule orthanq_call:
     input:
         calls = "results/calls/{sample}_{hla}.bcf",
         candidate_variants = "results/orthanq-candidates/{hla}.vcf",
+        xml = config["allele_db_xml"]
     output:
         report(
             "results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv",
@@ -41,8 +42,8 @@ rule orthanq_call:
     log:
         "logs/orthanq-call/{sample}_{hla}.log"
     shell:
-        "~/orthanq/target/release/orthanq call --haplotype-calls {input.calls} --haplotype-variants {input.candidate_variants}"
-        " --max-haplotypes 5 --prior diploid --output {output} 2> {log}"
+        "~/orthanq/target/release/orthanq call --haplotype-calls {input.calls} --haplotype-variants {input.candidate_variants} "
+        "--xml {input.xml} --max-haplotypes 5 --prior diploid --output {output} 2> {log}"
 
 rule arcasHLA_reference:
     output:
@@ -108,6 +109,40 @@ rule HLA_LA:
         "../envs/hla-la.yaml"
     shell:
         "HLA-LA.pl --bam {input.bam} --sampleID {wildcards.sample} --graph {params.graph} --customGraphDir {params.graphdir} --workingDir {params.workdir} --maxThreads {threads} > {log} 2>&1"
+
+rule parse_HLAs:
+    input:
+        orthanq=expand("results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv", 
+        sample=samples.sample_name,
+        hla=loci
+        ),
+        hla_la=expand("results/HLA-LA/{sample}/hla/R1_bestguess.txt",
+        sample=samples.sample_name
+        ),
+        arcasHLA=expand("results/arcasHLA/{sample}_{hla}/{sample}.genotype.json",
+        sample=samples.sample_name,
+        hla=loci
+        )
+    output:
+        orthanq=report(
+            "results/orthanq/final_report.csv",
+            caption="../report/orthanq.rst",
+            category="hla",
+        ),
+        hla_la=report(
+            "results/HLA-LA/final_report.csv",
+            caption="../report/hla_la.rst",
+            category="hla",
+        ),
+        arcasHLA=report(
+            "results/arcasHLA/final_report.csv",
+            caption="../report/arcasHLA.rst",
+            category="hla",
+        )
+    log:
+        "logs/parse_HLAs/parse_HLA_alleles.log"
+    script:
+        "../scripts/parse_HLA_alleles.py"
 
 rule datavzrd_config:
     input:

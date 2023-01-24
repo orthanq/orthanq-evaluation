@@ -30,15 +30,16 @@ rule orthanq_candidates:
     input:
         alleles = config["allele_db"],
         genome = "results/refs/hs_genome.fasta",
-        xml = config["allele_db_xml"]
+        xml = config["allele_db_xml"],
+        allele_freqs = "resources/allele_freqs/allele_frequencies.csv"
     output:
         candidate_variants = expand("results/orthanq-candidates/{hla}.vcf",hla=loci),
         #fasta = expand("results/orthanq-candidates/{hla}.fasta",hla=loci)
     log:
         "logs/orthanq-candidates/candidates.log"
     shell:
-        "~/orthanq/target/release/orthanq candidates --alleles {input.alleles} "
-        "--genome {input.genome} --xml {input.xml} --wes --output results/orthanq-candidates 2> {log}" # --wes option for protein level hla type variant generation, --wgs for individual types 
+        "~/orthanq/target/release/orthanq candidates --alleles {input.alleles} --genome {input.genome} "
+        "--xml {input.xml} --allele-freq {input.allele_freqs} --wes --output results/orthanq-candidates 2> {log}" # --wes option for protein level hla type variant generation, --wgs for individual types 
 
 # rule kallisto_index:
 #     input:
