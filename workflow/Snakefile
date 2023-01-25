@@ -58,10 +58,9 @@ if config["simulation"] == False:
                 "results/HLA-LA/{sample}/hla/R1_bestguess_G.txt",
                 sample=samples.sample_name
             ),
-            # expand("resources/datavzrd/{sample}.{hla}.datavzrd.yaml",sample=samples.sample_name,
-            #     hla=loci),
-            # expand("results/datavzrd-report/{sample}_{hla}", sample=samples.sample_name,
-            #     hla=loci)
             "results/orthanq/final_report.csv",
-            "results/comparison/comparison.tsv"
+            "results/comparison/comparison.tsv",
+            "results/datavzrd/validation_datavzrd.yaml",
+            "results/datavzrd-report/validation"
+
 

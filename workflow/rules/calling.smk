@@ -121,21 +121,12 @@ rule parse_HLAs:
         hla=loci
         )
     output:
-        orthanq=report(
+        orthanq=
             "results/orthanq/final_report.csv",
-            caption="../report/orthanq.rst",
-            category="hla",
-        ),
-        hla_la=report(
+        hla_la=
             "results/HLA-LA/final_report.csv",
-            caption="../report/hla_la.rst",
-            category="hla",
-        ),
-        arcasHLA=report(
+        arcasHLA=
             "results/arcasHLA/final_report.csv",
-            caption="../report/arcasHLA.rst",
-            category="hla",
-        )
     log:
         "logs/parse_HLAs/parse_HLA_alleles.log"
     script:
@@ -157,27 +148,33 @@ rule compare_tools:
 rule datavzrd_config:
     input:
         template="resources/datavzrd.yaml",
-        table="results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv"
+        validation="results/comparison/comparison.tsv",
+        orthanq="results/orthanq/final_report.csv",
+        hla_la="results/HLA-LA/final_report.csv",
+        arcasHLA="results/arcasHLA/final_report.csv",
+        ground_truth="resources/ground_truth/HLA-ground-truth-CEU-for-paper.tsv"
     output:
-        "resources/datavzrd/{sample}.{hla}.datavzrd.yaml"
+        "results/datavzrd/validation_datavzrd.yaml"
     log:
-        "logs/datavzrd-config/{sample}.{hla}.log"
+        "logs/datavzrd-config/template.log"
     template_engine:
         "yte"
 
 rule datavzrd:
     input:
-        config="resources/datavzrd/{sample}.{hla}.datavzrd.yaml",
-        # optional files required for rendering the given config
-        table="results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv"
+        config="results/datavzrd/validation_datavzrd.yaml",
+        validation="results/comparison/comparison.tsv",
+        orthanq="results/orthanq/final_report.csv",
+        hla_la="results/HLA-LA/final_report.csv",
+        arcasHLA="results/arcasHLA/final_report.csv",
+        ground_truth="resources/ground_truth/HLA-ground-truth-CEU-for-paper.tsv"
     output:
         report(
-            directory("results/datavzrd-report/{sample}_{hla}"),
+            directory("results/datavzrd-report/validation"),
             htmlindex="index.html",
-            # see https://snakemake.readthedocs.io/en/stable/snakefiles/reporting.html
-            # for additional options like caption, categories and labels
+            category="Validation_results",
         ),
     log:
-        "logs/datavzrd_report/{sample}_{hla}.log",
+        "logs/datavzrd/validation.log",
     wrapper:
-        "v1.16.0/utils/datavzrd"
+        "v1.21.4/utils/datavzrd"
