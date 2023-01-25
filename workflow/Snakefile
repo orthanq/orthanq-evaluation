@@ -62,5 +62,6 @@ if config["simulation"] == False:
             #     hla=loci),
             # expand("results/datavzrd-report/{sample}_{hla}", sample=samples.sample_name,
             #     hla=loci)
-            "results/orthanq/final_report.csv"
+            "results/orthanq/final_report.csv",
+            "results/comparison/comparison.tsv"
 

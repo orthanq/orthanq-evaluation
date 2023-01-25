@@ -35,10 +35,7 @@ rule orthanq_call:
         candidate_variants = "results/orthanq-candidates/{hla}.vcf",
         xml = config["allele_db_xml"]
     output:
-        report(
-            "results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv",
-            caption="../report/haplotype_abundances.rst",
-        ), #this directory also contains json files for solutions
+        "results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv"
     log:
         "logs/orthanq-call/{sample}_{hla}.log"
     shell:
@@ -143,6 +140,19 @@ rule parse_HLAs:
         "logs/parse_HLAs/parse_HLA_alleles.log"
     script:
         "../scripts/parse_HLA_alleles.py"
+
+rule compare_tools:
+    input:
+        orthanq="results/orthanq/final_report.csv",
+        hla_la="results/HLA-LA/final_report.csv",
+        arcasHLA="results/arcasHLA/final_report.csv",
+        ground_truth="resources/ground_truth/HLA-ground-truth-CEU-for-paper.tsv"
+    output:
+        validation="results/comparison/comparison.tsv"
+    log:
+        "logs/comparison/compare_tools.log"
+    script:
+        "../scripts/validation.py"
 
 rule datavzrd_config:
     input:
