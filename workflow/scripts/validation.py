@@ -1,31 +1,23 @@
 import pandas as pd
 
-orthanq_input = snakemake.input.orthanq
-hla_la_input = snakemake.input.hla_la
-arcasHLA_input = snakemake.input.arcasHLA
-ground_truth = snakemake.input.ground_truth
-
-
-#initialize the dataframe
-validation_table = pd.DataFrame(columns=('Locus', 'N', 'arcasHLA - Call Rate', 'arcasHLA - Accuracy', 'HLA-LA - Call Rate','HLA-LA - Accuracy', 'Orthanq - Call Rate', 'Orthanq - Accuracy'))
-
 #read tables
-ground_truth = pd.read_csv(ground_truth, sep = "\t")
-orthanq_input = pd.read_csv(orthanq_input, sep = "\t")
-arcasHLA_input = pd.read_csv(arcasHLA_input, sep = "\t")
-hla_la_input = pd.read_csv(hla_la_input, sep = "\t")
+ground_truth = pd.read_csv(snakemake.input.ground_truth, sep = "\t")
+orthanq_input = pd.read_csv(snakemake.input.orthanq, sep = "\t")
+arcasHLA_input = pd.read_csv(snakemake.input.arcasHLA, sep = "\t")
+hla_la_input = pd.read_csv(snakemake.input.hla_la, sep = "\t")
 
 ##initialize performance tables for tools
-orthanq_validation_table = pd.DataFrame(columns=('Locus', 'N', 'Orthanq - Call Rate', 'Orthanq - Accuracy'))
-arcasHLA_validation_table = pd.DataFrame(columns=('Locus', 'N', 'arcasHLA - Call Rate', 'arcasHLA - Accuracy'))
-hla_la_validation_table = pd.DataFrame(columns=('Locus', 'N', 'HLA-LA - Call Rate', 'HLA-LA - Accuracy'))
+orthanq_validation_table = pd.DataFrame(columns=('Locus', 'N', 'Orthanq - Call Rate', 'Orthanq - Accuracy - 1', 'Orthanq - Accuracy - 2'))
+arcasHLA_validation_table = pd.DataFrame(columns=('Locus', 'N', 'arcasHLA - Call Rate', 'arcasHLA - Accuracy - 1', 'arcasHLA - Accuracy - 2'))
+hla_la_validation_table = pd.DataFrame(columns=('Locus', 'N', 'HLA-LA - Call Rate', 'HLA-LA - Accuracy - 1', 'HLA-LA - Accuracy - 2'))
 
 #ORTHANQ
 #loop over all loci
 loci = ['A', 'B', 'C', 'DQB1']
 for locus in loci:
     values = orthanq_input[locus]
-    collected = 0
+    collected_1 = 0
+    collected_2 = 0
     for (index, value_in_orthanq) in enumerate(values):
         sample_name = orthanq_input.loc[index,'sample']
         values_in_truth = {}
@@ -53,19 +45,22 @@ for locus in loci:
                 values_in_truth["{0}".format(chr_index)] = [value_in_truth]
             else:
                 values_in_truth["{0}".format(chr_index)] = [value_in_truth]
-
-        values_in_truth_clone = values_in_truth
-        for allele in alleles: ##???
-            values_in_truth = values_in_truth_clone
-            for chr_index, (_,chr_values) in enumerate(values_in_truth.items()):
+        alleles_clone = alleles
+        for chr_index, (_,chr_values) in enumerate(values_in_truth.items()):
+            alleles = alleles_clone
+            for allele in alleles:
                 if allele in chr_values:
-                    collected+= 1
+                    if chr_index == 0:
+                        collected_1+= 1
+                    if chr_index == 1:
+                        collected_2+= 1
                     #to stop homozygous alleles inaccurately match, we should remove the one that matches
                     if len(values_in_truth) > 1:
-                        values_in_truth_clone.pop(chr_index, None)
+                        alleles_clone.remove(allele)
                     break
-    accuracy = 100*collected/(2*len(orthanq_input.index))
-    new_row = {'Locus': locus, 'N': len(orthanq_input.index), 'Orthanq - Call Rate': 1.00, 'Orthanq - Accuracy': accuracy}
+    accuracy_1 = 100*collected_1/(len(orthanq_input.index))
+    accuracy_2 = 100*collected_2/(len(orthanq_input.index))
+    new_row = {'Locus': locus, 'N': len(orthanq_input.index), 'Orthanq - Call Rate': 1.00, 'Orthanq - Accuracy - 1': accuracy_1, 'Orthanq - Accuracy - 2': accuracy_2}
     orthanq_validation_table = orthanq_validation_table.append(new_row, ignore_index=True)
 
 #arcasHLA
@@ -73,7 +68,8 @@ for locus in loci:
 loci = ['A', 'B', 'C', 'DQB1']
 for locus in loci:
     values = arcasHLA_input[locus]
-    collected = 0
+    collected_1 = 0
+    collected_2 = 0
     for (index, value_in_arcasHLA) in enumerate(values):
         sample_name = arcasHLA_input.loc[index,'sample']
         values_in_truth = {}
@@ -101,19 +97,26 @@ for locus in loci:
                 values_in_truth["{0}".format(chr_index)] = [value_in_truth]
             else:
                 values_in_truth["{0}".format(chr_index)] = [value_in_truth]
-
-        values_in_truth_clone = values_in_truth
-        for allele in alleles: ##???
-            values_in_truth = values_in_truth_clone
-            for chr_index, (_,chr_values) in enumerate(values_in_truth.items()):
+        print(alleles)
+        print(values_in_truth)
+        alleles_clone = alleles
+        for chr_index, (_,chr_values) in enumerate(values_in_truth.items()):
+            alleles = alleles_clone
+            for allele in alleles:
                 if allele in chr_values:
-                    collected+= 1
+                    if chr_index == 0:
+                        collected_1+= 1
+                    if chr_index == 1:
+                        collected_2+= 1
                     #to stop homozygous alleles inaccurately match, we should remove the one that matches
                     if len(values_in_truth) > 1:
-                        values_in_truth_clone.pop(chr_index, None)
+                        alleles_clone.remove(allele)
                     break
-    accuracy = 100*collected/(2*len(arcasHLA_input.index))
-    new_row = {'Locus': locus, 'N': len(arcasHLA_input.index), 'arcasHLA - Call Rate': 1.00, 'arcasHLA - Accuracy': accuracy}
+        print("collected_1:" + str(collected_1))
+        print("collected_2:" + str(collected_2))
+    accuracy_1 = 100*collected_1/(len(arcasHLA_input.index))
+    accuracy_2 = 100*collected_2/(len(arcasHLA_input.index))
+    new_row = {'Locus': locus, 'N': len(arcasHLA_input.index), 'arcasHLA - Call Rate': 1.00, 'arcasHLA - Accuracy - 1': accuracy_1, 'arcasHLA - Accuracy - 2': accuracy_2}
     arcasHLA_validation_table = arcasHLA_validation_table.append(new_row, ignore_index=True)
 
 first_merge = pd.merge(orthanq_validation_table, arcasHLA_validation_table, how='left', on=['Locus', 'N'])
@@ -123,7 +126,8 @@ first_merge = pd.merge(orthanq_validation_table, arcasHLA_validation_table, how=
 loci = ['A', 'B', 'C', 'DQB1']
 for locus in loci:
     values = hla_la_input[locus]
-    collected = 0
+    collected_1 = 0
+    collected_2 = 0
     for (index, value_in_hla_la) in enumerate(values):
         sample_name = hla_la_input.loc[index,'sample']
         values_in_truth = {}
@@ -156,23 +160,26 @@ for locus in loci:
                 values_in_truth["{0}".format(chr_index)] = [value_in_truth]
             else:
                 values_in_truth["{0}".format(chr_index)] = [value_in_truth]
-
-        values_in_truth_clone = values_in_truth
-        for _, hla_la_alleles in alleles.items():
-            for allele in hla_la_alleles:
-                values_in_truth = values_in_truth_clone
-                for chr_index, (_,chr_values) in enumerate(values_in_truth.items()):
+        alleles_clone = alleles
+        for chr_index, (_,chr_values) in enumerate(values_in_truth.items()):
+            alleles = alleles_clone
+            for (allele_index,allele_list) in alleles.items():
+                for allele in allele_list:
                     if allele in chr_values:
-                        collected+= 1
+                        if chr_index == 0:
+                            collected_1+= 1
+                        if chr_index == 1:
+                            collected_2+= 1
                         #to stop homozygous alleles inaccurately match, we should remove the one that matches
                         if len(values_in_truth) > 1:
-                            values_in_truth_clone.pop(chr_index, None)
+                            alleles_clone.pop(allele_index, None)
                         break
                 else:
-                    continue
-                break
-    accuracy = 100*collected/(2*len(hla_la_input.index))
-    new_row = {'Locus': locus, 'N': len(hla_la_input.index), 'HLA-LA - Call Rate': 1.00, 'HLA-LA - Accuracy': accuracy}
+                    continue  # only executed if the inner loop did NOT break
+                break  # only executed if the inner loop DID break
+    accuracy_1 = 100*collected_1/(len(hla_la_input.index))
+    accuracy_2 = 100*collected_2/(len(hla_la_input.index))
+    new_row = {'Locus': locus, 'N': len(hla_la_input.index), 'HLA-LA - Call Rate': 1.00, 'HLA-LA - Accuracy - 1': accuracy_1, 'HLA-LA - Accuracy - 2': accuracy_2}
     hla_la_validation_table = hla_la_validation_table.append(new_row, ignore_index=True)
 
 final_table = pd.merge(first_merge, hla_la_validation_table, how='left', on=['Locus', 'N'])
