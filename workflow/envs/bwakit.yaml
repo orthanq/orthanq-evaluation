@@ -1,6 +1,7 @@
-name: varlociraptor
+name: bwakit
 channels:
    - bioconda
    - conda-forge
 dependencies:
-   - varlociraptor=5.9.0
+   - bwakit=0.7.17
+   

@@ -1,10 +1,10 @@
 rule varlociraptor_preprocess:
     input:
-        ref="results/refs/hs_genome.fasta",
-        fai = "results/refs/hs_genome.fasta.fai",
+        ref="results/bwakit-genome/hs38DH.fa",
+        fai = "results/bwakit-genome/hs38DH.fa.fai",
         candidates = "results/orthanq-candidates/{hla}.vcf",
-        bam="results/mapped/{sample}.bam",
-        bai="results/mapped/{sample}.bam.bai"
+        bam="results/processed_mapped/{sample}.aln.sorted.bam",
+        bai="results/processed_mapped/{sample}.aln.sorted.bam.bai"
     output:
         "results/observations/{sample}_{hla}.bcf"
     log:
@@ -12,7 +12,8 @@ rule varlociraptor_preprocess:
     conda:
         "../envs/varlociraptor.yaml"
     shell:
-        "varlociraptor preprocess variants --report-fragment-ids --candidates {input.candidates} "
+        "varlociraptor preprocess variants "
+        "--report-fragment-ids --omit-mapq-adjustment --candidates {input.candidates} "
         "{input.ref} --bam {input.bam} --output {output} 2> {log}"
 
 rule varlociraptor_call:
@@ -39,7 +40,7 @@ rule orthanq_call:
     log:
         "logs/orthanq-call/{sample}_{hla}.log"
     shell:
-        "~/orthanq/target/release/orthanq call --haplotype-calls {input.calls} --haplotype-variants {input.candidate_variants} "
+        "../orthanq/target/release/orthanq call --haplotype-calls {input.calls} --haplotype-variants {input.candidate_variants} "
         "--xml {input.xml} --max-haplotypes 5 --prior diploid --output {output} 2> {log}"
 
 rule arcasHLA_reference:
