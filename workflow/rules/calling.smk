@@ -12,7 +12,8 @@ rule varlociraptor_preprocess:
     conda:
         "../envs/varlociraptor.yaml"
     shell:
-        "varlociraptor preprocess variants --report-fragment-ids --candidates {input.candidates} "
+        "varlociraptor preprocess variants "
+        "--report-fragment-ids --omit-mapq-adjustment --candidates {input.candidates} "
         "{input.ref} --bam {input.bam} --output {output} 2> {log}"
 
 rule varlociraptor_call:
