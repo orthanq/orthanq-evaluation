@@ -3,8 +3,8 @@ rule varlociraptor_preprocess:
         ref="results/bwakit-genome/hs38DH.fa",
         fai = "results/bwakit-genome/hs38DH.fa.fai",
         candidates = "results/orthanq-candidates/{hla}.vcf",
-        bam="results/processed_mapped/{sample}.aln.sorted.bam",
-        bai="results/processed_mapped/{sample}.aln.sorted.bam.bai"
+        bam="results/realignment/{sample}.realigned.sorted.bam",
+        bai="results/realignment/{sample}.realigned.sorted.bam.bai"
     output:
         "results/observations/{sample}_{hla}.bcf"
     log:

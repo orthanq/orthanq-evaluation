@@ -42,7 +42,8 @@ rule samtools_view:
 rule bwakit_post_process:
     input:
         sample="results/mapped/{sample}.aln.sam",
-        genome_alt="results/bwakit-genome/hs38DH.fa.alt"
+        genome_alt="results/bwakit-genome/hs38DH.fa.alt",
+        bwakit="resources/bwa/bwakit"
     output:
         "results/processed_mapped/{sample}.aln.sam"
     log:
@@ -52,20 +53,19 @@ rule bwakit_post_process:
     threads:10
     shell:
         #should be fixed.
-        "k8 ~/miniconda3/pkgs/bwakit-0.7.17.dev1-hdfd78af_1/bin/bwa-postalt.js {input.genome_alt} {input.sample} > {output} 2> {log}"
+        "k8 {input.bwakit}/bwa-postalt.js {input.genome_alt} {input.sample} > {output} 2> {log}"
 
-rule samtools_view_post_process:
+rule realignment:
     input:
-        "results/processed_mapped/{sample}.aln.sam"
+        sam="results/processed_mapped/{sample}.aln.sam",
+        genome_alt="results/bwakit-genome/hs38DH.fa",
+        realigner="resources/realignment-after-postalt/target/debug/realignment"
     output:
-        "results/processed_mapped/{sample}.aln.bam"
+        "results/realignment/{sample}.realigned.bam"
     log:
-        "logs/samtools_view_postprocess/{sample}.log"
-    params:
-        extra="-h",  #include header
-    threads: 6
-    wrapper:
-        "v1.22.0/bio/samtools/view"
+        "logs/realignment/{sample}.log"
+    shell:
+        "{input.realigner} --alignment {input.sam} --reference {input.genome_alt} --output {output} 2> {log}"
 
 rule genome_index:
     input:
@@ -80,9 +80,9 @@ rule genome_index:
 
 rule samtools_sort:
     input:
-        "results/processed_mapped/{sample}.aln.bam"
+        "results/realignment/{sample}.realigned.bam"
     output:
-        "results/processed_mapped/{sample}.aln.sorted.bam"
+        "results/realignment/{sample}.realigned.sorted.bam"
     log:
         "logs/samtools_sort/{sample}.log",
     params:
@@ -93,9 +93,9 @@ rule samtools_sort:
 
 rule samtools_index:
     input:
-        "results/processed_mapped/{sample}.aln.sorted.bam"
+        "results/realignment/{sample}.realigned.sorted.bam"
     output:
-        "results/processed_mapped/{sample}.aln.sorted.bam.bai"
+        "results/realignment/{sample}.realigned.sorted.bam.bai"
     log:
         "logs/samtools_index/{sample}.log"
     threads: 4

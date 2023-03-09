@@ -21,10 +21,10 @@ if config["simulation"] == True:
                 hla=loci,
             ),
             # expand(
-            #     "results/orthanq/{sample}_{hla}.tsv",
-            #     sample=simulated_sample.sample_name.unique(),
+            #     "results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv",
+            #     sample=samples.sample_name,
             #     hla=loci,
-            # )
+            # ),
 
 
 if config["simulation"] == False:
