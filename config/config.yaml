@@ -1,12 +1,12 @@
 #full path for the genomic HLA sequences and associated xml file. (here IMGT v3.32 is used.)
-allele_db: /vol/compute/hamdiyes_project/orthanq-evaluation/resources/HLA-alleles/IMGTHLA-3.32.0-alpha/hla_gen.fasta
-allele_db_xml: /vol/compute/hamdiyes_project/orthanq-evaluation/resources/HLA-alleles/IMGTHLA-3.32.0-alpha/xml/hla.xml
+allele_db: /home/uzuner/orthanq-evaluation/resources/IMGTHLA-3.32.0-alpha/hla_gen.fasta
+allele_db_xml: /home/uzuner/orthanq-evaluation/resources/IMGTHLA-3.32.0-alpha/xml/hla.xml
 
 #arcasHLA database version
 arcasHLA_version: "3.32.0"
 
 #simulate reads or call for HLA types given a sample
-simulation: False
+simulation: True
 
 #samples
 samples: config/samples2.tsv
