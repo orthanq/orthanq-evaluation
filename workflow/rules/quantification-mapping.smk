@@ -12,34 +12,48 @@
 #     shell:
 #         "mkdir -p results/bwakit-genome && cd results/bwakit-genome && run-gen-ref hs38DH && bwa index hs38DH.fa"
 
+rule get_hs_genome:
+    output:
+        "results/refs/hs_genome.fasta",
+    params:
+        species="homo_sapiens",
+        datatype="dna",
+        build="GRCh38",
+        release="106",
+    log:
+        "logs/ensembl/get_genome.log",
+    cache: True  # save space and time with between workflow caching (see docs)
+    wrapper:
+        "v1.25.0/bio/reference/ensembl-sequence"
+
 rule genome_index:
     input:
-        "results/bwakit-genome/hs38DH.fa"
+        "results/refs/hs_genome.fasta"
     output:
-        "results/bwakit-genome/hs38DH.fa.fai"
+        "results/refs/hs_genome.fasta.fai"
     log:
         "logs/genome_index/bwa_hs_genome.log"
     threads: 4
     wrapper:
-        "v1.22.0/bio/samtools/faidx" #update wrapper version
+        "v1.25.0/bio/samtools/faidx" #update wrapper version
 
-rule prepare_orthanq_genome:
-    input:
-        genome="results/bwakit-genome/hs38DH.fa",
-        chromosomes="resources/genome-prep/chromosomes_to_extract.txt"
-    output:
-        "results/orthanq-genome/hg38_genome_extracted.fa"
-    log:
-        "logs/seqtk/extract-chromosomes.log"
-    threads: 2
-    shell:
-        "seqtk subseq {input.genome} {input.chromosomes} > {output} 2> {log}"
+# rule prepare_orthanq_genome:
+#     input:
+#         genome="results/bwakit-genome/hs38DH.fa",
+#         chromosomes="resources/genome-prep/chromosomes_to_extract.txt"
+#     output:
+#         "results/orthanq-genome/hg38_genome_extracted.fa"
+#     log:
+#         "logs/seqtk/extract-chromosomes.log"
+#     threads: 2
+#     shell:
+#         "seqtk subseq {input.genome} {input.chromosomes} > {output} 2> {log}"
 
 ##orthanq_candidates generates both candidate variants and individual genome sequences for each locus(to be used for quantification indices in the downstream processing)
 rule orthanq_candidates:
     input:
         alleles = config["allele_db"],
-        genome = "results/orthanq-genome/hg38_genome_extracted.fa",
+        genome = "results/refs/hs_genome.fasta",
         xml = config["allele_db_xml"],
         allele_freqs = "resources/allele_freqs/allele_frequencies.csv"
     output:
@@ -92,7 +106,7 @@ rule bcftools_merge:
 
 rule vg_autoindex:
     input:
-        genome="results/orthanq-genome/hg38_genome_extracted.fa",
+        genome="results/refs/hs_genome.fasta",
         variants= "results/orthanq-candidates/merged.vcf"
     output:
         "results/vg/autoindex/idx.giraffe.gbz"
@@ -114,7 +128,7 @@ rule vg_giraffe:
         "logs/vg/alignment/{sample}.log"
     conda:
         "../envs/vg.yaml"
-    threads: 12
+    threads: 18
     shell:
         "vg giraffe -Z results/vg/autoindex/idx.giraffe.gbz -f {input.reads[0]} -f {input.reads[1]} --output-format BAM -t {threads} > {output} 2> {log}"
 
@@ -141,3 +155,30 @@ rule samtools_index:
     threads: 4
     wrapper:
         "v1.22.0/bio/samtools/index"
+
+rule kallisto_index:
+    input:
+        fasta = "resources/IMGTHLA-3.32.0-alpha/fasta/{hla}_gen.fasta"
+    output:
+        index = "results/kallisto-index/{hla}.idx"
+    params:
+        extra = "--kmer-size=31"
+    log:
+        "logs/kallisto/index/{hla}.log"
+    threads: 10
+    wrapper:
+        "v1.25.0/bio/kallisto/index"
+
+rule kallisto_quant:
+    input:
+        fastq = get_fastq_input,
+        index = "results/kallisto-index/{hla}.idx"
+    output:
+        directory('results/kallisto/quant_results_{sample}_{hla}')
+    params:
+        extra = "-b 5 --seed=42 --pseudobam"
+    log:
+        "logs/kallisto/kallisto_quant_{sample}_{hla}.log"
+    threads: 20
+    wrapper:
+        "v1.25.0/bio/kallisto/quant"

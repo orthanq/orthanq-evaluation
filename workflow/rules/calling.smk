@@ -1,7 +1,7 @@
 rule varlociraptor_preprocess:
     input:
-        ref="results/bwakit-genome/hs38DH.fa",
-        fai = "results/bwakit-genome/hs38DH.fa.fai",
+        ref="results/refs/hs_genome.fasta",
+        fai = "results/refs/hs_genome.fasta.fai",
         candidates = "results/orthanq-candidates/{hla}.vcf",
         bam="results/vg/alignment/{sample}_vg.sorted.bam",
         bai="results/vg/alignment/{sample}_vg.sorted.bam.bai"
@@ -12,7 +12,7 @@ rule varlociraptor_preprocess:
     conda:
         "../envs/varlociraptor.yaml"
     shell:
-        "varlociraptor preprocess variants "
+        "varlociraptor/target/release/varlociraptor preprocess variants " #for testing the new mnv improvement in varlociraptor
         "--report-fragment-ids --omit-mapq-adjustment --candidates {input.candidates} "
         "{input.ref} --bam {input.bam} --output {output} 2> {log}"
 
@@ -27,13 +27,14 @@ rule varlociraptor_call:
     conda:
         "../envs/varlociraptor.yaml" 
     shell:
-        "varlociraptor call variants --omit-strand-bias --omit-read-position-bias --omit-read-orientation-bias --omit-softclip-bias --omit-homopolymer-artifact-detection --omit-alt-locus-bias generic --obs sample={input.obs} " ##varlociraptor v5.3.0
+        "varlociraptor/target/release/varlociraptor call variants --omit-strand-bias --omit-read-position-bias --omit-read-orientation-bias --omit-softclip-bias --omit-homopolymer-artifact-detection --omit-alt-locus-bias generic --obs sample={input.obs} " ##varlociraptor v5.3.0
         "--scenario {input.scenario} > {output} 2> {log}"
 
 rule orthanq_call:
     input:
         calls = "results/calls/{sample}_{hla}.bcf",
         candidate_variants = "results/orthanq-candidates/{hla}.vcf",
+        counts = "results/kallisto/quant_results_{sample}_{hla}",
         xml = config["allele_db_xml"]
     output:
         "results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv"
@@ -41,7 +42,7 @@ rule orthanq_call:
         "logs/orthanq-call/{sample}_{hla}.log"
     shell:
         "../orthanq/target/release/orthanq call --haplotype-calls {input.calls} --haplotype-variants {input.candidate_variants} "
-        "--xml {input.xml} --max-haplotypes 5 --prior diploid --output {output} 2> {log}"
+        "--haplotype-counts {input.counts}/abundance.h5 --xml {input.xml} --max-haplotypes 5 --prior diploid --output {output} 2> {log}"
 
 rule arcasHLA_reference:
     output:
@@ -114,20 +115,20 @@ rule parse_HLAs:
         sample=samples.sample_name,
         hla=loci
         ),
-        hla_la=expand("results/HLA-LA/{sample}/hla/R1_bestguess.txt",
-        sample=samples.sample_name
-        ),
-        arcasHLA=expand("results/arcasHLA/{sample}_{hla}/{sample}.genotype.json",
-        sample=samples.sample_name,
-        hla=loci
-        )
+        # hla_la=expand("results/HLA-LA/{sample}/hla/R1_bestguess.txt",
+        # sample=samples.sample_name
+        # ),
+        # arcasHLA=expand("results/arcasHLA/{sample}_{hla}/{sample}.genotype.json",
+        # sample=samples.sample_name,
+        # hla=loci
+        # )
     output:
         orthanq=
             "results/orthanq/final_report.csv",
-        hla_la=
-            "results/HLA-LA/final_report.csv",
-        arcasHLA=
-            "results/arcasHLA/final_report.csv",
+        # hla_la=
+        #     "results/HLA-LA/final_report.csv",
+        # arcasHLA=
+        #     "results/arcasHLA/final_report.csv",
     log:
         "logs/parse_HLAs/parse_HLA_alleles.log"
     script:
@@ -136,8 +137,8 @@ rule parse_HLAs:
 rule compare_tools:
     input:
         orthanq="results/orthanq/final_report.csv",
-        hla_la="results/HLA-LA/final_report.csv",
-        arcasHLA="results/arcasHLA/final_report.csv",
+        # hla_la="results/HLA-LA/final_report.csv",
+        # arcasHLA="results/arcasHLA/final_report.csv",
         ground_truth="resources/ground_truth/HLA-ground-truth-CEU-for-paper.tsv"
     output:
         validation="results/comparison/comparison.tsv"
