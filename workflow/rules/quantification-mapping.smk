@@ -59,6 +59,8 @@ rule orthanq_candidates:
     output:
         candidate_variants = expand("results/orthanq-candidates/{hla}.vcf",hla=loci),
         #fasta = expand("results/orthanq-candidates/{hla}.fasta",hla=loci)
+    conda:
+        "../envs/orthanq.yaml"
     log:
         "logs/orthanq-candidates/candidates.log"
     shell:
@@ -114,7 +116,7 @@ rule vg_autoindex:
         "logs/vg/autoindex.log"
     conda:
         "../envs/vg.yaml"
-    threads: 12
+    threads: 20
     shell:
         "vg autoindex --workflow giraffe -r {input.genome} -v {input.variants} -p results/vg/autoindex/idx -t {threads}"
 

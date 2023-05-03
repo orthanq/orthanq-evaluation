@@ -1,3 +1,10 @@
+#set the environment variable to conda library folder to prevent libhdf5 not being found by snakemake
+LD_LIBRARY_PATH = "$CONDA_PREFIX/lib"
+shell.prefix("""
+set -euo pipefail;
+export LD_LIBRARY_PATH=\"{LD_LIBRARY_PATH}\";
+""".format(LD_LIBRARY_PATH=LD_LIBRARY_PATH))
+
 configfile: "config/config.yaml"
 
 ruleorder: orthanq_candidates > orthanq_call

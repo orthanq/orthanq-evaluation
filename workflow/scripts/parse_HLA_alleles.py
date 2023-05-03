@@ -7,13 +7,18 @@ orthanq_input = snakemake.input.orthanq
 
 #initialize the dataframe
 orthanq_final_table = pd.DataFrame(columns=('sample', 'A', 'B', 'C', 'DQA1','DQB1'))
+
 for index in range(len(orthanq_input)):
     splitted = os.path.basename(orthanq_input[index]).split("_")
     sample_name = splitted[0]
     locus_name = splitted[1].split(".")[0]
     if not sample_name in orthanq_final_table['sample'].tolist():
-        new_row = {'sample': sample_name, 'A': [], 'B': [], 'C': [], 'DQA1': [], 'DQB1': []}
-        orthanq_final_table = orthanq_final_table.append(new_row, ignore_index=True)
+        # new_row = {'sample': sample_name, 'A': [], 'B': [], 'C': [], 'DQA1': [], 'DQB1': []}
+        new_row = pd.DataFrame([[sample_name, '', '', '', '', '']],
+                   columns=['sample', 'A', 'B', 'C', 'DQA1', 'DQB1'])
+        # orthanq_final_table = orthanq_final_table.append(new_row, ignore_index=True)
+        orthanq_final_table = pd.concat([orthanq_final_table, new_row], ignore_index=True)
+
     best_result = pd.read_csv(orthanq_input[index]).iloc[[0]] #best result, first row
     filtered_cols = [col for col in best_result if col.startswith(locus_name.split(".")[0])]
     value_to_add = []

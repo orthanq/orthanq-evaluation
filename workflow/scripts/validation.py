@@ -60,8 +60,11 @@ for locus in loci:
                     break
     accuracy_1 = 100*collected_1/(len(orthanq_input.index))
     accuracy_2 = 100*collected_2/(len(orthanq_input.index))
-    new_row = {'Locus': locus, 'N': len(orthanq_input.index), 'Orthanq - Call Rate': 1.00, 'Orthanq - Accuracy - 1': accuracy_1, 'Orthanq - Accuracy - 2': accuracy_2}
-    orthanq_validation_table = orthanq_validation_table.append(new_row, ignore_index=True)
+    # new_row = {'Locus': locus, 'N': len(orthanq_input.index), 'Orthanq - Call Rate': 1.00, 'Orthanq - Accuracy - 1': accuracy_1, 'Orthanq - Accuracy - 2': accuracy_2}
+    new_row = pd.DataFrame([[locus, len(orthanq_input.index), 1.00, accuracy_1, accuracy_2]],
+                   columns=['Locus', 'N', 'Orthanq - Call Rate', 'Orthanq - Accuracy - 1', 'Orthanq - Accuracy - 2'])
+    # orthanq_validation_table = orthanq_validation_table.append(new_row, ignore_index=True)
+    orthanq_validation_table = pd.concat([orthanq_validation_table, new_row], ignore_index=True)
 
 # #arcasHLA
 # #loop over all loci
