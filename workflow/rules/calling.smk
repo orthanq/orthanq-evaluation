@@ -44,7 +44,7 @@ rule orthanq_call:
         "logs/orthanq-call/{sample}_{hla}.log"
     shell:
         "../orthanq/target/release/orthanq call --haplotype-calls {input.calls} --haplotype-variants {input.candidate_variants} "
-        "--haplotype-counts {input.counts}/abundance.h5 --xml {input.xml} --max-haplotypes 5 --prior diploid --output {output} 2> {log}"
+        "--haplotype-counts {input.counts}/abundance.h5 --xml {input.xml} --max-haplotypes 5 --prior diploid-subclonal --output {output} 2> {log}"
 
 rule arcasHLA_reference:
     output:
@@ -111,43 +111,57 @@ rule HLA_LA:
     shell:
         "HLA-LA.pl --bam {input.bam} --sampleID {wildcards.sample} --graph {params.graph} --customGraphDir {params.graphdir} --workingDir {params.workdir} --maxThreads {threads} > {log} 2>&1"
 
-rule parse_HLAs:
+rule parse_and_validate:
     input:
         orthanq=expand("results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv", 
         sample=samples.sample_name,
         hla=loci
         ),
-        # hla_la=expand("results/HLA-LA/{sample}/hla/R1_bestguess.txt",
-        # sample=samples.sample_name
-        # ),
-        # arcasHLA=expand("results/arcasHLA/{sample}_{hla}/{sample}.genotype.json",
-        # sample=samples.sample_name,
-        # hla=loci
-        # )
-    output:
-        orthanq=
-            "results/orthanq/final_report.csv",
-        # hla_la=
-        #     "results/HLA-LA/final_report.csv",
-        # arcasHLA=
-        #     "results/arcasHLA/final_report.csv",
-    log:
-        "logs/parse_HLAs/parse_HLA_alleles.log"
-    script:
-        "../scripts/parse_HLA_alleles.py"
-
-rule compare_tools:
-    input:
-        orthanq="results/orthanq/final_report.csv",
-        # hla_la="results/HLA-LA/final_report.csv",
-        # arcasHLA="results/arcasHLA/final_report.csv",
         ground_truth="resources/ground_truth/HLA-ground-truth-CEU-for-paper.tsv"
     output:
         validation="results/comparison/comparison.tsv"
     log:
-        "logs/comparison/compare_tools.log"
+        "logs/comparison/compare_and_validate.log"
     script:
-        "../scripts/validation.py"
+        "../scripts/parse_and_validate_diploid_subclonal.py"
+
+# rule parse_HLAs:
+#     input:
+#         orthanq=expand("results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv", 
+#         sample=samples.sample_name,
+#         hla=loci
+#         ),
+#         # hla_la=expand("results/HLA-LA/{sample}/hla/R1_bestguess.txt",
+#         # sample=samples.sample_name
+#         # ),
+#         # arcasHLA=expand("results/arcasHLA/{sample}_{hla}/{sample}.genotype.json",
+#         # sample=samples.sample_name,
+#         # hla=loci
+#         # )
+#     output:
+#         orthanq=
+#             "results/orthanq/final_report.csv",
+#         # hla_la=
+#         #     "results/HLA-LA/final_report.csv",
+#         # arcasHLA=
+#         #     "results/arcasHLA/final_report.csv",
+#     log:
+#         "logs/parse_HLAs/parse_HLA_alleles.log"
+#     script:
+#         "../scripts/parse_HLA_alleles.py"
+
+# rule compare_tools:
+#     input:
+#         orthanq="results/orthanq/final_report.csv",
+#         # hla_la="results/HLA-LA/final_report.csv",
+#         # arcasHLA="results/arcasHLA/final_report.csv",
+#         ground_truth="resources/ground_truth/HLA-ground-truth-CEU-for-paper.tsv"
+#     output:
+#         validation="results/comparison/comparison.tsv"
+#     log:
+#         "logs/comparison/compare_tools.log"
+#     script:
+#         "../scripts/validation.py"
 
 rule datavzrd_config:
     input:
