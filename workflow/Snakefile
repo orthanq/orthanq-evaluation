@@ -68,7 +68,7 @@ if config["simulation"] == False:
                 sample=samples.sample_name,
                 hla=loci,
             ),
-            "results/orthanq/final_report.csv",
+            # "results/orthanq/final_report.csv",
             "results/comparison/comparison.tsv",
             # expand("results/kallisto/quant_results_{sample}_{hla}/abundance.h5",
             #     sample=samples.sample_name,
