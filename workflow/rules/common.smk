@@ -7,7 +7,7 @@ samples = pd.read_csv(config["samples"], sep="\t").set_index(
     ["sample_name"], drop=False
 )
 #loci = ["A","DPA1","DRB4","V","B","DPB1","DRB5","W","C","DQA1", "E", "DQA2", "F", "S", "DMA", "DQB1", "G", "TAP1", "DMB", "DRA", "HFE", "TAP2", "DOA", "DRB1", "T", "DOB", "DRB3", "MICA", "U"]
-loci = ["A","B","C","DQA1","DQB1"]
+loci = ["A","B","C","DQB1"]
 
 # input function for simulation sample
 def create_sample(): #n: number of samples in the end, k: number of fractions

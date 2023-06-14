@@ -2,7 +2,7 @@ rule varlociraptor_preprocess:
     input:
         ref="results/refs/hs_genome.fasta",
         fai = "results/refs/hs_genome.fasta.fai",
-        candidates = "results/orthanq-candidates/{hla}.vcf",
+        candidates = "results/orthanq-candidates-intersected/{hla}.vcf",
         bam="results/vg/alignment/{sample}_vg.sorted.bam",
         bai="results/vg/alignment/{sample}_vg.sorted.bam.bai"
     output:
@@ -33,7 +33,7 @@ rule varlociraptor_call:
 rule orthanq_call:
     input:
         calls = "results/calls/{sample}_{hla}.bcf",
-        candidate_variants = "results/orthanq-candidates/{hla}.vcf",
+        candidate_variants = "results/orthanq-candidates-intersected/{hla}.vcf",
         counts = "results/kallisto/quant_results_{sample}_{hla}",
         xml = config["allele_db_xml"]
     output:
@@ -44,7 +44,7 @@ rule orthanq_call:
         "logs/orthanq-call/{sample}_{hla}.log"
     shell:
         "../orthanq/target/release/orthanq call --haplotype-calls {input.calls} --haplotype-variants {input.candidate_variants} "
-        "--haplotype-counts {input.counts}/abundance.h5 --xml {input.xml} --max-haplotypes 5 --prior diploid-subclonal --output {output} 2> {log}"
+        "--haplotype-counts {input.counts}/abundance.h5 --xml {input.xml} --max-haplotypes 5 --prior diploid --output {output} 2> {log}"
 
 rule arcasHLA_reference:
     output:

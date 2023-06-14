@@ -63,6 +63,7 @@ if config["simulation"] == False:
             #     hla=loci,
             # ),
             expand("results/orthanq-candidates/{hla}.vcf.gz.tbi",hla=loci),
+            expand("results/orthanq-candidates-intersected/{hla}.vcf.gz.tbi",hla=loci),
             expand(
                 "results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv",
                 sample=samples.sample_name,

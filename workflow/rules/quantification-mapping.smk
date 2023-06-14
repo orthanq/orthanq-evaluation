@@ -1,4 +1,4 @@
-# ruleorder: orthanq_candidates > varlociraptor_preprocess
+# ruleorder: tabix_exons > bcftools_merge
 
 # rule bwakit_index:
 #     output:
@@ -50,6 +50,9 @@ rule genome_index:
 #         "seqtk subseq {input.genome} {input.chromosomes} > {output} 2> {log}"
 
 ##orthanq_candidates generates both candidate variants and individual genome sequences for each locus(to be used for quantification indices in the downstream processing)
+#the alleles are filtered out according to the following criteria:
+#if the allele has a full name equivalent (e.g. A*24:02:02:02) in the database and it's higher than 0.05, it's IN.
+#if the allele doesn't have a full name equivalent (e.g. A*24:02:02), then look for the first three fields, if still not then look for first two fields (A*24:02)
 rule orthanq_candidates:
     input:
         alleles = config["allele_db"],
@@ -93,6 +96,45 @@ rule tabix:
     wrapper:
         "v1.23.5-27-g1638662a/bio/tabix/index"
 
+rule intersect_exons:
+    input:
+        left="results/orthanq-candidates/{hla}.vcf",
+        right="resources/HLA_exons/HLA_{hla}_exons.bed"
+    output:
+        "results/orthanq-candidates-intersected/{hla}.vcf"
+    params:
+        extra="-header"
+    log:
+        "logs/bedtools/{hla}.log"
+    wrapper:
+        "v1.31.1/bio/bedtools/intersect"
+#
+rule bgzip_exons:
+    input:
+        "results/orthanq-candidates-intersected/{hla}.vcf"
+    output:
+        "results/orthanq-candidates-intersected/{hla}.vcf.gz"
+    params:
+        extra="", # optional
+    threads: 1
+    log:
+        "logs/bgzip-merged-exons/{hla}.log",
+    wrapper:
+        "v1.23.5-27-g1638662a/bio/bgzip"
+
+rule tabix_exons:
+    input:
+        "results/orthanq-candidates-intersected/{hla}.vcf.gz"
+    output:
+        "results/orthanq-candidates-intersected/{hla}.vcf.gz.tbi"
+    log:
+        "logs/tabix-merged-exons/{hla}.log",
+    params:
+        # pass arguments to tabix (e.g. index a vcf)
+        "-p vcf",
+    wrapper:
+        "v1.23.5-27-g1638662a/bio/tabix/index"
+#merge all candidate variants in the orthanq-candidates (not orthanq-candidates-intersected)
 rule bcftools_merge:
     input:
         calls=expand("results/orthanq-candidates/{hla}.vcf.gz", hla=loci)
@@ -106,17 +148,58 @@ rule bcftools_merge:
     wrapper:
         "v1.23.5/bio/bcftools/merge"
 
+#then, do the intersection for all exons this time
+rule intersect_exons_all:
+    input:
+        left="results/orthanq-candidates/merged.vcf",
+        right="resources/HLA_exons/all_exons.bed"
+    output:
+        "results/orthanq-candidates-intersected-all/merged_intersected_variants.vcf"
+    params:
+        extra="-header"
+    log:
+        "logs/bedtools/intersect-all-exons.log"
+    wrapper:
+        "v1.31.1/bio/bedtools/intersect"
+
+rule bgzip_exons_all:
+    input:
+        "results/orthanq-candidates-intersected-all/merged_intersected_variants.vcf"
+    output:
+        "results/orthanq-candidates-intersected-all/merged_intersected_variants.vcf.gz"
+    params:
+        extra="", # optional
+    threads: 1
+    log:
+        "logs/bgzip-merged-exons/all.log",
+    wrapper:
+        "v1.31.1/bio/bgzip"
+
+
+rule tabix_exons_all:
+    input:
+        "results/orthanq-candidates-intersected-all/merged_intersected_variants.vcf.gz"
+    output:
+        "results/orthanq-candidates-intersected-all/merged_intersected_variants.vcf.gz.tbi"
+    log:
+        "logs/tabix-merged-exons/all.log",
+    params:
+        # pass arguments to tabix (e.g. index a vcf)
+        "-p vcf",
+    wrapper:
+        "v1.31.1/bio/tabix/index"
+
 rule vg_autoindex:
     input:
         genome="results/refs/hs_genome.fasta",
-        variants= "results/orthanq-candidates/merged.vcf"
+        variants="results/orthanq-candidates-intersected-all/merged_intersected_variants.vcf.gz"
     output:
         "results/vg/autoindex/idx.giraffe.gbz"
     log:
         "logs/vg/autoindex.log"
     conda:
         "../envs/vg.yaml"
-    threads: 20
+    threads: 40
     shell:
         "vg autoindex --workflow giraffe -r {input.genome} -v {input.variants} -p results/vg/autoindex/idx -t {threads}"
 
@@ -130,9 +213,9 @@ rule vg_giraffe:
         "logs/vg/alignment/{sample}.log"
     conda:
         "../envs/vg.yaml"
-    threads: 18
+    threads: 30
     shell:
-        "vg giraffe -Z results/vg/autoindex/idx.giraffe.gbz -f {input.reads[0]} -f {input.reads[1]} --output-format BAM -t {threads} > {output} 2> {log}"
+        "vg giraffe -Z results/vg/autoindex/idx.giraffe.gbz -f {input.reads[0]} -f {input.reads[1]} --output-format BAM -t {threads} --max-multimaps 3 > {output} 2> {log}"
 
 rule samtools_sort:
     input:
