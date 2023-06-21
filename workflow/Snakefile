@@ -62,8 +62,11 @@ if config["simulation"] == False:
             #     sample=samples.sample_name,
             #     hla=loci,
             # ),
-            expand("results/orthanq-candidates/{hla}.vcf.gz.tbi",hla=loci),
-            expand("results/orthanq-candidates-intersected/{hla}.vcf.gz.tbi",hla=loci),
+            # expand("results/orthanq-candidates/{hla}.vcf.gz.tbi",hla=loci),
+            # expand("results/orthanq-candidates-intersected/{hla}.vcf.gz.tbi",hla=loci),
+            expand("results/bwa_alignment/{sample}_mapped.bai",sample=samples.sample_name),
+            expand("results/bwa_alignment/{sample}_mapped_extracted.bam",sample=samples.sample_name),
+            expand("results/extracted_reads/{sample}.1.fq",sample=samples.sample_name),
             expand(
                 "results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv",
                 sample=samples.sample_name,

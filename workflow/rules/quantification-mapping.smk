@@ -203,9 +203,90 @@ rule vg_autoindex:
     shell:
         "vg autoindex --workflow giraffe -r {input.genome} -v {input.variants} -p results/vg/autoindex/idx -t {threads}"
 
-rule vg_giraffe:
+#new mapping strategy:
+#first, align against with bwa against the primary assembly
+#second, extract all reads that belong to HLA loci, use samtools view and then fastq
+#last, map only to those extracted reads
+
+#Step 1: map reads by bwa
+rule bwa_index:
+    input:
+        "results/refs/hs_genome.fasta"
+    output:
+        idx=multiext("results/bwa-index/hs_genome", ".amb", ".ann", ".bwt", ".pac", ".sa")
+    log:
+        "logs/bwa_index/hs_genome.log"
+    params:
+        prefix="results/bwa-index/hs_genome",
+        algorithm="bwtsw",
+    wrapper:
+        "v2.0.0/bio/bwa/index" 
+
+rule bwa_mem:
     input:
         reads = get_fastq_input,
+        #reads = ["results/mixed/{sample}_1.fq", "results/mixed/{sample}_2.fq"],
+        idx = multiext("results/bwa-index/hs_genome", ".amb", ".ann", ".bwt", ".pac", ".sa")
+    output:
+        "results/bwa_alignment/{sample}_mapped.bam"
+    log:
+        "logs/bwa_mem/{sample}.log"
+    params:
+        index="results/bwa-index/hs_genome",
+        extra=r"-R '@RG\tID:{sample}\tSM:{sample}' -P",
+        sorting="samtools",             
+        sort_order="coordinate", 
+    threads: 30
+    wrapper:
+        "v2.0.0/bio/bwa/mem"
+
+rule samtools_index_bwa:
+    input:
+        "results/bwa_alignment/{sample}_mapped.bam"
+    output:
+        "results/bwa_alignment/{sample}_mapped.bai"
+    log:
+        "logs/samtools_index_bwa/{sample}.log"
+    threads: 4
+    wrapper:
+        "v2.0.0/bio/samtools/index"
+
+#Step 2: extract reads that map to HLA loci
+rule samtools_view:
+    input:
+        "results/bwa_alignment/{sample}_mapped.bam",
+        regions="resources/HLA_regions/regions.bed" #only contains the regions for HLA-A,HLA-B, HLA-C and HLA-DQB1
+    output:
+        bam="results/bwa_alignment/{sample}_mapped_extracted.bam",
+        idx="results/bwa_alignment/{sample}_mapped_extracted.bai"
+    log:
+        "logs/samtools-view/{sample}.log",
+    params:
+        extra=lambda wc, input: "-L {}".format(input.regions)
+    threads: 10
+    wrapper:
+        "v2.0.0/bio/samtools/view"
+
+rule samtools_fastq_separate:
+    input:
+        "results/bwa_alignment/{sample}_mapped_extracted.bam"
+    output:
+        "results/extracted_reads/{sample}.1.fq",
+        "results/extracted_reads/{sample}.2.fq",
+    log:
+        "logs/extracted_reads/{sample}.separate.log",
+    params:
+        sort="-m 4G",
+        fastq="-n",
+    threads: 10
+    wrapper:
+        "v2.0.0/bio/samtools/fastq/separate"
+
+rule vg_giraffe:
+    input:
+        reads_1 = "results/extracted_reads/{sample}.1.fq",
+        reads_2 = "results/extracted_reads/{sample}.2.fq",
+        # reads = get_fastq_input,
         idx = "results/vg/autoindex/idx.giraffe.gbz"
     output:
         "results/vg/alignment/{sample}_vg.bam"
@@ -215,7 +296,7 @@ rule vg_giraffe:
         "../envs/vg.yaml"
     threads: 30
     shell:
-        "vg giraffe -Z results/vg/autoindex/idx.giraffe.gbz -f {input.reads[0]} -f {input.reads[1]} --output-format BAM -t {threads} --max-multimaps 3 > {output} 2> {log}"
+        "vg giraffe -Z results/vg/autoindex/idx.giraffe.gbz -f {input.reads_1} -f {input.reads_2} --output-format BAM -t {threads}  > {output} 2> {log}"
 
 rule samtools_sort:
     input:
@@ -250,7 +331,7 @@ rule kallisto_index:
         extra = "--kmer-size=31"
     log:
         "logs/kallisto/index/{hla}.log"
-    threads: 10
+    threads: 20
     wrapper:
         "v1.25.0/bio/kallisto/index"
 
