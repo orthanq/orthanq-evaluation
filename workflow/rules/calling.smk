@@ -3,8 +3,8 @@ rule varlociraptor_preprocess:
         ref="results/refs/hs_genome.fasta",
         fai = "results/refs/hs_genome.fasta.fai",
         candidates = "results/orthanq-candidates-intersected/{hla}.vcf",
-        bam="results/vg/alignment/{sample}_vg.sorted.bam",
-        bai="results/vg/alignment/{sample}_vg.sorted.bam.bai"
+        bam="results/vg/alignment/{sample}_vg.sorted.reheadered.extracted.bam",
+        bai="results/vg/alignment/{sample}_vg.sorted.reheadered.extracted.bam.bai"
     output:
         "results/observations/{sample}_{hla}.bcf"
     log:
@@ -14,7 +14,7 @@ rule varlociraptor_preprocess:
     shell:
         "varlociraptor preprocess variants " #for testing the new mnv improvement in varlociraptor
         "--report-fragment-ids --omit-mapq-adjustment --candidates {input.candidates} "
-        "{input.ref} --bam {input.bam} --output {output} 2> {log}"
+        "{input.ref} --bam {input.bam} --output-raw-observations results/observations_log/{wildcards.sample}_{wildcards.hla} --output {output} 2> {log}"
 
 rule varlociraptor_call:
     input:

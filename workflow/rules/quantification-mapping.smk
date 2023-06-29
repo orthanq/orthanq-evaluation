@@ -233,7 +233,7 @@ rule bwa_mem:
         "logs/bwa_mem/{sample}.log"
     params:
         index="results/bwa-index/hs_genome",
-        extra=r"-R '@RG\tID:{sample}\tSM:{sample}' -P",
+        extra=r"-R '@RG\tID:{sample}\tSM:{sample}'",
         sorting="samtools",             
         sort_order="coordinate", 
     threads: 30
@@ -286,8 +286,7 @@ rule vg_giraffe:
     input:
         reads_1 = "results/extracted_reads/{sample}.1.fq",
         reads_2 = "results/extracted_reads/{sample}.2.fq",
-        # reads = get_fastq_input,
-        idx = "results/vg/autoindex/idx.giraffe.gbz"
+        idx = "resources/vg-pangenome/hprc-v1.0-mc-grch38.xg"
     output:
         "results/vg/alignment/{sample}_vg.bam"
     log:
@@ -296,7 +295,7 @@ rule vg_giraffe:
         "../envs/vg.yaml"
     threads: 30
     shell:
-        "vg giraffe -Z results/vg/autoindex/idx.giraffe.gbz -f {input.reads_1} -f {input.reads_2} --output-format BAM -t {threads}  > {output} 2> {log}"
+        "vg giraffe -x {input.idx} -f {input.reads_1} -f {input.reads_2} --max-multimaps 3 --output-format BAM -t {threads}  > {output} 2> {log}"
 
 rule samtools_sort:
     input:
@@ -322,29 +321,42 @@ rule samtools_index:
     wrapper:
         "v1.22.0/bio/samtools/index"
 
-rule kallisto_index:
+rule reheader:
     input:
-        fasta = "resources/IMGTHLA-3.32.0-alpha/fasta/{hla}_gen.fasta"
+        "results/vg/alignment/{sample}_vg.sorted.bam"
     output:
-        index = "results/kallisto-index/{hla}.idx"
-    params:
-        extra = "--kmer-size=31"
+        "results/vg/alignment/{sample}_vg.sorted.reheadered.bam"
     log:
-        "logs/kallisto/index/{hla}.log"
-    threads: 20
+        "logs/samtools_reheader/{sample}.log"
+    conda:
+        "../envs/samtools.yaml"
+    threads: 4
+    shell:
+        "samtools view -H {input} | sed 's/GRCh38.chr//g' | samtools reheader - {input} > {output} 2> {log}"
+    
+rule samtools_index_after_reheader:
+    input:
+        "results/vg/alignment/{sample}_vg.sorted.reheadered.bam"
+    output:
+        "results/vg/alignment/{sample}_vg.sorted.reheadered.bam.bai"
+    log:
+        "logs/samtools_index_after_reheader/{sample}.log"
+    threads: 4
     wrapper:
-        "v1.25.0/bio/kallisto/index"
+        "v1.22.0/bio/samtools/index"
 
-rule kallisto_quant:
+
+rule keep_only_primary_chr:
     input:
-        fastq = get_fastq_input,
-        index = "results/kallisto-index/{hla}.idx"
+        "results/vg/alignment/{sample}_vg.sorted.reheadered.bam",
+        "results/vg/alignment/{sample}_vg.sorted.reheadered.bam.bai",
     output:
-        directory('results/kallisto/quant_results_{sample}_{hla}')
-    params:
-        extra = "-b 5 --seed=42 --pseudobam"
+        bam="results/vg/alignment/{sample}_vg.sorted.reheadered.extracted.bam",
+        idx="results/vg/alignment/{sample}_vg.sorted.reheadered.extracted.bam.bai"
     log:
-        "logs/kallisto/kallisto_quant_{sample}_{hla}.log"
-    threads: 20
+        "logs/samtools-view-primary-chr/{sample}.log",
+    params:
+        region="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X Y MT"
+    threads: 10
     wrapper:
-        "v1.25.0/bio/kallisto/quant"
+        "v2.0.0/bio/samtools/view"
