@@ -14,7 +14,7 @@ rule varlociraptor_preprocess:
     shell:
         "varlociraptor preprocess variants " #for testing the new mnv improvement in varlociraptor
         "--report-fragment-ids --omit-mapq-adjustment --candidates {input.candidates} "
-        "{input.ref} --bam {input.bam} --output-raw-observations results/observations_log/{wildcards.sample}_{wildcards.hla} --output {output} 2> {log}"
+        "{input.ref} --bam {input.bam} --output {output} 2> {log}"
 
 rule varlociraptor_call:
     input:
@@ -34,7 +34,6 @@ rule orthanq_call:
     input:
         calls = "results/calls/{sample}_{hla}.bcf",
         candidate_variants = "results/orthanq-candidates-intersected/{hla}.vcf",
-        counts = "results/kallisto/quant_results_{sample}_{hla}",
         xml = config["allele_db_xml"]
     output:
         "results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv"
@@ -44,7 +43,7 @@ rule orthanq_call:
         "logs/orthanq-call/{sample}_{hla}.log"
     shell:
         "../orthanq/target/release/orthanq call --haplotype-calls {input.calls} --haplotype-variants {input.candidate_variants} "
-        "--haplotype-counts {input.counts}/abundance.h5 --xml {input.xml} --max-haplotypes 5 --prior diploid --output {output} 2> {log}"
+        "--xml {input.xml} --max-haplotypes 5 --prior diploid --output {output} 2> {log}"
 
 rule arcasHLA_reference:
     output:

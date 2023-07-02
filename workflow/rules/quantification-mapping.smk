@@ -236,7 +236,7 @@ rule bwa_mem:
         extra=r"-R '@RG\tID:{sample}\tSM:{sample}'",
         sorting="samtools",             
         sort_order="coordinate", 
-    threads: 30
+    threads: 40
     wrapper:
         "v2.0.0/bio/bwa/mem"
 
@@ -247,7 +247,7 @@ rule samtools_index_bwa:
         "results/bwa_alignment/{sample}_mapped.bai"
     log:
         "logs/samtools_index_bwa/{sample}.log"
-    threads: 4
+    threads: 10
     wrapper:
         "v2.0.0/bio/samtools/index"
 
@@ -255,6 +255,7 @@ rule samtools_index_bwa:
 rule samtools_view:
     input:
         "results/bwa_alignment/{sample}_mapped.bam",
+        "results/bwa_alignment/{sample}_mapped.bai",
         regions="resources/HLA_regions/regions.bed" #only contains the regions for HLA-A,HLA-B, HLA-C and HLA-DQB1
     output:
         bam="results/bwa_alignment/{sample}_mapped_extracted.bam",
