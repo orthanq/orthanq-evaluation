@@ -16,7 +16,7 @@ with open(snakemake.log[0], "w") as f:
     orthanq_validation_table = pd.DataFrame(columns=('Locus', 'N', 'Orthanq - Call Rate', 'Orthanq - Accuracy'))
 
     #loop over loci and orthanq results
-    loci = ['A', 'B', 'C', 'DQB1']
+    loci = ['A', 'B', 'C', 'DQB1', 'DRB1']
     samples_collected = []
     for locus in loci:    
         #initialize collected hits
