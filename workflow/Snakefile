@@ -48,25 +48,9 @@ if config["simulation"] == False:
 
     rule all:
         input:
-            # "results/refs/hs_genome.fasta",
-            # "results/bwakit-genome/hs38DH.fa",
-            # expand("results/processed_mapped/{sample}.aln.sam", sample=samples.sample_name),
-            # expand("results/orthanq-candidates/{hla}.vcf", hla=loci),
-            # expand(
-            #     "results/calls/{sample}_{hla}.bcf",
-            #     sample=samples.sample_name,
-            #     hla=loci,
-            # ),
-            # expand(
-            #     "results/arcasHLA/{sample}_{hla}/{sample}.genotype.json",
-            #     sample=samples.sample_name,
-            #     hla=loci,
-            # ),
-            # expand("results/orthanq-candidates/{hla}.vcf.gz.tbi",hla=loci),
-            # expand("results/orthanq-candidates-intersected/{hla}.vcf.gz.tbi",hla=loci),
-            expand("results/bwa_alignment/{sample}_mapped.bai",sample=samples.sample_name),
-            expand("results/bwa_alignment/{sample}_mapped_extracted.bam",sample=samples.sample_name),
-            expand("results/extracted_reads/{sample}.1.fq",sample=samples.sample_name),
+            "results/refs/hs_genome.fasta",
+            expand("results/orthanq-candidates/{hla}.vcf.gz.tbi",hla=loci),
+            expand("results/orthanq-candidates-intersected/{hla}.vcf.gz.tbi",hla=loci),
             expand(
                 "results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv",
                 sample=samples.sample_name,
@@ -74,15 +58,15 @@ if config["simulation"] == False:
             ),
             # "results/orthanq/final_report.csv",
             "results/comparison/comparison.tsv",
-            # expand("results/kallisto/quant_results_{sample}_{hla}/abundance.h5",
-            #     sample=samples.sample_name,
-            #     hla=loci)
             # expand(
             #     "results/HLA-LA/{sample}/hla/R1_bestguess_G.txt",
             #     sample=samples.sample_name
             # ),
-            # "results/orthanq/final_report.csv",
-            # "results/comparison/comparison.tsv",
+            # expand(
+            #     "results/arcasHLA/{sample}_{hla}/{sample}.genotype.json",
+            #     sample=samples.sample_name,
+            #     hla=loci,
+            # ),
             # "results/datavzrd/validation_datavzrd.yaml",
             # "results/datavzrd-report/validation"
 
