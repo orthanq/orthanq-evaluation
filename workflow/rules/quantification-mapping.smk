@@ -120,9 +120,11 @@ rule vg_giraffe:
         "results/vg/alignment/{sample}_vg.bam"
     log:
         "logs/vg/alignment/{sample}.log"
+    benchmark:    
+        "benchmarks/vg_giraffe/{sample}.tsv"
     conda:
         "../envs/vg.yaml"
-    threads: 30
+    threads: 40
     shell:
         "vg giraffe -x {input.idx} -f {input.reads[0]} -f {input.reads[1]} --output-format BAM -t {threads}  > {output} 2> {log}"
 
@@ -134,6 +136,8 @@ rule samtools_sort:
         idx = "results/vg/alignment/{sample}_vg.sorted.bam.bai"
     log:
         "logs/samtools_sort/{sample}.log",
+    benchmark:    
+        "benchmarks/samtools_sort/{sample}.tsv"   
     params:
         extra="-m 4G",
     threads: 8
@@ -147,6 +151,8 @@ rule reheader:
         "results/vg/alignment/{sample}_vg.sorted.reheadered.bam"
     log:
         "logs/samtools_reheader/{sample}.log"
+    benchmark:    
+        "benchmarks/samtools_reheader/{sample}.tsv"   
     conda:
         "../envs/samtools.yaml"
     threads: 4

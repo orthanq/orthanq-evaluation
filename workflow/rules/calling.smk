@@ -9,6 +9,8 @@ rule varlociraptor_preprocess:
         "results/observations/{sample}_{hla}.bcf"
     log:
         "logs/varlociraptor/preprocess/{sample}_{hla}.log",
+    benchmark:    
+        "benchmarks/varlociraptor_preprocess/{sample}_{hla}.tsv"    
     conda:
         "../envs/varlociraptor.yaml"
     shell:
@@ -24,6 +26,8 @@ rule varlociraptor_call:
         "results/calls/{sample}_{hla}.bcf"
     log:
         "logs/varlociraptor/call/{sample}_{hla}.log",
+    benchmark:    
+        "benchmarks/varlociraptor_call/{sample}_{hla}.tsv"    
     conda:
         "../envs/varlociraptor.yaml" 
     shell:
@@ -41,6 +45,8 @@ rule orthanq_call:
         "../envs/orthanq.yaml"
     log:
         "logs/orthanq-call/{sample}_{hla}.log"
+    benchmark:    
+        "benchmarks/orthanq_call/{sample}_{hla}.tsv"
     shell:
         "../orthanq/target/release/orthanq call --haplotype-calls {input.calls} --haplotype-variants {input.candidate_variants} "
         "--xml {input.xml} --max-haplotypes 5 --prior diploid --output {output} 2> {log}"
