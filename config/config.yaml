@@ -9,7 +9,7 @@ arcasHLA_version: "3.32.0"
 simulation: False
 
 #samples
-samples: config/samples2.tsv
+samples: config/samples_w_removal.tsv
 
 #alleles
 hla: config/alleles.tsv

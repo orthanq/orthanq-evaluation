@@ -231,6 +231,8 @@ rule bwa_mem:
         "results/bwa_alignment/{sample}_mapped.bam"
     log:
         "logs/bwa_mem/{sample}.log"
+    benchmark:    
+        "benchmarks/bwa_mem/{sample}.tsv"
     params:
         index="results/bwa-index/hs_genome",
         extra=r"-R '@RG\tID:{sample}\tSM:{sample}'",
@@ -292,9 +294,11 @@ rule vg_giraffe:
         "results/vg/alignment/{sample}_vg.bam"
     log:
         "logs/vg/alignment/{sample}.log"
+    benchmark:    
+        "benchmarks/vg_giraffe/{sample}.tsv"
     conda:
         "../envs/vg.yaml"
-    threads: 30
+    threads: 20
     shell:
         "vg giraffe -x {input.idx} -f {input.reads_1} -f {input.reads_2} --max-multimaps 3 --output-format BAM -t {threads}  > {output} 2> {log}"
 
@@ -305,6 +309,8 @@ rule samtools_sort:
         "results/vg/alignment/{sample}_vg.sorted.bam"
     log:
         "logs/samtools_sort/{sample}.log",
+    benchmark:    
+        "benchmarks/samtools_sort/{sample}.tsv" 
     params:
         extra="-m 4G",
     threads: 8
@@ -329,6 +335,8 @@ rule reheader:
         "results/vg/alignment/{sample}_vg.sorted.reheadered.bam"
     log:
         "logs/samtools_reheader/{sample}.log"
+    benchmark:    
+        "benchmarks/samtools_reheader/{sample}.tsv" 
     conda:
         "../envs/samtools.yaml"
     threads: 4

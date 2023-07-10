@@ -9,6 +9,8 @@ rule varlociraptor_preprocess:
         "results/observations/{sample}_{hla}.bcf"
     log:
         "logs/varlociraptor/preprocess/{sample}_{hla}.log",
+    benchmark:    
+        "benchmarks/varlociraptor_preprocess/{sample}_{hla}.tsv"  
     conda:
         "../envs/varlociraptor.yaml"
     shell:
@@ -24,6 +26,8 @@ rule varlociraptor_call:
         "results/calls/{sample}_{hla}.bcf"
     log:
         "logs/varlociraptor/call/{sample}_{hla}.log",
+    benchmark:    
+        "benchmarks/varlociraptor_call/{sample}_{hla}.tsv"  
     conda:
         "../envs/varlociraptor.yaml" 
     shell:
@@ -41,6 +45,8 @@ rule orthanq_call:
         "../envs/orthanq.yaml"
     log:
         "logs/orthanq-call/{sample}_{hla}.log"
+    benchmark:    
+        "benchmarks/orthanq_call/{sample}_{hla}.tsv"
     shell:
         "../orthanq/target/release/orthanq call --haplotype-calls {input.calls} --haplotype-variants {input.candidate_variants} "
         "--xml {input.xml} --max-haplotypes 5 --prior diploid --output {output} 2> {log}"
@@ -61,7 +67,7 @@ rule arcasHLA_reference:
 rule arcasHLA_extract:
     input:
         "foo.txt",
-        bam="results/mapped/{sample}.bam",
+        bam="results/bwa_alignment/{sample}_mapped.bam"
     output:
         extracted_read1="results/arcasHLA/{sample}/{sample}.extracted.1.fq.gz",
         extracted_read2="results/arcasHLA/{sample}/{sample}.extracted.2.fq.gz",
@@ -69,7 +75,7 @@ rule arcasHLA_extract:
         "logs/arcashla/extract/{sample}.log"
     conda:
         "../envs/arcasHLA.yaml"
-    threads: 8
+    threads: 20
     shell:
         "arcasHLA extract {input.bam} -o results/arcasHLA/{wildcards.sample} -t {threads} -v 2> {log}"
 
@@ -83,7 +89,7 @@ rule arcasHLA_genotype:
         "logs/arcashla/genotype/{sample}_{hla}.log",
     conda:
         "../envs/arcasHLA.yaml"
-    threads: 4
+    threads: 20
     params:
         locus = "{hla}"
     shell:
