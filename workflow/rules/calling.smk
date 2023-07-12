@@ -56,6 +56,8 @@ rule arcasHLA_reference:
         "foo.txt"
     log:
         "logs/arcashla/reference.log"
+    benchmark:    
+        "benchmarks/arcasHLA/reference/reference.tsv"  
     conda:
         "../envs/arcasHLA.yaml"
     params:
@@ -73,6 +75,8 @@ rule arcasHLA_extract:
         extracted_read2="results/arcasHLA/{sample}/{sample}.extracted.2.fq.gz",
     log:
         "logs/arcashla/extract/{sample}.log"
+    benchmark:    
+        "benchmarks/arcasHLA/extract/{sample}.tsv"  
     conda:
         "../envs/arcasHLA.yaml"
     threads: 20
@@ -87,6 +91,8 @@ rule arcasHLA_genotype:
         "results/arcasHLA/{sample}_{hla}/{sample}.genotype.json"
     log:
         "logs/arcashla/genotype/{sample}_{hla}.log",
+    benchmark:    
+        "benchmarks/arcasHLA/genotype/{sample}_{hla}.tsv"  
     conda:
         "../envs/arcasHLA.yaml"
     threads: 20
@@ -97,14 +103,16 @@ rule arcasHLA_genotype:
 
 rule HLA_LA:
     input:
-        bam="results/mapped/{sample}.bam",
-        bai="results/mapped/{sample}.bam.bai",
-        index="resources/graphs/PRG_MHC_GRCh38_withIMGT/serializedGRAPH", #V3.32
+        bam="results/bwa_alignment/{sample}_mapped.bam",
+        bai="results/bwa_alignment/{sample}_mapped.bai",
+        index="resources/HLA-LA/graphs/PRG_MHC_GRCh38_withIMGT/serializedGRAPH", #V3.32
     output:
         "results/HLA-LA/{sample}/hla/R1_bestguess_G.txt",
-    threads: 20
+    threads: 40
     log:
         "logs/HLA-LA/{sample}.log",
+    benchmark:    
+        "benchmarks/hla-la/{sample}.tsv"  
     params:
         graph=lambda w, input: os.path.basename(os.path.dirname(input.index)),
         graphdir=lambda w, input: os.path.dirname(os.path.dirname(input.index)),

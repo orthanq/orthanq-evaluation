@@ -58,15 +58,15 @@ if config["simulation"] == False:
             ),
             "results/comparison/comparison.tsv",
 
-            expand(
-                "results/arcasHLA/{sample}_{hla}/{sample}.genotype.json",
-                sample=samples.sample_name,
-                hla=loci,
-            ),
             # expand(
-            #     "results/HLA-LA/{sample}/hla/R1_bestguess_G.txt",
-            #     sample=samples.sample_name
-            # ),
+            #     "results/arcasHLA/{sample}_{hla}/{sample}.genotype.json",
+            #     sample=samples.sample_name,
+            #     hla=loci,
+            # ), wait until the developers of bioconda or arcashla respond
+            expand(
+                "results/HLA-LA/{sample}/hla/R1_bestguess_G.txt",
+                sample=samples.sample_name
+            ),
             # "results/orthanq/final_report.csv",
             # "results/comparison/comparison.tsv",
             # "results/datavzrd/validation_datavzrd.yaml",
