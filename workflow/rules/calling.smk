@@ -69,10 +69,10 @@ rule arcasHLA_reference:
 rule arcasHLA_extract:
     input:
         "foo.txt",
-        bam="results/bwa_alignment/{sample}_mapped.bam"
+        bam="results/bwa_alignment/{sample}_mapped.bam" #note: arcasHLA reads sample name as 'SRR01234_mapped', as a result it creates extracted fastqs with this name, e.g. 'SRR01234_mapped.extracted.1.fq.gz'
     output:
-        extracted_read1="results/arcasHLA/{sample}/{sample}.extracted.1.fq.gz",
-        extracted_read2="results/arcasHLA/{sample}/{sample}.extracted.2.fq.gz",
+        extracted_read1="results/arcasHLA/{sample}/{sample}_mapped.extracted.1.fq.gz",
+        extracted_read2="results/arcasHLA/{sample}/{sample}_mapped.extracted.2.fq.gz",
     log:
         "logs/arcashla/extract/{sample}.log"
     benchmark:    
@@ -85,8 +85,8 @@ rule arcasHLA_extract:
 
 rule arcasHLA_genotype:
     input:
-        extracted_read1="results/arcasHLA/{sample}/{sample}.extracted.1.fq.gz",
-        extracted_read2="results/arcasHLA/{sample}/{sample}.extracted.2.fq.gz",
+        extracted_read1="results/arcasHLA/{sample}/{sample}_mapped.extracted.1.fq.gz",
+        extracted_read2="results/arcasHLA/{sample}/{sample}_mapped.extracted.2.fq.gz",
     output:
         "results/arcasHLA/{sample}_{hla}/{sample}.genotype.json"
     log:
@@ -99,7 +99,7 @@ rule arcasHLA_genotype:
     params:
         locus = "{hla}"
     shell:
-        "arcasHLA genotype {input} -g {params} -o results/arcasHLA/{wildcards.sample}_{wildcards.hla} -t {threads} 2> {log}"
+        "arcasHLA genotype {input} -g {params} -o results/arcasHLA/{wildcards.sample}_{wildcards.hla} -t {threads} --temp results/tmp 2> {log}"
 
 rule HLA_LA:
     input:
@@ -138,30 +138,30 @@ rule parse_and_validate:
     script:
         "../scripts/parse_and_validate_diploid_subclonal.py"
 
-# rule parse_HLAs:
-#     input:
-#         orthanq=expand("results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv", 
-#         sample=samples.sample_name,
-#         hla=loci
-#         ),
-#         # hla_la=expand("results/HLA-LA/{sample}/hla/R1_bestguess.txt",
-#         # sample=samples.sample_name
-#         # ),
-#         # arcasHLA=expand("results/arcasHLA/{sample}_{hla}/{sample}.genotype.json",
-#         # sample=samples.sample_name,
-#         # hla=loci
-#         # )
-#     output:
-#         orthanq=
-#             "results/orthanq/final_report.csv",
-#         # hla_la=
-#         #     "results/HLA-LA/final_report.csv",
-#         # arcasHLA=
-#         #     "results/arcasHLA/final_report.csv",
-#     log:
-#         "logs/parse_HLAs/parse_HLA_alleles.log"
-#     script:
-#         "../scripts/parse_HLA_alleles.py"
+rule parse_HLAs:
+    input:
+        orthanq=expand("results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv", 
+        sample=samples.sample_name,
+        hla=loci
+        ),
+        # hla_la=expand("results/HLA-LA/{sample}/hla/R1_bestguess.txt",
+        # sample=samples.sample_name
+        # ),
+        # arcasHLA=expand("results/arcasHLA/{sample}_{hla}/{sample}.genotype.json",
+        # sample=samples.sample_name,
+        # hla=loci
+        # )
+    output:
+        orthanq=
+            "results/orthanq/final_report.csv",
+        # hla_la=
+        #     "results/HLA-LA/final_report.csv",
+        # arcasHLA=
+        #     "results/arcasHLA/final_report.csv",
+    log:
+        "logs/parse_HLAs/parse_HLA_alleles.log"
+    script:
+        "../scripts/parse_HLA_alleles.py"
 
 # rule compare_tools:
 #     input:

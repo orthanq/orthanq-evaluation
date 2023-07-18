@@ -1,3 +1,7 @@
+# This script parses the results of HLA typing that is performed by HLA-LA, arcasHLA and orthanq.
+# It then creates separate tables for each in a unified manner.abs
+# Sidenote for Orthanq: orthanq may output several combinations of HLA genotypes per locus. We output all of them separated by commas.
+
 import pandas as pd
 import os
 import json
@@ -19,17 +23,34 @@ for index in range(len(orthanq_input)):
         # orthanq_final_table = orthanq_final_table.append(new_row, ignore_index=True)
         orthanq_final_table = pd.concat([orthanq_final_table, new_row], ignore_index=True)
 
-    best_result = pd.read_csv(orthanq_input[index]).iloc[[0]] #best result, first row
-    filtered_cols = [col for col in best_result if col.startswith(locus_name.split(".")[0])]
-    value_to_add = []
-    for col in filtered_cols:
-        if best_result[col][0] == 0.5:
-            value_to_add.append(col)
-        elif best_result[col][0] == 1.0:
-            value_to_add.append(col) #two times the value, homozygous sample handling
-            value_to_add.append(col)
-    value_to_add = '/'.join(value_to_add)
-    orthanq_final_table.loc[orthanq_final_table['sample'] == sample_name, locus_name] = value_to_add
+    ##more than one best record
+    results = pd.read_csv(orthanq_input[index])
+
+    ##find the records that have the same density
+    best_odds = [1, 1.0, 1.00]
+    best_results = results[results.odds.isin(best_odds)]
+    print("best results: ", best_results)
+    
+    #retrieve the predicted haplotypes
+    #collect locus names
+    filtered_cols = []
+    filtered_cols = [col for col in results if col.startswith(locus_name)]
+    print(filtered_cols)
+    #loop over best results
+    all_combinations=[]
+    for (i,result_row) in best_results.iterrows():
+        value_to_add = []     
+        #collect first two fields and cumulative fractions of haplotypes
+        for col in filtered_cols:
+            if best_results[col][i] == 0.5:
+                value_to_add.append(col)
+            elif best_results[col][i] == 1.0:
+                value_to_add.append(col) #two times the value, homozygous sample handling
+                value_to_add.append(col)
+        value_to_add = '/'.join(value_to_add)
+        all_combinations.append(value_to_add)
+    
+    orthanq_final_table.loc[orthanq_final_table['sample'] == sample_name, locus_name] = ','.join(all_combinations)
 
 orthanq_final_table.to_csv(
     snakemake.output.orthanq, sep="\t", index=False, header=True

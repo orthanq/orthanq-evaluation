@@ -1,3 +1,8 @@
+##this script does the following:
+# It parses and validates orthanq results compared to the ground truth (applicable both to diploid and subclonal priors)
+# in case of diploid subclonals, if two haplotypes are present in the ground truth with the sum of their fractions more than 50% then the sample gets a true positive for the comparison.
+# Finally, create a table for accuracy values
+
 import pandas as pd
 import os
 import json
