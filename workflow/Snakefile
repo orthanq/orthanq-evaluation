@@ -58,7 +58,7 @@ if config["simulation"] == False:
             ),
             "results/comparison/comparison.tsv",
             expand(
-                "results/arcasHLA/{sample}_{hla}/{sample}.genotype.json",
+                "results/arcasHLA/{sample}_{hla}/{sample}_mapped.genotype.json",
                 sample=samples.sample_name,
                 hla=loci,
             ), 

@@ -88,7 +88,7 @@ rule arcasHLA_genotype:
         extracted_read1="results/arcasHLA/{sample}/{sample}_mapped.extracted.1.fq.gz",
         extracted_read2="results/arcasHLA/{sample}/{sample}_mapped.extracted.2.fq.gz",
     output:
-        "results/arcasHLA/{sample}_{hla}/{sample}.genotype.json"
+        "results/arcasHLA/{sample}_{hla}/{sample}_mapped.genotype.json"
     log:
         "logs/arcashla/genotype/{sample}_{hla}.log",
     benchmark:    
@@ -99,7 +99,7 @@ rule arcasHLA_genotype:
     params:
         locus = "{hla}"
     shell:
-        "arcasHLA genotype {input} -g {params} -o results/arcasHLA/{wildcards.sample}_{wildcards.hla} -t {threads} --temp results/tmp 2> {log}"
+        "arcasHLA genotype {input} -g {params} -o results/arcasHLA/{wildcards.sample}_{wildcards.hla} -t {threads} 2> {log}"
 
 rule HLA_LA:
     input:
@@ -147,7 +147,7 @@ rule parse_HLAs:
         # hla_la=expand("results/HLA-LA/{sample}/hla/R1_bestguess.txt",
         # sample=samples.sample_name
         # ),
-        # arcasHLA=expand("results/arcasHLA/{sample}_{hla}/{sample}.genotype.json",
+        # arcasHLA=expand("results/arcasHLA/{sample}_{hla}/{sample}_mapped.genotype.json",
         # sample=samples.sample_name,
         # hla=loci
         # )
