@@ -1,0 +1,60 @@
+name: Evaluation results
+datasets:
+  validation:
+    separator: "\t"
+    path: ?input.validation
+    offer-excel: true
+  orthanq-report:
+    separator: "\t"
+    path: ?input.orthanq
+    offer-excel: true  
+  arcashla-report:
+    separator: "\t"
+    path: ?input.arcasHLA
+    offer-excel: true
+  hla_la-report:
+    separator: "\t"
+    path: ?input.hla_la
+    offer-excel: true
+  ground_truth:
+    separator: "\t"
+    path: ?input.ground_truth
+    offer-excel: true
+views:
+  validation:
+    dataset: validation
+    desc: |
+      ### Validation
+      This table contains validation results
+    page-size: 25
+    render-table:
+      columns:
+        regex('.+Accuracy'):
+          plot:
+            ticks:
+              scale: linear
+              domain:
+                - 0
+                - 100
+        "arcasHLA - Call Rate":
+          precision: 2
+  orthanq-report:
+    dataset: orthanq-report
+    desc: |
+      ## Orthanq
+      This table contains orthanq predictions
+  arcashla-report:
+    dataset: arcashla-report
+    desc: |
+      ## arcasHLA
+      This table contains arcasHLA predictions
+  hla_la-report:
+    dataset: hla_la-report
+    desc: |
+      ## HLA-LA
+      This table contains HLA-LA predictions
+  ground_truth:
+    dataset: ground_truth
+    desc: |
+      ## ground_truth
+      This table contains ground_truth

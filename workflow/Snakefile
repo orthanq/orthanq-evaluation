@@ -68,6 +68,6 @@ if config["simulation"] == False:
             ),
             "results/orthanq/final_report.csv",
             "results/comparison/validation.tsv",
-            # "results/datavzrd/validation_datavzrd.yaml",
-            # "results/datavzrd-report/validation"
+            "results/datavzrd/validation_datavzrd.yaml",
+            "results/datavzrd-report/validation"
 
