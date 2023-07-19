@@ -67,7 +67,7 @@ if config["simulation"] == False:
                 sample=samples.sample_name
             ),
             "results/orthanq/final_report.csv",
-            # "results/comparison/comparison.tsv",
+            "results/comparison/validation.tsv",
             # "results/datavzrd/validation_datavzrd.yaml",
             # "results/datavzrd-report/validation"
 

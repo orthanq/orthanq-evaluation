@@ -132,7 +132,7 @@ rule parse_and_validate:
         ),
         ground_truth="resources/ground_truth/HLA-ground-truth-CEU-for-paper.tsv"
     output:
-        validation="results/comparison/comparison.tsv"
+        validation="results/orthanq/orthanq_validation.tsv"
     log:
         "logs/comparison/compare_and_validate.log"
     script:
@@ -144,42 +144,42 @@ rule parse_HLAs:
         sample=samples.sample_name,
         hla=loci
         ),
-        # hla_la=expand("results/HLA-LA/{sample}/hla/R1_bestguess.txt",
-        # sample=samples.sample_name
-        # ),
-        # arcasHLA=expand("results/arcasHLA/{sample}_{hla}/{sample}_mapped.genotype.json",
-        # sample=samples.sample_name,
-        # hla=loci
-        # )
+        hla_la=expand("results/HLA-LA/{sample}/hla/R1_bestguess.txt",
+        sample=samples.sample_name
+        ),
+        arcasHLA=expand("results/arcasHLA/{sample}_{hla}/{sample}_mapped.genotype.json",
+        sample=samples.sample_name,
+        hla=loci
+        )
     output:
         orthanq=
             "results/orthanq/final_report.csv",
-        # hla_la=
-        #     "results/HLA-LA/final_report.csv",
-        # arcasHLA=
-        #     "results/arcasHLA/final_report.csv",
+        hla_la=
+            "results/HLA-LA/final_report.csv",
+        arcasHLA=
+            "results/arcasHLA/final_report.csv",
     log:
         "logs/parse_HLAs/parse_HLA_alleles.log"
     script:
         "../scripts/parse_HLA_alleles.py"
 
-# rule compare_tools:
-#     input:
-#         orthanq="results/orthanq/final_report.csv",
-#         # hla_la="results/HLA-LA/final_report.csv",
-#         # arcasHLA="results/arcasHLA/final_report.csv",
-#         ground_truth="resources/ground_truth/HLA-ground-truth-CEU-for-paper.tsv"
-#     output:
-#         validation="results/comparison/comparison.tsv"
-#     log:
-#         "logs/comparison/compare_tools.log"
-#     script:
-#         "../scripts/validation.py"
+rule compare_tools:
+    input:
+        orthanq="results/orthanq/orthanq_validation.tsv",
+        hla_la="results/HLA-LA/final_report.csv",
+        arcasHLA="results/arcasHLA/final_report.csv",
+        ground_truth="resources/ground_truth/HLA-ground-truth-CEU-for-paper.tsv"
+    output:
+        validation="results/comparison/validation.tsv"
+    log:
+        "logs/comparison/compare_tools.log"
+    script:
+        "../scripts/validation.py"
 
 rule datavzrd_config:
     input:
         template="resources/datavzrd.yaml",
-        validation="results/comparison/comparison.tsv",
+        validation="results/comparison/validation.tsv",
         orthanq="results/orthanq/final_report.csv",
         hla_la="results/HLA-LA/final_report.csv",
         arcasHLA="results/arcasHLA/final_report.csv",
@@ -194,7 +194,7 @@ rule datavzrd_config:
 rule datavzrd:
     input:
         config="results/datavzrd/validation_datavzrd.yaml",
-        validation="results/comparison/comparison.tsv",
+        validation="results/comparison/validation.tsv",
         orthanq="results/orthanq/final_report.csv",
         hla_la="results/HLA-LA/final_report.csv",
         arcasHLA="results/arcasHLA/final_report.csv",
