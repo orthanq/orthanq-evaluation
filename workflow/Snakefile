@@ -13,7 +13,8 @@ if config["simulation"] == True:
 
     include: "rules/common.smk"
     include: "rules/simulation.smk"
-    include: "rules/quantification-mapping.smk"
+    include: "rules/candidate_generation.smk"
+    include: "rules/alignment.smk"
     include: "rules/calling.smk"
 
     rule all:
@@ -33,41 +34,18 @@ if config["simulation"] == True:
                 sample=simulated_sample.sample_name.unique(),
                 hla=loci,
             ),
-            # expand("results/kallisto/quant_results_{sample}_{hla}/abundance.h5",
-            #     sample=simulated_sample.sample_name.unique(),
-            #     hla=loci)
+            # todo: configure the workflow to target simulated samples as well
             # "results/orthanq/final_report.csv"
-            # "results/vg/autoindex/idx.giraffe.gbz",
-            # expand("results/vg/alignment/{sample}_vg.bam", sample=simulated_sample.sample_name.unique())
 
 if config["simulation"] == False:
 
     include: "rules/common.smk"
-    include: "rules/quantification-mapping.smk"
+    include: "rules/candidate_generation.smk"
+    include: "rules/alignment.smk"
     include: "rules/calling.smk"
+    include: "rules/evaluation.smk"
 
     rule all:
         input:
-            expand("results/bwa_alignment/{sample}_mapped.bai",sample=samples.sample_name),
-            expand("results/bwa_alignment/{sample}_mapped_extracted.bam",sample=samples.sample_name),
-            expand("results/extracted_reads/{sample}.1.fq",sample=samples.sample_name),
-            expand(
-                "results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv",
-                sample=samples.sample_name,
-                hla=loci,
-            ),
-            "results/comparison/comparison.tsv",
-            expand(
-                "results/arcasHLA/{sample}_{hla}/{sample}_mapped.genotype.json",
-                sample=samples.sample_name,
-                hla=loci,
-            ), 
-            expand(
-                "results/HLA-LA/{sample}/hla/R1_bestguess_G.txt",
-                sample=samples.sample_name
-            ),
-            "results/orthanq/final_report.csv",
-            "results/comparison/validation.tsv",
-            "results/datavzrd/validation_datavzrd.yaml",
             "results/datavzrd-report/validation"
 
