@@ -74,6 +74,66 @@ rule HLA_LA:
     shell:
         "HLA-LA.pl --bam {input.bam} --sampleID {wildcards.sample} --graph {params.graph} --customGraphDir {params.graphdir} --workingDir {params.workdir} --maxThreads {threads} > {log} 2>&1"
 
+#use razers3 before optiype
+#reads are recommended to be aligned separately. If both are supplied, core dumps or the process is killed at some point.
+rule razers3:
+    input:
+        genome="results/refs/hs_genome.fasta",
+        reads=get_fastq_input
+    output:
+        read1="results/razers3/mapped/{sample}_1.bam",
+        read2="results/razers3/mapped/{sample}_2.bam"
+    log:
+        "logs/razers3/map/{sample}.log"
+    benchmark:    
+        "benchmarks/razers3/{sample}.tsv"  
+    threads: 30
+    conda:
+        "../envs/razers3.yaml"
+    shell:
+        "razers3 -i 95 -m 1 -dr 0 -o {output.read1} {input.genome} {input.reads[0]} && "
+        "razers3 -i 95 -m 1 -dr 0 -o {output.read2} {input.genome} {input.reads[1]} "
+
+rule razers3_bam_to_fastq:
+    input:
+        "results/razers3/mapped/{sample}_{pair}.bam",
+    output:
+        "results/razers3/reads/{sample}.{pair}.fq",
+    log:
+        "logs/razers3/extract/{sample}.{pair}.separate.log",
+    benchmark:    
+        "benchmarks/razers3_bam_to_fastq/{sample}.{pair}.tsv"  
+    conda:
+        "../envs/samtools.yaml"
+    threads: 10
+    shell:
+        "samtools fastq {input} > {output}"
+
+rule optitype:
+    input:
+        # list of input reads
+        # reads=get_fastq_input
+        reads=["results/razers3/reads/{sample}.1.fq", "results/razers3/reads/{sample}.2.fq"]
+    output:
+        pdf="results/optitype/{sample}_coverage_plot.pdf",
+        tsv="results/optitype/{sample}_result.tsv",
+    log:
+        "logs/optitype/{sample}.log"
+    benchmark:    
+        "benchmarks/optitype/{sample}.tsv"  
+    params:
+        # Type of sequencing data. Can be 'dna' or 'rna'. Default is 'dna'.
+        sequencing_type="dna",
+        # optiype config file, optional
+        config="",
+        # additional parameters
+        extra=""
+    threads: 20
+    conda:
+        "../envs/optitype.yaml"
+    shell:
+        "OptiTypePipeline.py -i {input.reads[0]} {input.reads[1]} --dna --outdir results/optitype --prefix {wildcards.sample}"
+        
 rule parse_HLAs:
     input:
         orthanq=expand("results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv", 

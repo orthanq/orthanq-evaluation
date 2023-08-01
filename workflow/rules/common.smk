@@ -1,9 +1,15 @@
 # This script contains functions for creating simulated samples and collecting fastq inputs.
 
 import pandas as pd
+import os
 
 configfile: "config/config.yaml"
 
+#in case user configs have both uppercase and lowercase no_proxy values (optitype throws errors in this case)
+del os.environ['no_proxy']
+del os.environ['ftp_proxy']
+del os.environ['https_proxy']
+del os.environ['http_proxy']
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #  
 # Simulation of samples from HLA alleles and haplotype quantification for samples that are simulated #

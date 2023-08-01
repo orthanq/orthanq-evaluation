@@ -4,7 +4,7 @@
 # second, extract all reads that belong to HLA loci, use samtools view and then fastq
 # last, map only to those extracted reads
 
-# Step 1: map reads by bwa
+# Step 1: align reads by bwa
 rule bwa_index:
     input:
         "results/refs/hs_genome.fasta"

@@ -47,5 +47,6 @@ if config["simulation"] == False:
 
     rule all:
         input:
-            "results/datavzrd-report/validation"
+            # "results/datavzrd-report/validation",
+            expand("results/optitype/{sample}_result.tsv",sample=samples.sample_name)
 

@@ -76,7 +76,7 @@ for index in range(len(arcasHLA_input)):
     # returns JSON object as 
     # a dictionary
     data = json.load(f)
-
+    
     if data != {}: #arcasHLA may not produce predictions for some loci
         filtered_cols = data[locus_name]
         value_to_add = []
