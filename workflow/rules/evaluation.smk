@@ -75,28 +75,91 @@ rule HLA_LA:
         "HLA-LA.pl --bam {input.bam} --sampleID {wildcards.sample} --graph {params.graph} --customGraphDir {params.graphdir} --workingDir {params.workdir} --maxThreads {threads} > {log} 2>&1"
 
 #use razers3 before optiype
+
+#razers3 uses a lot of memory and it will not run for wgs samples with the memory that we have in our clusters.
+#for this reason, we will subset fastqs in 30 batches and align them to the reference.
+split_numbers = list(range(1,31))
+rule fastq_split:
+    input:
+        get_fastq_input
+    output:
+        fq1=expand("results/fastq_split/{{sample}}_piece{split_no}_1.fastq.gz",split_no=split_numbers),
+        fq2=expand("results/fastq_split/{{sample}}_piece{split_no}_2.fastq.gz",split_no=split_numbers)
+    log:
+        "logs/fastqsplitter/{sample}.log"
+    benchmark:    
+        "benchmarks/fastq_split/{sample}.tsv"  
+    conda:
+        "../envs/fastqsplitter.yaml"
+    params:
+        fq1=lambda w, output: [ "-o " + fq for fq in output.fq1], #the output of fastqsplitter requires "-o and output name" as many as the number of pieces that is desired
+        fq2=lambda w, output: [ "-o " + fq for fq in output.fq2],
+    threads: 10
+    resources:
+        mem_mb=50000
+    shell:
+        "fastqsplitter -i {input[0]} -t {threads} {params.fq1} 2> {log} && "
+        "fastqsplitter -i {input[1]} -t {threads} {params.fq2} 2>> {log}"
+
 #reads are recommended to be aligned separately. If both are supplied, core dumps or the process is killed at some point.
 rule razers3:
     input:
         genome="results/refs/hs_genome.fasta",
-        reads=get_fastq_input
+        fq1="results/fastq_split/{sample}_piece{split_no}_1.fastq.gz",
+        fq2="results/fastq_split/{sample}_piece{split_no}_2.fastq.gz",
     output:
-        read1="results/razers3/mapped/{sample}_1.bam",
-        read2="results/razers3/mapped/{sample}_2.bam"
+        b1="results/razers3/mapped/{sample}_piece{split_no}_1.bam",
+        b2="results/razers3/mapped/{sample}_piece{split_no}_2.bam"
     log:
-        "logs/razers3/map/{sample}.log"
+        "logs/razers3/map/{sample}_{split_no}.log"
     benchmark:    
-        "benchmarks/razers3/{sample}.tsv"  
+        "benchmarks/razers3/{sample}_{split_no}.tsv"  
     threads: 30
+    # resources:
+    #     mem_mb=lambda w, input: input.size
     conda:
         "../envs/razers3.yaml"
     shell:
-        "razers3 -i 95 -m 1 -dr 0 -o {output.read1} {input.genome} {input.reads[0]} && "
-        "razers3 -i 95 -m 1 -dr 0 -o {output.read2} {input.genome} {input.reads[1]} "
+        "razers3 -i 95 -m 1 -dr 0 -tc {threads} -o {output.b1} {input.genome} {input.fq1} 2> {log} && "
+        "razers3 -i 95 -m 1 -dr 0 -tc {threads} -o {output.b2} {input.genome} {input.fq2} 2>> {log}"
+
+#sort the resulting bam files to be able to use samtools merge in the next step
+rule samtools_sort_razers3:
+    input:
+        "results/razers3/mapped/{sample}_piece{split_no}_{pair}.bam",
+    output:
+        bam="results/razers3/mapped/{sample}_piece{split_no}_{pair}_sorted.bam",
+        idx="results/razers3/mapped/{sample}_piece{split_no}_{pair}_sorted.bam.bai",
+    log:
+        "logs/samtools_sort_razers3/{sample}_{split_no}_{pair}.log",
+    benchmark:    
+        "benchmarks/samtools_sort_razers3/{sample}_{split_no}_{pair}.tsv" 
+    params:
+        extra="-m 4G",
+    threads: 8
+    wrapper:
+        "v1.22.0/bio/samtools/sort"
+
+#merge the pieces into a single bam file
+rule merge_bam:
+    input:
+        bam=expand("results/razers3/mapped/{{sample}}_piece{split_no}_{{pair}}_sorted.bam", split_no=split_numbers)
+    output:
+        merged_bam="results/razers3/merged/{sample}_{pair}.bam",
+        idx="results/razers3/merged/{sample}_{pair}.bam.bai"
+    log:
+        "logs/samtools_merge/{sample}_{pair}.log",
+    benchmark:    
+        "benchmarks/samtools_merge/{sample}_{pair}.tsv" 
+    conda:
+        "../envs/samtools.yaml"
+    threads: 10
+    shell:
+        "samtools merge {input} -o {output} 2> {log}"
 
 rule razers3_bam_to_fastq:
     input:
-        "results/razers3/mapped/{sample}_{pair}.bam",
+        "results/razers3/merged/{sample}_{pair}.bam",
     output:
         "results/razers3/reads/{sample}.{pair}.fq",
     log:
@@ -131,7 +194,8 @@ rule optitype:
     threads: 20
     conda:
         "../envs/optitype.yaml"
-    shell:
+    shell: #in case user configs have both uppercase and lowercase no_proxy values (optitype throws errors in this case)
+        "unset http_proxy ftp_proxy https_proxy no_proxy; "
         "OptiTypePipeline.py -i {input.reads[0]} {input.reads[1]} --dna --outdir results/optitype --prefix {wildcards.sample}"
         
 rule parse_HLAs:
