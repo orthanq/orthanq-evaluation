@@ -143,19 +143,18 @@ rule samtools_sort_razers3:
 #merge the pieces into a single bam file
 rule merge_bam:
     input:
-        bam=expand("results/razers3/mapped/{{sample}}_piece{split_no}_{{pair}}_sorted.bam", split_no=split_numbers)
+        expand("results/razers3/mapped/{{sample}}_piece{split_no}_{{pair}}_sorted.bam", split_no=split_numbers)
     output:
-        merged_bam="results/razers3/merged/{sample}_{pair}.bam",
+        "results/razers3/merged/{sample}_{pair}.bam",
         idx="results/razers3/merged/{sample}_{pair}.bam.bai"
     log:
         "logs/samtools_merge/{sample}_{pair}.log",
     benchmark:    
         "benchmarks/samtools_merge/{sample}_{pair}.tsv" 
-    conda:
-        "../envs/samtools.yaml"
     threads: 10
-    shell:
-        "samtools merge {input} -o {output} 2> {log}"
+    wrapper:
+        "v2.3.2/bio/samtools/merge"
+
 
 rule razers3_bam_to_fastq:
     input:
