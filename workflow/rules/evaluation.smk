@@ -104,7 +104,7 @@ rule fastq_split:
 #reads are recommended to be aligned separately. If both are supplied, core dumps or the process is killed at some point.
 rule razers3:
     input:
-        genome="results/refs/hs_genome.fasta",
+        genome="resources/optitype/hla_reference_dna.fasta",
         fq1="results/fastq_split/{sample}_piece{split_no}_1.fastq.gz",
         fq2="results/fastq_split/{sample}_piece{split_no}_2.fastq.gz",
     output:
@@ -209,7 +209,10 @@ rule parse_HLAs:
         arcasHLA=expand("results/arcasHLA/{sample}_{hla}/{sample}_mapped.genotype.json",
         sample=samples.sample_name,
         hla=loci
-        )
+        ),
+        optitype=expand("results/optitype/{sample}_result.tsv",
+        sample=samples.sample_name
+        ),
     output:
         orthanq=
             "results/orthanq/final_report.csv",
@@ -217,6 +220,8 @@ rule parse_HLAs:
             "results/HLA-LA/final_report.csv",
         arcasHLA=
             "results/arcasHLA/final_report.csv",
+        optitype=
+            "results/optitype/final_report.csv"
     log:
         "logs/parse_HLAs/parse_HLA_alleles.log"
     script:
@@ -227,7 +232,8 @@ rule compare_tools:
         orthanq="results/orthanq/orthanq_validation.tsv",
         hla_la="results/HLA-LA/final_report.csv",
         arcasHLA="results/arcasHLA/final_report.csv",
-        ground_truth="resources/ground_truth/HLA-ground-truth-CEU-for-paper.tsv"
+        ground_truth="resources/ground_truth/HLA-ground-truth-CEU-for-paper.tsv",
+        optitype="results/optitype/final_report.csv"
     output:
         validation="results/comparison/validation.tsv"
     log:
@@ -242,6 +248,7 @@ rule datavzrd_config:
         orthanq="results/orthanq/final_report.csv",
         hla_la="results/HLA-LA/final_report.csv",
         arcasHLA="results/arcasHLA/final_report.csv",
+        optitype="results/optitype/final_report.csv",
         ground_truth="resources/ground_truth/HLA-ground-truth-CEU-for-paper.tsv"
     output:
         "results/datavzrd/validation_datavzrd.yaml"
@@ -257,6 +264,7 @@ rule datavzrd:
         orthanq="results/orthanq/final_report.csv",
         hla_la="results/HLA-LA/final_report.csv",
         arcasHLA="results/arcasHLA/final_report.csv",
+        optitype="results/optitype/final_report.csv",
         ground_truth="resources/ground_truth/HLA-ground-truth-CEU-for-paper.tsv"
     output:
         report(
@@ -268,3 +276,4 @@ rule datavzrd:
         "logs/datavzrd/validation.log",
     wrapper:
         "v1.21.4/utils/datavzrd"
+        

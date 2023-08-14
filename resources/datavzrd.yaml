@@ -16,6 +16,10 @@ datasets:
     separator: "\t"
     path: ?input.hla_la
     offer-excel: true
+  optitype-report:
+    separator: "\t"
+    path: ?input.optitype
+    offer-excel: true
   ground_truth:
     separator: "\t"
     path: ?input.ground_truth
@@ -53,6 +57,11 @@ views:
     desc: |
       ## HLA-LA
       This table contains HLA-LA predictions
+  optitype-report:
+    dataset: optitype-report
+    desc: |
+      ## Optitype
+      This table contains Optitype predictions
   ground_truth:
     dataset: ground_truth
     desc: |

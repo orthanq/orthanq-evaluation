@@ -5,10 +5,12 @@ ground_truth = pd.read_csv(snakemake.input.ground_truth, sep = "\t")
 orthanq_input = pd.read_csv(snakemake.input.orthanq, sep = "\t")
 arcasHLA_input = pd.read_csv(snakemake.input.arcasHLA, sep = "\t")
 hla_la_input = pd.read_csv(snakemake.input.hla_la, sep = "\t")
+optitype_input = pd.read_csv(snakemake.input.optitype, sep = "\t")
 
 ##initialize performance tables for tools
 arcasHLA_validation_table = pd.DataFrame(columns=('Locus', 'N', 'arcasHLA - Call Rate', 'arcasHLA - Accuracy'))
 hla_la_validation_table = pd.DataFrame(columns=('Locus', 'N', 'HLA-LA - Call Rate', 'HLA-LA - Accuracy'))
+optitype_validation_table = pd.DataFrame(columns=('Locus', 'N', 'Optitype - Call Rate', 'Optitype - Accuracy'))
 
 #arcasHLA
 #loop over all loci
@@ -135,7 +137,65 @@ for locus in loci:
                    columns=['Locus', 'N', 'HLA-LA - Call Rate', 'HLA-LA - Accuracy'])
     hla_la_validation_table = pd.concat([hla_la_validation_table, new_row], ignore_index=True)
 
-final_table = pd.merge(first_merge, hla_la_validation_table, how='left', on=['Locus', 'N'])
+second_merge = pd.merge(first_merge, hla_la_validation_table, how='left', on=['Locus', 'N'])
+
+#optitype
+#loop over all loci
+loci = ['A', 'B', 'C']
+for locus in loci:
+    values = optitype_input[locus]
+    collected = 0
+    samples_called = 0 #some samples in arcashla have some loci that is uncalled, so we need to count the number of samples that are called here.
+    for (index, value_in_optitype) in enumerate(values):
+        if pd.isnull(value_in_optitype):
+            continue
+        else:
+            sample_name = optitype_input.loc[index,'sample']
+            values_in_truth = {}
+            alleles = []
+            for (chr_index,chr_number) in enumerate([1, 2]):
+                #value in optitype 
+                first_allele = value_in_optitype.split("/")[chr_index]
+                allele_in_arcasHLA = first_allele.split("*")[1]
+                alleles.append(allele_in_arcasHLA)
+                
+                locus_name_in_truth_1 = "HLA-" + locus + " " + str(chr_number)
+                value_in_truth = ground_truth.loc[ground_truth['Run Accession'] == sample_name, locus_name_in_truth_1].array[0] ##array[0] to reach what's inside the Series
+                ##split in case of alles that have e.g. 23:01/02/04 in the truth
+                tmp_alleles = []
+                if "/" in value_in_truth:
+                    first_split = value_in_truth.split("/")
+                    first_field = first_split[0].split(":")[0]
+                    tmp_alleles.append(first_split[0])
+                    for splitted in first_split[1:]:
+                        tmp_alleles.append(first_field + ":" +splitted)
+                    values_in_truth["{0}".format(chr_index)] = tmp_alleles
+                    
+                elif value_in_truth.endswith("*"):
+                    value_in_truth=value_in_truth.rstrip("*")
+                    values_in_truth["{0}".format(chr_index)] = [value_in_truth]
+                else:
+                    values_in_truth["{0}".format(chr_index)] = [value_in_truth]
+
+            values_in_truth_clone = values_in_truth
+            for allele in alleles: ##???
+                values_in_truth = values_in_truth_clone
+                for chr_index, (_,chr_values) in enumerate(values_in_truth.items()):
+                    if allele in chr_values:
+                        collected+= 1
+                        #to stop homozygous alleles inaccurately match, we should remove the one that matches
+                        if len(values_in_truth) > 1:
+                            values_in_truth_clone.pop(chr_index, None)
+                        break
+            samples_called+=1
+    call_rate = samples_called/len(optitype_input.index)
+    accuracy = 100*collected/(samples_called*2)
+    # new_row = {'Locus': locus, 'N': len(arcasHLA_input.index), 'arcasHLA - Call Rate': 1.00, 'arcasHLA - Accuracy': accuracy}
+    new_row = pd.DataFrame([[locus, len(optitype_input.index), call_rate, accuracy]],
+                   columns=['Locus', 'N', 'Optitype - Call Rate', 'Optitype - Accuracy'])
+    optitype_validation_table = pd.concat([optitype_validation_table, new_row], ignore_index=True)
+
+final_table = pd.merge(second_merge, optitype_validation_table, how='left', on=['Locus', 'N'])
 
 final_table.to_csv(
     snakemake.output.validation, sep="\t", index=False, header=True

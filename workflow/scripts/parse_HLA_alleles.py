@@ -152,3 +152,38 @@ for index in range(len(hla_la_input)):
 hla_la_final_table.to_csv(
     snakemake.output.hla_la, sep="\t", index=False, header=True
 )
+
+#optitype
+optitype_input = snakemake.input.optitype   
+
+#initialize the dataframe
+optitype_final_table = pd.DataFrame(columns=('sample', 'A', 'B', 'C'))
+for index in range(len(optitype_input)):
+    sample_name = os.path.basename(os.path.dirname(os.path.dirname(hla_la_input[index]))).split("_")[0]
+
+    #read
+    data = pd.read_csv(optitype[index], sep = "\t")
+
+    A = []
+    B = []
+    C = []
+
+    A.append(data.loc[0,'A1'])
+    A.append(data.loc[0,'A2'])
+    A = '/'.join(A)
+
+    B.append(data.loc[0,'B1'])
+    B.append(data.loc[0,'B2'])
+    B = '/'.join(B)
+
+    C.append(data.loc[0,'C1'])
+    C.append(data.loc[0,'C2'])
+    C = '/'.join(C)
+
+    new_row = pd.DataFrame([[sample_name, A, B, C]],
+                columns=['sample', 'A', 'B', 'C'])
+    optitype_final_table = pd.concat([optitype_final_table, new_row], ignore_index=True)
+
+optitype_final_table.to_csv(
+    snakemake.output.optitype, sep="\t", index=False, header=True
+)
