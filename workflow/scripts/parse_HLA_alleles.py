@@ -162,7 +162,7 @@ for index in range(len(optitype_input)):
     sample_name = os.path.basename(os.path.dirname(os.path.dirname(hla_la_input[index]))).split("_")[0]
 
     #read
-    data = pd.read_csv(optitype[index], sep = "\t")
+    data = pd.read_csv(optitype_input[index], sep = "\t")
 
     A = []
     B = []
