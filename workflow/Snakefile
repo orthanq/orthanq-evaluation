@@ -50,6 +50,7 @@ if config["simulation"] == False:
             "results/comparison/validation.tsv",
             "results/datavzrd-report/validation",
             # expand("results/optitype/{sample}_result.tsv",sample=samples.sample_name),
-            # "results/comparison/validation.tsv"
+            # "results/comparison/validation.tsv",
+            "results/comparison/evaluation_plot.json"
 
 

@@ -227,24 +227,49 @@ rule parse_HLAs:
     script:
         "../scripts/parse_HLA_alleles.py"
 
-rule compare_tools:
+rule validate_orthanq:
     input:
-        orthanq="results/orthanq/orthanq_validation.tsv",
+        orthanq=expand("results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv", 
+        sample=samples.sample_name,
+        hla=loci
+        ),
+        ground_truth="resources/ground_truth/HLA-ground-truth-CEU-for-paper.tsv"
+    output:
+        validation="results/validation/orthanq_validation.tsv"
+    log:
+        "logs/validate_orthanq/validate_orthanq.log"
+    script:
+        "../scripts/parse_and_validate_diploid_subclonal.py"
+
+rule validate_tools:
+    input:
+        orthanq="results/validation/orthanq_validation.tsv",
         hla_la="results/HLA-LA/final_report.csv",
         arcasHLA="results/arcasHLA/final_report.csv",
         ground_truth="resources/ground_truth/HLA-ground-truth-CEU-for-paper.tsv",
         optitype="results/optitype/final_report.csv"
     output:
-        validation="results/comparison/validation.tsv"
+        validation="results/validation/validation.tsv"
     log:
-        "logs/comparison/compare_tools.log"
+        "logs/validation/validation.log"
     script:
         "../scripts/validation.py"
+
+rule evaluation_plot:
+    input:
+        template="resources/templates/evaluation_plot.json",
+        validation="results/validation/validation.tsv"
+    output:
+        plot="results/comparison/evaluation_plot.json"
+    log:
+        "logs/comparison/evaluation_plot.log"
+    script:
+        "../scripts/evaluation_plot.py"
 
 rule datavzrd_config:
     input:
         template="resources/datavzrd.yaml",
-        validation="results/comparison/validation.tsv",
+        validation="results/validation/validation.tsv",
         orthanq="results/orthanq/final_report.csv",
         hla_la="results/HLA-LA/final_report.csv",
         arcasHLA="results/arcasHLA/final_report.csv",
@@ -260,7 +285,7 @@ rule datavzrd_config:
 rule datavzrd:
     input:
         config="results/datavzrd/validation_datavzrd.yaml",
-        validation="results/comparison/validation.tsv",
+        validation="results/validation/validation.tsv",
         orthanq="results/orthanq/final_report.csv",
         hla_la="results/HLA-LA/final_report.csv",
         arcasHLA="results/arcasHLA/final_report.csv",

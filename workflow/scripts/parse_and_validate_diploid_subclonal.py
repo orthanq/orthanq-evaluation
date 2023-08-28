@@ -13,12 +13,12 @@ with open(snakemake.log[0], "w") as f:
 
     #orthanq results
     orthanq_input = snakemake.input.orthanq
-
+    print(orthanq_input)
     #ground truth
     ground_truth = pd.read_csv(snakemake.input.ground_truth, sep = "\t")
 
     #initialize orthanq validation table
-    orthanq_validation_table = pd.DataFrame(columns=('Locus', 'N', 'Orthanq - Call Rate', 'Orthanq - Accuracy'))
+    orthanq_validation_table = pd.DataFrame(columns=('Locus', 'N', 'Orthanq_Call_Rate', 'Orthanq_Accuracy'))
 
     #loop over loci and orthanq results
     loci = ['A', 'B', 'C', 'DQB1']
@@ -122,7 +122,7 @@ with open(snakemake.log[0], "w") as f:
 
         #concatenate the locus-wise statistics to the validation table
         new_row = pd.DataFrame([[locus, len(list(set(samples_collected))), 1.00, accuracy]],
-                        columns=['Locus', 'N', 'Orthanq - Call Rate', 'Orthanq - Accuracy'])
+                        columns=['Locus', 'N', 'Orthanq_Call_Rate', 'Orthanq_Accuracy'])
         orthanq_validation_table = pd.concat([orthanq_validation_table, new_row], ignore_index=True)
 
     #write the validation table

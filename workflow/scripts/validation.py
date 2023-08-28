@@ -12,9 +12,9 @@ with open(snakemake.log[0], "w") as f:
     optitype_input = pd.read_csv(snakemake.input.optitype, sep = "\t")
 
     ##initialize performance tables for tools
-    arcasHLA_validation_table = pd.DataFrame(columns=('Locus', 'N', 'arcasHLA - Call Rate', 'arcasHLA - Accuracy'))
-    hla_la_validation_table = pd.DataFrame(columns=('Locus', 'N', 'HLA-LA - Call Rate', 'HLA-LA - Accuracy'))
-    optitype_validation_table = pd.DataFrame(columns=('Locus', 'N', 'Optitype - Call Rate', 'Optitype - Accuracy'))
+    arcasHLA_validation_table = pd.DataFrame(columns=('Locus', 'N', 'arcasHLA_Call_Rate', 'arcasHLA_Accuracy'))
+    hla_la_validation_table = pd.DataFrame(columns=('Locus', 'N', 'HLA_LA_Call_Rate', 'HLA_LA_Accuracy'))
+    optitype_validation_table = pd.DataFrame(columns=('Locus', 'N', 'Optitype_Call_Rate', 'Optitype_Accuracy'))
 
     #arcasHLA
     #loop over all loci
@@ -69,7 +69,7 @@ with open(snakemake.log[0], "w") as f:
         accuracy = 100*collected/(samples_called*2)
         # new_row = {'Locus': locus, 'N': len(arcasHLA_input.index), 'arcasHLA - Call Rate': 1.00, 'arcasHLA - Accuracy': accuracy}
         new_row = pd.DataFrame([[locus, len(arcasHLA_input.index), call_rate, accuracy]],
-                    columns=['Locus', 'N', 'arcasHLA - Call Rate', 'arcasHLA - Accuracy'])
+                    columns=['Locus', 'N', 'arcasHLA_Call_Rate', 'arcasHLA_Accuracy'])
         arcasHLA_validation_table = pd.concat([arcasHLA_validation_table, new_row], ignore_index=True)
 
     first_merge = pd.merge(orthanq_input, arcasHLA_validation_table, how='left', on=['Locus', 'N'])
@@ -138,7 +138,7 @@ with open(snakemake.log[0], "w") as f:
         # new_row = {'Locus': locus, 'N': len(hla_la_input.index), 'HLA-LA - Call Rate': 1.00, 'HLA-LA - Accuracy': accuracy}
         # hla_la_validation_table = hla_la_validation_table.append(new_row, ignore_index=True)
         new_row = pd.DataFrame([[locus, len(hla_la_input.index), call_rate, accuracy]],
-                    columns=['Locus', 'N', 'HLA-LA - Call Rate', 'HLA-LA - Accuracy'])
+                    columns=['Locus', 'N', 'HLA_LA_Call_Rate', 'HLA_LA_Accuracy'])
         hla_la_validation_table = pd.concat([hla_la_validation_table, new_row], ignore_index=True)
 
     second_merge = pd.merge(first_merge, hla_la_validation_table, how='left', on=['Locus', 'N'])
@@ -200,7 +200,7 @@ with open(snakemake.log[0], "w") as f:
         call_rate = samples_called/len(optitype_input.index)
         accuracy = 100*collected/(samples_called*2)
         new_row = pd.DataFrame([[locus, len(optitype_input.index), call_rate, accuracy]],
-                    columns=['Locus', 'N', 'Optitype - Call Rate', 'Optitype - Accuracy'])
+                    columns=['Locus', 'N', 'Optitype_Call_Rate', 'Optitype_Accuracy'])
         optitype_validation_table = pd.concat([optitype_validation_table, new_row], ignore_index=True)
 
     final_table = pd.merge(second_merge, optitype_validation_table, how='left', on=['Locus', 'N'])
