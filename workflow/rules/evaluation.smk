@@ -260,9 +260,9 @@ rule evaluation_plot:
         template="resources/templates/evaluation_plot.json",
         validation="results/validation/validation.tsv"
     output:
-        plot="results/comparison/evaluation_plot.json"
+        plot="results/evaluation/evaluation_plot.json"
     log:
-        "logs/comparison/evaluation_plot.log"
+        "logs/evaluation/evaluation_plot.log"
     script:
         "../scripts/evaluation_plot.py"
 
