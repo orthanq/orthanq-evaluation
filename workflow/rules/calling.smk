@@ -50,5 +50,5 @@ rule orthanq_call:
     benchmark:    
         "benchmarks/orthanq_call/{sample}_{hla}.tsv"
     shell:
-        "../orthanq/target/release/orthanq call --haplotype-calls {input.calls} --haplotype-variants {input.candidate_variants} "
-        "--xml {input.xml} --max-haplotypes 5 --prior diploid --output {output} 2> {log}"
+        "../orthanq/target/release/orthanq call --haplotype-calls {input.calls} --haplotype-variants "
+        " {input.candidate_variants} --xml {input.xml} --prior diploid --output {output} 2> {log}"
