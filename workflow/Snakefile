@@ -1,24 +1,56 @@
+#set the environment variable to conda library folder to prevent libhdf5 not being found by snakemake
+LD_LIBRARY_PATH = "$CONDA_PREFIX/lib"
+shell.prefix("""
+set -euo pipefail;
+export LD_LIBRARY_PATH=\"{LD_LIBRARY_PATH}\";
+""".format(LD_LIBRARY_PATH=LD_LIBRARY_PATH))
+
 configfile: "config/config.yaml"
+
+ruleorder: orthanq_candidates > orthanq_call
 
 if config["simulation"] == True:
 
     include: "rules/common.smk"
     include: "rules/simulation.smk"
-    include: "rules/quantification-mapping.smk"
+    include: "rules/candidate_generation.smk"
+    include: "rules/alignment.smk"
     include: "rules/calling.smk"
 
     rule all:
         input:
-            [f"results/fractions/{row['sample_name']}-{row['hla']}-{row['num_reads']}_1.fq" for _, row in simulated_sample.iterrows()],
-            expand("results/orthanq/{sample}_{hla}.tsv", sample=simulated_sample.sample_name.unique(), hla=loci)
+            [
+                f"results/fractions/{row['sample_name']}-{row['hla']}-{row['num_reads']}_1.fq"
+                for _, row in simulated_sample.iterrows()
+            ],
+            expand("results/orthanq-candidates/{hla}.vcf.gz.tbi", hla=loci),
+            expand(
+                "results/calls/{sample}_{hla}.bcf",
+                sample=simulated_sample.sample_name.unique(),
+                hla=loci,
+            ),
+            expand(
+                "results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv",
+                sample=simulated_sample.sample_name.unique(),
+                hla=loci,
+            ),
+            # todo: configure the workflow to target simulated samples as well
+            # "results/orthanq/final_report.csv"
 
 if config["simulation"] == False:
 
     include: "rules/common.smk"
-    include: "rules/quantification-mapping.smk"
+    include: "rules/candidate_generation.smk"
+    include: "rules/alignment.smk"
     include: "rules/calling.smk"
+    include: "rules/evaluation.smk"
 
     rule all:
         input:
-            "results/refs/hs_genome.fasta",
-            expand("results/orthanq/{sample}_{hla}.tsv", sample=samples.sample_name, hla=loci)
+            "results/comparison/validation.tsv",
+            "results/datavzrd-report/validation",
+            # expand("results/optitype/{sample}_result.tsv",sample=samples.sample_name),
+            # "results/comparison/validation.tsv",
+            "results/comparison/evaluation_plot.json"
+
+

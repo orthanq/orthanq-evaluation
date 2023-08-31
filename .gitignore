@@ -1,5 +1,7 @@
 resources/*
-!resources/scenarios/*
+!resources/scenarios
+!resources/datavzrd.yaml
+!resources/HLA_exons
 .snakemake/
 logs/
 results/

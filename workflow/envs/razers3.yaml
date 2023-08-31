@@ -1,0 +1,6 @@
+name: razers3
+channels:
+   - conda-forge
+   - bioconda
+dependencies:
+   - razers3 ==3.5.8

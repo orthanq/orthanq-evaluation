@@ -1,0 +1,6 @@
+name: arcasHLA
+channels:
+   - conda-forge
+   - bioconda
+dependencies:
+   - arcas-hla ==0.5.0
