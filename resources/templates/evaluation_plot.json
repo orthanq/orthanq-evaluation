@@ -1,0 +1,27 @@
+{
+    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "datasets": {
+      "tool_accuracies": []
+    },
+    "data": {"name": "tool_accuracies"},
+    "layer": [{"mark": "bar"},
+    {"mark": {
+        "type": "text",
+        "align": "left",
+        "baseline": "middle",
+        "dx": -9,
+        "dy": -4,
+        "fontSize": 7
+      },
+      "encoding": {
+        "text": {"field": "value", "type": "quantitative",  "format": ".2f"}
+      }
+      }],
+    "encoding": {
+      "x": {"field": "category", "axis": {"title": "Locus"}},
+      "y": {"field": "value", "type": "quantitative", "axis": {"title": "Accuracy"}},
+      "xOffset": {"field": "group"},
+      "color": {"field": "group"}
+    }
+  }
+  

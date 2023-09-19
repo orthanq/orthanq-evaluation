@@ -1,0 +1,32 @@
+{
+    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "datasets": {
+      "tool_accuracies": [
+        {"category":"A", "group": "arcasHLA", "value":0.1},
+        {"category":"A", "group": "HLA-LA", "value":0.6},
+        {"category":"A", "group": "Optitype", "value":0.9},
+        {"category":"A", "group": "Orthanq", "value":0.7},
+        {"category":"B", "group": "arcasHLA", "value":0.1},
+        {"category":"B", "group": "HLA-LA", "value":0.6},
+        {"category":"B", "group": "Optitype", "value":0.9},
+        {"category":"B", "group": "Orthanq", "value":0.7},
+        {"category":"C", "group": "arcasHLA", "value":0.1},
+        {"category":"C", "group": "HLA-LA", "value":0.6},
+        {"category":"C", "group": "Optitype", "value":0.9},
+        {"category":"C", "group": "Orthanq", "value":0.7},
+        {"category":"DQB1", "group": "arcasHLA", "value":0.1},
+        {"category":"DQB1", "group": "HLA-LA", "value":0.6},
+        {"category":"DQB1", "group": "Optitype", "value":0.9},
+        {"category":"DQB1", "group": "Orthanq", "value":0.7}
+      ]
+    },
+    "data": {"name": "tool_accuracies"},
+    "mark": "bar",
+    "encoding": {
+      "x": {"field": "category", "axis": {"title": "Locus"}},
+      "y": {"field": "value", "type": "quantitative", "axis": {"title": "Accuracy"}},
+      "xOffset": {"field": "group"},
+      "color": {"field": "group"}
+    }
+  }
+  
