@@ -235,7 +235,8 @@ rule validate_orthanq:
         ),
         ground_truth="resources/ground_truth/HLA-ground-truth-CEU-for-paper.tsv"
     output:
-        validation="results/validation/orthanq_validation.tsv"
+        validation="results/validation/orthanq_validation.tsv",
+        tp_fp_table="results/validation/tp_fp_table.tsv",
     log:
         "logs/validate_orthanq/validate_orthanq.log"
     script:

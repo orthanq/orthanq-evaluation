@@ -2,7 +2,7 @@
 # It parses and validates orthanq results compared to the ground truth (applicable both to diploid and subclonal priors)
 # in case of diploid subclonals, if two haplotypes are present in the ground truth with the sum of their fractions more than 50% then the sample gets a true positive for the comparison.
 # Finally, create a table for accuracy values
-
+# In addition, this script also writes a table for TP and FP predictions of Orthanq later to be used for plotting purposes.
 import pandas as pd
 import os
 import json
@@ -19,6 +19,9 @@ with open(snakemake.log[0], "w") as f:
 
     #initialize orthanq validation table
     orthanq_validation_table = pd.DataFrame(columns=('Locus', 'N', 'Orthanq_Call_Rate', 'Orthanq_Accuracy'))
+
+    #initialize the table to output TP and FP samples
+    orthanq_tp_fp_table = pd.DataFrame(columns=('Sample', 'Locus', 'TP', 'Best_Density'))
 
     #loop over loci and orthanq results
     loci = ['A', 'B', 'C', 'DQB1']
@@ -50,6 +53,15 @@ with open(snakemake.log[0], "w") as f:
             filtered_cols = []
             filtered_cols = [col for col in results if col.startswith(locus)]
    
+            #enter the best density to the orthanq_tp_fp_table
+            best_density = results['density'][0]
+
+            #fill up the orthanq_tp_fp_table with 0 for FP as default
+            if not (((orthanq_tp_fp_table["Sample"] == sample_name) & (orthanq_tp_fp_table["Locus"] == locus_name)).any()):
+                row_to_add = pd.DataFrame([[sample_name, locus_name, 0, best_density]],
+                    columns=['Sample', 'Locus', 'TP', 'Best_Density'])
+                orthanq_tp_fp_table = pd.concat([orthanq_tp_fp_table, row_to_add], ignore_index=True)
+
             #loop over best results
             for (i,result_row) in best_results.iterrows():
 
@@ -111,8 +123,12 @@ with open(snakemake.log[0], "w") as f:
                 print("fractions: ",fractions)
 
                 #score only haplotypes that make up more than 50%
+                #also enter the entry to the tp_fp table to use in the plots in further rules
                 if fractions > 0.5:    
                     collected += 1.0
+                    
+                    #fill up the orthanq_tp_fp_table with 1 for TP
+                    orthanq_tp_fp_table.loc[(orthanq_tp_fp_table.Sample == sample_name) & (orthanq_tp_fp_table.Locus == locus_name) & (orthanq_tp_fp_table.Best_Density == best_density),'TP'] = 1
                     print("inner loop collected: ", collected)
                     break ##break as soon as the collected gets +1 
         print("collected: ",collected)
@@ -128,4 +144,9 @@ with open(snakemake.log[0], "w") as f:
     #write the validation table
     orthanq_validation_table.to_csv(
         snakemake.output.validation, sep="\t", index=False, header=True
+    )
+
+    #write the orthanq_tp_fp_table table
+    orthanq_tp_fp_table.to_csv(
+        snakemake.output.tp_fp_table, sep="\t", index=False, header=True
     )
