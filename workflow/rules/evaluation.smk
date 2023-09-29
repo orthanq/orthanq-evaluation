@@ -199,7 +199,7 @@ rule optitype:
         
 rule parse_HLAs:
     input:
-        orthanq=expand("results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv", 
+        orthanq=expand("results/orthanq/{sample}_{hla}/{sample}_{hla}.csv", 
         sample=samples.sample_name,
         hla=loci
         ),
@@ -229,7 +229,7 @@ rule parse_HLAs:
 
 rule validate_orthanq:
     input:
-        orthanq=expand("results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv", 
+        orthanq=expand("results/orthanq/{sample}_{hla}/{sample}_{hla}.csv", 
         sample=samples.sample_name,
         hla=loci
         ),

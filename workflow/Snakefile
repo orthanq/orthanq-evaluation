@@ -47,10 +47,9 @@ if config["simulation"] == False:
 
     rule all:
         input:
-            "results/comparison/validation.tsv",
             "results/datavzrd-report/validation",
             # expand("results/optitype/{sample}_result.tsv",sample=samples.sample_name),
             # "results/comparison/validation.tsv",
-            "results/comparison/evaluation_plot.json"
+            "results/evaluation/evaluation_plot.json"
 
 
