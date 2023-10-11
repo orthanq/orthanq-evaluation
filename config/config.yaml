@@ -24,3 +24,6 @@ n_nonhla_reads: 5000
 ##tool configurations
 #art simulation
 f_coverage: 50
+
+#orthanq settings
+orthanq_prior: "diploid"

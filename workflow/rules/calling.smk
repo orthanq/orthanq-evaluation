@@ -49,6 +49,8 @@ rule orthanq_call:
         "logs/orthanq-call/{sample}_{hla}.log"
     benchmark:    
         "benchmarks/orthanq_call/{sample}_{hla}.tsv"
+    params:
+        prior = config["orthanq_prior"]
     shell:
         "../orthanq/target/release/orthanq call --haplotype-calls {input.calls} --haplotype-variants "
-        " {input.candidate_variants} --xml {input.xml} --prior diploid --output {output} 2> {log}"
+        " {input.candidate_variants} --xml {input.xml} --prior {params} --output {output} 2> {log}"
