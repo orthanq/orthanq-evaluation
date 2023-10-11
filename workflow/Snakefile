@@ -9,7 +9,7 @@ configfile: "config/config.yaml"
 
 ruleorder: orthanq_candidates > orthanq_call
 
-if config["simulation"] == True:
+if config["simulation"] and config["subclonal_sample_creation"] == False:
 
     include: "rules/common.smk"
     include: "rules/simulation.smk"
@@ -30,15 +30,14 @@ if config["simulation"] == True:
                 hla=loci,
             ),
             expand(
-                "results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv",
+                "results/orthanq/{sample}_{hla}/{sample}_{hla}.csv",
                 sample=simulated_sample.sample_name.unique(),
                 hla=loci,
             ),
             # todo: configure the workflow to target simulated samples as well
             # "results/orthanq/final_report.csv"
 
-if config["simulation"] == False:
-
+elif config["simulation"] == False and config["subclonal_sample_creation"] == False:
     include: "rules/common.smk"
     include: "rules/candidate_generation.smk"
     include: "rules/alignment.smk"
@@ -52,3 +51,15 @@ if config["simulation"] == False:
             "results/evaluation/evaluation_plot.json"
 
 
+elif config["subclonal_sample_creation"]:
+    include: "rules/common.smk"
+    include: "rules/simulation.smk"
+    include: "rules/candidate_generation.smk"
+    include: "rules/alignment.smk"
+    include: "rules/calling.smk"
+    include: "rules/clonal_sample_creation.smk"
+
+    rule all:
+        input:
+            "results/mixed/subclonal_sample_1.fq",
+            expand("results/orthanq/subclonal_{hla}/subclonal_{hla}.csv", hla=loci)

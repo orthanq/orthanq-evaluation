@@ -26,6 +26,20 @@ rule genome_index:
     wrapper:
         "v1.25.0/bio/samtools/faidx" #update wrapper version
 
+#download population allele frequencies from the snapshot
+
+rule download_population_af:
+    output:
+        csv = "resources/allele_freqs/allele_frequencies.csv",
+        rda_file = "resources/allele_freqs/allele_frequencies.rda"
+    log:
+        "logs/download/population_allele_frequencies.log"
+    conda:
+        "../envs/r.yaml"
+    script:
+        "../scripts/load_allele_frequencies.R"
+        
+
 # Generating candidate variants with Orthanq
 # Alleles are filtered out according to the following criteria:
 # if the allele has a full name equivalent (e.g. A*24:02:02:02) in the database and it's higher than 0.05, it's IN.

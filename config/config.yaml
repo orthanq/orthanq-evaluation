@@ -8,8 +8,11 @@ arcasHLA_version: "3.32.0"
 #simulate reads or call for HLA types given a sample
 simulation: False
 
+#create a subclonal sample from the given alleles list 
+subclonal_sample_creation: False
+
 #samples
-samples: config/samples_w_removal.tsv
+samples: config/samples_w_removal_and_eliminated.tsv
 
 #alleles
 hla: config/alleles.tsv

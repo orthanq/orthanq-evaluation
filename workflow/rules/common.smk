@@ -44,7 +44,9 @@ def get_fastq_input(wildcards):
     if config["simulation"] == False:
         sample = samples.loc[wildcards.sample]
         return [sample["fq1"], sample["fq2"]]
-    else:
+    elif config["simulation"] and config["subclonal_sample_creation"] == False:
         sample = wildcards.sample
         simulated = ["results/mixed/{sample}_1.fq", "results/mixed/{sample}_2.fq"]
         return simulated
+    elif config["subclonal_sample_creation"]:
+        return ["results/subclonal/subclonal_1.fq", "results/subclonal/subclonal_2.fq"]
