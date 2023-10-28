@@ -29,7 +29,9 @@ rule arcasHLA_extract:
         "benchmarks/arcasHLA/extract/{sample}.tsv"  
     conda:
         "../envs/arcasHLA.yaml"
-    threads: 20
+    resources:
+        mem_mb=120000
+    threads: 40
     shell:
         "arcasHLA extract {input.bam} -o results/arcasHLA/{wildcards.sample} -t {threads} -v 2> {log}"
 
@@ -45,7 +47,7 @@ rule arcasHLA_genotype:
         "benchmarks/arcasHLA/genotype/{sample}_{hla}.tsv"  
     conda:
         "../envs/arcasHLA.yaml"
-    threads: 20
+    threads: 40
     params:
         locus = "{hla}"
     shell:
@@ -94,9 +96,9 @@ rule fastq_split:
     params:
         fq1=lambda w, output: [ "-o " + fq for fq in output.fq1], #the output of fastqsplitter requires "-o and output name" as many as the number of pieces that is desired
         fq2=lambda w, output: [ "-o " + fq for fq in output.fq2],
-    threads: 10
+    threads: 40
     resources:
-        mem_mb=50000
+        mem_mb=60000
     shell:
         "fastqsplitter -i {input[0]} -t {threads} {params.fq1} 2> {log} && "
         "fastqsplitter -i {input[1]} -t {threads} {params.fq2} 2>> {log}"
@@ -114,7 +116,7 @@ rule razers3:
         "logs/razers3/map/{sample}_{split_no}.log"
     benchmark:    
         "benchmarks/razers3/{sample}_{split_no}.tsv"  
-    threads: 30
+    threads: 40
     # resources:
     #     mem_mb=lambda w, input: input.size
     conda:
@@ -136,7 +138,7 @@ rule samtools_sort_razers3:
         "benchmarks/samtools_sort_razers3/{sample}_{split_no}_{pair}.tsv" 
     params:
         extra="-m 4G",
-    threads: 8
+    threads: 40
     wrapper:
         "v1.22.0/bio/samtools/sort"
 
@@ -151,7 +153,7 @@ rule merge_bam:
         "logs/samtools_merge/{sample}_{pair}.log",
     benchmark:    
         "benchmarks/samtools_merge/{sample}_{pair}.tsv" 
-    threads: 10
+    threads: 40
     wrapper:
         "v2.3.2/bio/samtools/merge"
 
@@ -167,7 +169,7 @@ rule razers3_bam_to_fastq:
         "benchmarks/razers3_bam_to_fastq/{sample}.{pair}.tsv"  
     conda:
         "../envs/samtools.yaml"
-    threads: 10
+    threads: 40
     shell:
         "samtools fastq {input} > {output}"
 
@@ -190,7 +192,7 @@ rule optitype:
         config="",
         # additional parameters
         extra=""
-    threads: 20
+    threads: 40
     conda:
         "../envs/optitype.yaml"
     shell: #in case user configs have both uppercase and lowercase no_proxy values (optitype throws errors in this case)
@@ -275,7 +277,9 @@ rule datavzrd_config:
         hla_la="results/HLA-LA/final_report.csv",
         arcasHLA="results/arcasHLA/final_report.csv",
         optitype="results/optitype/final_report.csv",
-        ground_truth="resources/ground_truth/HLA-ground-truth-CEU-for-paper.tsv"
+        samples_evaluated="resources/ground_truth/ground_truth_for_paper/samples_evaluated.tsv",
+        individuals_no_fastq="resources/ground_truth/ground_truth_for_paper/individuals_wo_fastq_data.tsv",
+        samples_low_coverage="resources/ground_truth/ground_truth_for_paper/samples_with_low_coverage.tsv"
     output:
         "results/datavzrd/validation_datavzrd.yaml"
     log:
@@ -291,7 +295,9 @@ rule datavzrd:
         hla_la="results/HLA-LA/final_report.csv",
         arcasHLA="results/arcasHLA/final_report.csv",
         optitype="results/optitype/final_report.csv",
-        ground_truth="resources/ground_truth/HLA-ground-truth-CEU-for-paper.tsv"
+        samples_evaluated="resources/ground_truth/ground_truth_for_paper/samples_evaluated.tsv",
+        individuals_no_fastq="resources/ground_truth/ground_truth_for_paper/individuals_wo_fastq_data.tsv",
+        samples_low_coverage="resources/ground_truth/ground_truth_for_paper/samples_with_low_coverage.tsv"
     output:
         report(
             directory("results/datavzrd-report/validation"),

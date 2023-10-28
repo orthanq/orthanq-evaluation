@@ -60,9 +60,13 @@ rule samtools_view:
         idx="results/bwa_alignment/{sample}_mapped_extracted.bai"
     log:
         "logs/samtools-view/{sample}.log",
+    benchmark:    
+        "benchmarks/samtools_view_extract_HLA/{sample}.tsv"
     params:
         extra=lambda wc, input: "-L {}".format(input.regions)
-    threads: 10
+    resources:
+        mem_mb=60000
+    threads: 40
     wrapper:
         "v2.0.0/bio/samtools/view"
 
@@ -74,10 +78,12 @@ rule samtools_fastq_separate:
         "results/extracted_reads/{sample}.2.fq",
     log:
         "logs/extracted_reads/{sample}.separate.log",
+    benchmark:    
+        "benchmarks/bam_to_fastq/{sample}.tsv"
     params:
         sort="-m 4G",
         fastq="-n",
-    threads: 10
+    threads: 40
     wrapper:
         "v2.0.0/bio/samtools/fastq/separate"
 
@@ -95,7 +101,7 @@ rule vg_giraffe:
         "benchmarks/vg_giraffe/{sample}.tsv"
     conda:
         "../envs/vg.yaml"
-    threads: 20
+    threads: 40
     shell:
         "vg giraffe -x {input.idx} -f {input.reads_1} -f {input.reads_2} --max-multimaps 3 --output-format BAM -t {threads}  > {output} 2> {log}"
 
@@ -103,27 +109,17 @@ rule samtools_sort:
     input:
         "results/vg/alignment/{sample}_vg.bam"
     output:
-        "results/vg/alignment/{sample}_vg.sorted.bam"
+        bam="results/vg/alignment/{sample}_vg.sorted.bam",
+        idx="results/vg/alignment/{sample}_vg.sorted.bai"
     log:
         "logs/samtools_sort/{sample}.log",
     benchmark:    
         "benchmarks/samtools_sort/{sample}.tsv" 
-    params:
-        extra="-m 4G",
-    threads: 8
+    # params:
+    #     extra="-m 4G",
+    threads: 40
     wrapper:
         "v1.22.0/bio/samtools/sort"
-
-rule samtools_index:
-    input:
-        "results/vg/alignment/{sample}_vg.sorted.bam"
-    output:
-        "results/vg/alignment/{sample}_vg.sorted.bam.bai"
-    log:
-        "logs/samtools_index/{sample}.log"
-    threads: 4
-    wrapper:
-        "v1.22.0/bio/samtools/index"
 
 # modify the header for chromosome names to be compatible with the reference genome that we acquire from ensembl
 rule reheader:
@@ -137,7 +133,7 @@ rule reheader:
         "benchmarks/samtools_reheader/{sample}.tsv" 
     conda:
         "../envs/samtools.yaml"
-    threads: 4
+    threads: 40
     shell:
         "samtools view -H {input} | sed 's/GRCh38.chr//g' | samtools reheader - {input} > {output} 2> {log}"
     
@@ -148,7 +144,9 @@ rule samtools_index_after_reheader:
         "results/vg/alignment/{sample}_vg.sorted.reheadered.bam.bai"
     log:
         "logs/samtools_index_after_reheader/{sample}.log"
-    threads: 4
+    benchmark:    
+        "benchmarks/samtools_index_after_reheader/{sample}.tsv"
+    threads: 40
     wrapper:
         "v1.22.0/bio/samtools/index"
 
@@ -162,8 +160,10 @@ rule keep_only_primary_chr:
         idx="results/vg/alignment/{sample}_vg.sorted.reheadered.extracted.bam.bai"
     log:
         "logs/samtools-view-primary-chr/{sample}.log",
+    benchmark:    
+        "benchmarks/samtools_view_primary_chr/{sample}.tsv"
     params:
         region="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X Y MT"
-    threads: 10
+    threads: 40
     wrapper:
         "v2.0.0/bio/samtools/view"

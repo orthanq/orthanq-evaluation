@@ -20,9 +20,17 @@ datasets:
     separator: "\t"
     path: ?input.optitype
     offer-excel: true
-  ground_truth:
+  samples_evaluated:
     separator: "\t"
-    path: ?input.ground_truth
+    path: ?input.samples_evaluated
+    offer-excel: true
+  individuals_no_fastq:
+    separator: "\t"
+    path: ?input.individuals_no_fastq
+    offer-excel: true
+  samples_low_coverage:
+    separator: "\t"
+    path: ?input.samples_low_coverage
     offer-excel: true
 views:
   validation:
@@ -62,8 +70,18 @@ views:
     desc: |
       ## Optitype
       This table contains Optitype predictions
-  ground_truth:
-    dataset: ground_truth
+  samples_evaluated:
+    dataset: samples_evaluated
     desc: |
-      ## ground_truth
-      This table contains ground_truth
+      ## Ground truth of evaluated samples
+      This table contains ground_truth values for all evaluated samples (1000 Genomes CEU population) in the paper.
+  individuals_no_fastq:
+    dataset: individuals_no_fastq
+    desc: |
+      ## Samples with no available fastq data
+      This table contains samples with no available fastq data.
+  samples_low_coverage:
+    dataset: samples_low_coverage
+    desc: |
+      ## Samples with low coverage
+      This table contains samples with low coverage fastq data, hence they were excluded from the evaluation.
