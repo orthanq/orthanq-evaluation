@@ -1,5 +1,4 @@
 #some considerations to be done manually for files:
-#remove underscores from the giab sample D1S1L001
 #remove the same that was removed rom sample list: SRR071132
 import os
 import glob 
