@@ -32,6 +32,12 @@ datasets:
     separator: "\t"
     path: ?input.samples_low_coverage
     offer-excel: true
+  preprocessing:
+    path: ?input.preprocessing_table
+    offer-excel: true
+  genotyping:
+    path: ?input.genotyping_table
+    offer-excel: true
 views:
   validation:
     dataset: validation
@@ -85,3 +91,11 @@ views:
     desc: |
       ## Samples with low coverage
       This table contains samples with low coverage fastq data, hence they were excluded from the evaluation.
+  preprocessing:
+    dataset: preprocessing
+    desc: |
+      ## Runtimes of all tools including all the preprocessing steps.
+  genotyping:
+    dataset: genotyping
+    desc: |
+      ## Runtimes of all tools including only the "HLA typing" or "calling" commmands.

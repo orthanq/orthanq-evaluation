@@ -269,6 +269,37 @@ rule evaluation_plot:
     script:
         "../scripts/evaluation_plot.py"
 
+##add evaluation plot to datavzrd report
+
+rule gather_benchmark:
+    input: 
+        benchmarks = "benchmarks" #to avoid too many inputs
+    output:
+        preprocessing_table = "results/runtimes/preprocessing.csv",
+        preprocessing_plot = "results/runtimes/preprocessing.json",
+        genotyping_table = "results/runtimes/genotyping.csv",
+        genotyping_plot = "results/runtimes/genotyping.json"
+    conda:
+        "../envs/gather_benchmarks.yaml"
+    log:
+        "logs/runtimes/runtimes.log"
+    script:
+        "../scripts/runtimes.py"
+
+rule vg2svg:
+    input:
+        preprocessing = "results/runtimes/{plot}.json",
+        genotyping = "results/runtimes/{plot}.json",
+        evaluation ="results/evaluation/{plot}.json"
+    output:
+        "results/vega/{plot}.svg",
+    log:
+        "logs/vg2svg/{plot}.log",
+    conda:
+        "../envs/vega.yaml"
+    shell:
+        "vl2svg {input} {output} 2> {log}"
+
 rule datavzrd_config:
     input:
         template="resources/datavzrd.yaml",
@@ -279,7 +310,9 @@ rule datavzrd_config:
         optitype="results/optitype/final_report.csv",
         samples_evaluated="resources/ground_truth/ground_truth_for_paper/samples_evaluated.tsv",
         individuals_no_fastq="resources/ground_truth/ground_truth_for_paper/individuals_wo_fastq_data.tsv",
-        samples_low_coverage="resources/ground_truth/ground_truth_for_paper/samples_with_low_coverage.tsv"
+        samples_low_coverage="resources/ground_truth/ground_truth_for_paper/samples_with_low_coverage.tsv",
+        preprocessing_table = "results/runtimes/preprocessing.csv",
+        genotyping_table = "results/runtimes/genotyping.csv",
     output:
         "results/datavzrd/validation_datavzrd.yaml"
     log:
@@ -297,7 +330,9 @@ rule datavzrd:
         optitype="results/optitype/final_report.csv",
         samples_evaluated="resources/ground_truth/ground_truth_for_paper/samples_evaluated.tsv",
         individuals_no_fastq="resources/ground_truth/ground_truth_for_paper/individuals_wo_fastq_data.tsv",
-        samples_low_coverage="resources/ground_truth/ground_truth_for_paper/samples_with_low_coverage.tsv"
+        samples_low_coverage="resources/ground_truth/ground_truth_for_paper/samples_with_low_coverage.tsv",
+        preprocessing_table = "results/runtimes/preprocessing.csv",
+        genotyping_table = "results/runtimes/genotyping.csv",
     output:
         report(
             directory("results/datavzrd-report/validation"),

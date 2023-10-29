@@ -1,0 +1,7 @@
+name: benchmarks
+channels:
+   - conda-forge
+dependencies:
+   - altair
+   - pandas
+   
