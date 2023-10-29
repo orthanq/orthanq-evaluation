@@ -57,6 +57,8 @@ rule orthanq_candidates:
         "../envs/orthanq.yaml"
     log:
         "logs/orthanq-candidates/candidates.log"
+    benchmark:    
+        "benchmarks/orthanq_candidates/orthanq_candidates.tsv"  
     shell:
         "../orthanq/target/release/orthanq candidates --alleles {input.alleles} --genome {input.genome} "
         "--xml {input.xml} --allele-freq {input.allele_freqs} --wes --output results/orthanq-candidates 2> {log}" # --wes option for protein level hla type variant generation, --wgs for individual types 
@@ -71,6 +73,8 @@ rule bgzip:
     threads: 1
     log:
         "logs/bgzip/{hla}.log",
+    benchmark:    
+        "benchmarks/orthanq_candidates/bgzip/{hla}.tsv"  
     wrapper:
         "v1.23.5-27-g1638662a/bio/bgzip"
 
@@ -81,6 +85,8 @@ rule tabix:
         "results/orthanq-candidates/{hla}.vcf.gz.tbi",
     log:
         "logs/tabix/{hla}.log",
+    benchmark:    
+        "benchmarks/orthanq_candidates/tabix/{hla}.tsv"  
     params:
         # pass arguments to tabix (e.g. index a vcf)
         "-p vcf",
@@ -98,6 +104,8 @@ rule intersect_exons:
         extra="-header"
     log:
         "logs/bedtools/{hla}.log"
+    benchmark:    
+        "benchmarks/orthanq_candidates/intersect_exons/{hla}.tsv"  
     wrapper:
         "v1.31.1/bio/bedtools/intersect"
 
@@ -111,6 +119,8 @@ rule bgzip_exons:
     threads: 1
     log:
         "logs/bgzip-merged-exons/{hla}.log",
+    benchmark:    
+        "benchmarks/orthanq_candidates/bgzip_exons/{hla}.tsv"  
     wrapper:
         "v1.23.5-27-g1638662a/bio/bgzip"
 
@@ -121,6 +131,8 @@ rule tabix_exons:
         "results/orthanq-candidates-intersected/{hla}.vcf.gz.tbi"
     log:
         "logs/tabix-merged-exons/{hla}.log",
+    benchmark:    
+        "benchmarks/orthanq_candidates/tabix_exons/{hla}.tsv"  
     params:
         # pass arguments to tabix (e.g. index a vcf)
         "-p vcf",
