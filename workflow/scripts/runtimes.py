@@ -35,18 +35,18 @@ with open(snakemake.log[0], "w") as f:
                 idx = tool_runtimes.index[(tool_runtimes['tool'] == tool_name) & (tool_runtimes['sample'] == sample_name)]
                 max_rs = tool_runtimes.iloc[idx]['max_rss']
                 new_max_rs = max_rs
-                new_max_rs += df.iloc[0]['max_rss']
+
+                new_max_rs += (df.iloc[0]['max_rss'])/1024 # in gb
+
                 seconds = tool_runtimes.iloc[idx]['s'] 
-                # print(tool_name)
-                # print(seconds)
-                # print(df.iloc[0]['s'])
                 new_seconds = seconds
-                new_seconds += df.iloc[0]['s']
-                # print(new_seconds)
+
+                new_seconds += (df.iloc[0]['s'])/60 # in minutes
+
                 tool_runtimes.loc[idx, ['max_rss']] = new_max_rs
                 tool_runtimes.loc[idx, ['s']] = new_seconds
             else:
-                new_record = pd.DataFrame([{'sample': sample_name, 'tool': tool_name, 'max_rss': df.iloc[0]["max_rss"] , 's': df.iloc[0]["s"]}])
+                new_record = pd.DataFrame([{'sample': sample_name, 'tool': tool_name, 'max_rss': (df.iloc[0]["max_rss"])/1024 , 's': (df.iloc[0]["s"])/60}])
                 tool_runtimes = pd.concat([tool_runtimes, new_record], ignore_index=True)
         return tool_runtimes
 
@@ -71,14 +71,18 @@ with open(snakemake.log[0], "w") as f:
                         idx = tool_runtimes.index[(tool_runtimes['tool'] == tool_name) & (tool_runtimes['sample'] == sample_name)]
                         max_rs = tool_runtimes.iloc[idx]['max_rss']
                         new_max_rs = max_rs
-                        new_max_rs += df.iloc[0]['max_rss']
+
+                        new_max_rs += (df.iloc[0]['max_rss'])/1024 # in gb
+
                         seconds = tool_runtimes.iloc[idx]['s'] 
                         new_seconds = seconds
-                        new_seconds += df.iloc[0]['s']
+
+                        new_seconds += (df.iloc[0]['s'])/60 # in minutes
+
                         tool_runtimes.loc[idx, ['max_rss']] = new_max_rs
                         tool_runtimes.loc[idx, ['s']] = new_seconds
                     else:
-                        new_record = pd.DataFrame([{'sample': sample_name, 'tool': tool_name, 'max_rss': df.iloc[0]["max_rss"] , 's': df.iloc[0]["s"]}])
+                        new_record = pd.DataFrame([{'sample': sample_name, 'tool': tool_name, 'max_rss': (df.iloc[0]["max_rss"])/1024 , 's': (df.iloc[0]["s"])/60}])
                         tool_runtimes = pd.concat([tool_runtimes, new_record], ignore_index=True)
         else:
             for f in tsv_files: 
@@ -87,22 +91,22 @@ with open(snakemake.log[0], "w") as f:
                 splitted = file_name.split("_")
                 sample_name = splitted[0]
                 sample_name = sample_name.rsplit('.', 1)[0]
-                new_record = pd.DataFrame([{'sample': sample_name, 'tool': tool_name, 'max_rss': df.iloc[0]["max_rss"] , 's': df.iloc[0]["s"]}])
+                new_record = pd.DataFrame([{'sample': sample_name, 'tool': tool_name, 'max_rss': (df.iloc[0]["max_rss"])/1024 , 's': (df.iloc[0]["s"])/60}])
                 tool_runtimes = pd.concat([tool_runtimes, new_record], ignore_index=True)
         return tool_runtimes
     #create a plot for final table
     def create_plot(tool_runtimes):
         seconds = alt.Chart(tool_runtimes).mark_line(point=True).encode(
-            x=alt.X('sample:N', axis=alt.Axis(labels=False, title=None)).sort(field="order", order= "descending"),
-            y=alt.Y('s:Q', title="runtime [s]").scale(type="log"),
+            x=alt.X('sample:N', axis=alt.Axis(labels=True, title=None)).sort(field="order", order= "descending"),
+            y=alt.Y('s:Q', title="runtime [m]").scale(type="log"),
             color='tool:N',
         ).transform_joinaggregate(
             order='min(s)',
             groupby=["sample"]
         )
         max_rss = alt.Chart(tool_runtimes).mark_line(point=True).encode(
-            x=alt.X('sample:N', axis=alt.Axis(labels=False)).sort(field="order", order= "descending"),
-            y=alt.Y('max_rss:Q', title="RSS memory consumption [MB]").scale(type="log"),
+            x=alt.X('sample:N', axis=alt.Axis(labels=True)).sort(field="order", order= "descending"),
+            y=alt.Y('max_rss:Q', title="RSS memory consumption [GB]").scale(type="log"),
             color='tool:N',
         ).transform_joinaggregate(
             order='min(s)',
@@ -118,8 +122,10 @@ with open(snakemake.log[0], "w") as f:
                 tsv_files = glob.glob(os.path.join(subdir + "/" + dir, "*.tsv"))  
                 if dir == "extract": #arcasHLA
                     tool_runtimes = collect_measurements_preprocessing("arcasHLA",tsv_files,tool_runtimes, "_")
-                if dir == "bam_to_fastq" or dir == "samtools_index_after_reheader" or dir == "samtools_reheader" or dir == "samtools_sort" or dir == "samtools_view_extract_HLA" or dir == "samtools_view_primary_chr" or dir == "vg_giraffe": #orthanq
+                if dir == "samtools_index_after_reheader" or dir == "samtools_reheader" or dir == "samtools_sort" or dir == "samtools_view_primary_chr": #orthanq
                     tool_runtimes = collect_measurements_preprocessing("orthanq",tsv_files,tool_runtimes, "_")
+                if dir == "vg_giraffe" or dir == "samtools_view_extract_HLA" or dir ==  "bam_to_fastq": #orthanq + vg
+                    tool_runtimes = collect_measurements_preprocessing("orthanq+vg",tsv_files,tool_runtimes, "_")
                 if dir == "fastq_split" or dir == "razers3" or dir == "samtools_merge" or dir == "samtools_sort_razers3": #optitype
                     tool_runtimes = collect_measurements_preprocessing("optitype",tsv_files,tool_runtimes, "_")
                 if dir == "razers3_bam_to_fastq":
