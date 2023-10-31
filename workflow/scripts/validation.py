@@ -55,18 +55,25 @@ with open(snakemake.log[0], "w") as f:
                         values_in_truth["{0}".format(chr_index)] = [value_in_truth]
 
                 values_in_truth_clone = values_in_truth
+                print("sample name: " ,sample_name)
+                print("arcasHLA prediction: " + ''.join(alleles))
+                print("truth_values: " + str(values_in_truth))
+                allele_present=0
                 for allele in alleles: ##???
                     values_in_truth = values_in_truth_clone
                     for chr_index, (_,chr_values) in enumerate(values_in_truth.items()):
                         if allele in chr_values:
-                            collected+= 1
+                            allele_present+= 1 #both alleles should be correct
                             #to stop homozygous alleles inaccurately match, we should remove the one that matches
                             if len(values_in_truth) > 1:
                                 values_in_truth_clone.pop(chr_index, None)
                             break
                 samples_called+=1
+                if allele_present==2: #both alleles should be correct
+                    collected+=1
+                print("collected: " + str(collected))
         call_rate = samples_called/len(arcasHLA_input.index)
-        accuracy = 100*collected/(samples_called*2)
+        accuracy = 100*collected/samples_called
         # new_row = {'Locus': locus, 'N': len(arcasHLA_input.index), 'arcasHLA - Call Rate': 1.00, 'arcasHLA - Accuracy': accuracy}
         new_row = pd.DataFrame([[locus, len(arcasHLA_input.index), call_rate, accuracy]],
                     columns=['Locus', 'N', 'arcasHLA_Call_Rate', 'arcasHLA_Accuracy'])
@@ -118,12 +125,16 @@ with open(snakemake.log[0], "w") as f:
                         values_in_truth["{0}".format(chr_index)] = [value_in_truth]
 
                 values_in_truth_clone = values_in_truth
+                print("sample name: " ,sample_name)
+                print("hla-la prediction: " + ''.join(alleles))
+                print("truth_values: " + str(values_in_truth))
+                allele_present=0 #both alleles should be correct
                 for _, hla_la_alleles in alleles.items():
                     for allele in hla_la_alleles:
                         values_in_truth = values_in_truth_clone
                         for chr_index, (_,chr_values) in enumerate(values_in_truth.items()):
                             if allele in chr_values:
-                                collected+= 1
+                                allele_present+= 1
                                 #to stop homozygous alleles inaccurately match, we should remove the one that matches
                                 if len(values_in_truth) > 1:
                                     values_in_truth_clone.pop(chr_index, None)
@@ -131,9 +142,12 @@ with open(snakemake.log[0], "w") as f:
                         else:
                             continue
                         break
+                if allele_present==2: #both alleles should be correct
+                    collected+=1
+                print("collected: " + str(collected))
                 samples_called+=1
         call_rate = samples_called/len(arcasHLA_input.index)
-        accuracy = 100*collected/(samples_called*2)
+        accuracy = 100*collected/samples_called
         # accuracy = 100*collected/(2*len(hla_la_input.index))
         # new_row = {'Locus': locus, 'N': len(hla_la_input.index), 'HLA-LA - Call Rate': 1.00, 'HLA-LA - Accuracy': accuracy}
         # hla_la_validation_table = hla_la_validation_table.append(new_row, ignore_index=True)
@@ -186,19 +200,22 @@ with open(snakemake.log[0], "w") as f:
                 print("sample name: " ,sample_name)
                 print("optitype prediction: " + ''.join(alleles))
                 print("truth_values: " + str(values_in_truth))
+                allele_present = 0
                 for allele in alleles: ##???
                     values_in_truth = values_in_truth_clone
                     for chr_index, (_,chr_values) in enumerate(values_in_truth.items()):
                         if allele in chr_values:
-                            collected+= 1
+                            allele_present+= 1
                             #to stop homozygous alleles inaccurately match, we should remove the one that matches
                             if len(values_in_truth) > 1:
                                 values_in_truth_clone.pop(chr_index, None)
                             break
+                if allele_present==2:
+                    collected+=1
                 print("collected: " + str(collected))
                 samples_called+=1
         call_rate = samples_called/len(optitype_input.index)
-        accuracy = 100*collected/(samples_called*2)
+        accuracy = 100*collected/samples_called
         new_row = pd.DataFrame([[locus, len(optitype_input.index), call_rate, accuracy]],
                     columns=['Locus', 'N', 'Optitype_Call_Rate', 'Optitype_Accuracy'])
         optitype_validation_table = pd.concat([optitype_validation_table, new_row], ignore_index=True)

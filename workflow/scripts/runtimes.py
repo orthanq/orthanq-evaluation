@@ -97,7 +97,7 @@ with open(snakemake.log[0], "w") as f:
     #create a plot for final table
     def create_plot(tool_runtimes):
         seconds = alt.Chart(tool_runtimes).mark_line(point=True).encode(
-            x=alt.X('sample:N', axis=alt.Axis(labels=True, title=None)).sort(field="order", order= "descending"),
+            x=alt.X('sample:N', axis=alt.Axis(labels=False, title=None)).sort(field="order", order= "descending"),
             y=alt.Y('s:Q', title="runtime [m]").scale(type="log"),
             color='tool:N',
         ).transform_joinaggregate(
@@ -105,7 +105,7 @@ with open(snakemake.log[0], "w") as f:
             groupby=["sample"]
         )
         max_rss = alt.Chart(tool_runtimes).mark_line(point=True).encode(
-            x=alt.X('sample:N', axis=alt.Axis(labels=True)).sort(field="order", order= "descending"),
+            x=alt.X('sample:N', axis=alt.Axis(labels=False)).sort(field="order", order= "descending"),
             y=alt.Y('max_rss:Q', title="RSS memory consumption [GB]").scale(type="log"),
             color='tool:N',
         ).transform_joinaggregate(

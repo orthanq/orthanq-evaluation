@@ -55,7 +55,7 @@ elif config["simulation"] == False and config["subclonal_sample_creation"] == Fa
             expand("results/orthanq/{sample}_{hla}/{sample}_{hla}.csv",sample=samples.sample_name,
                 hla=loci,
             ),
-            "results/runtimes/genotyping_runtimes.json",
+            "results/runtimes/genotyping.json",
             "results/evaluation/evaluation_plot.json"
 
 
