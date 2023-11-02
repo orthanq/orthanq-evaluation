@@ -107,7 +107,7 @@ with open(snakemake.log[0], "w") as f:
                     print(dir)
                     tool_runtimes = collect_measurements("orthanq",tsv_files,tool_runtimes, "_")
                 if dir == "vg_giraffe" or dir == "samtools_view_extract_HLA" or dir ==  "bam_to_fastq": #orthanq + vg
-                    tool_runtimes = collect_measurements("orthanq+vg",tsv_files,tool_runtimes, "_")
+                    tool_runtimes = collect_measurements("vg (orthanq)",tsv_files,tool_runtimes, "_")
                 if dir == "fastq_split" or dir == "razers3" or dir == "samtools_merge" or dir == "samtools_sort_razers3": #optitype
                     tool_runtimes = collect_measurements("optitype",tsv_files,tool_runtimes, "_")
                 if dir == "razers3_bam_to_fastq": #also optitype
