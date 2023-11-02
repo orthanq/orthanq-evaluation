@@ -122,7 +122,7 @@ with open(snakemake.log[0], "w") as f:
                 tsv_files = glob.glob(os.path.join(subdir + "/" + dir, "*.tsv"))  
                 if dir == "extract": #arcasHLA
                     tool_runtimes = collect_measurements_preprocessing("arcasHLA",tsv_files,tool_runtimes, "_")
-                if dir == "samtools_index_after_reheader" or dir == "samtools_reheader" or dir == "samtools_sort" or dir == "samtools_view_primary_chr": #orthanq
+                if dir == "samtools_index_after_reheader" or dir == "samtools_reheader" or dir == "samtools_sort" or dir == "samtools_view_primary_chr" or dir == "varlociraptor_preprocess" or dir == "varlociraptor_call": #orthanq
                     tool_runtimes = collect_measurements_preprocessing("orthanq",tsv_files,tool_runtimes, "_")
                 if dir == "vg_giraffe" or dir == "samtools_view_extract_HLA" or dir ==  "bam_to_fastq": #orthanq + vg
                     tool_runtimes = collect_measurements_preprocessing("orthanq+vg",tsv_files,tool_runtimes, "_")
