@@ -80,7 +80,7 @@ with open(snakemake.log[0], "w") as f:
     def create_plot(tool_runtimes):
         seconds = alt.Chart(tool_runtimes).mark_line(point=True).encode(
             x=alt.X('sample:N', axis=alt.Axis(labels=False, title=None)).sort(field="order", order= "descending"),
-            y=alt.Y('s:Q', title="runtime [s]").scale(type="log"),
+            y=alt.Y('s:Q', title="runtime [m]").scale(type="log"),
             color='tool:N',
         ).transform_joinaggregate(
             order='min(s)',
@@ -88,7 +88,7 @@ with open(snakemake.log[0], "w") as f:
         )
         max_rss = alt.Chart(tool_runtimes).mark_line(point=True).encode(
             x=alt.X('sample:N', axis=alt.Axis(labels=False)).sort(field="order", order= "descending"),
-            y=alt.Y('max_rss:Q', title="RSS memory consumption [MB]").scale(type="log"),
+            y=alt.Y('max_rss:Q', title="RSS memory consumption [GB]").scale(type="log"),
             color='tool:N',
         ).transform_joinaggregate(
             order='min(s)',
