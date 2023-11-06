@@ -46,7 +46,6 @@ elif config["simulation"] == False and config["subclonal_sample_creation"] == Fa
 
     rule all:
         input:
-            "results/datavzrd-report/validation",
             expand("results/arcasHLA/{sample}_{hla}/{sample}_mapped.genotype.json",
             sample=samples.sample_name,
             hla=loci
@@ -55,9 +54,8 @@ elif config["simulation"] == False and config["subclonal_sample_creation"] == Fa
             expand("results/orthanq/{sample}_{hla}/{sample}_{hla}.csv",sample=samples.sample_name,
                 hla=loci,
             ),
-            "results/runtimes/genotyping.json",
-            "results/evaluation/evaluation_plot.json"
-
+            "results/vega/runtimes.html",
+            "results/datavzrd-report/validation",
 
 elif config["subclonal_sample_creation"]:
     include: "rules/common.smk"

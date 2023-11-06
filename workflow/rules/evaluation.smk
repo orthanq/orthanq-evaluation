@@ -244,6 +244,18 @@ rule validate_orthanq:
     script:
         "../scripts/parse_and_validate_diploid_subclonal.py"
 
+rule plot_tp_fp:
+    input:
+        tp_fp_table="results/validation/tp_fp_table.tsv",
+    output:
+        tp_fp_plot="results/validation/tp_fp_plot.json",
+    conda:
+        "../envs/altair.yaml"
+    log:
+        "logs/tp_fp_plot/tp_fp_plot.log"
+    script:
+        "../scripts/tp_fp_plot.py"
+
 rule validate_tools:
     input:
         orthanq="results/validation/orthanq_validation.tsv",
@@ -269,16 +281,12 @@ rule evaluation_plot:
     script:
         "../scripts/evaluation_plot.py"
 
-##add evaluation plot to datavzrd report
-
 rule gather_benchmark:
     input: 
         benchmarks = "benchmarks" #to avoid too many inputs
     output:
-        preprocessing_table = "results/runtimes/preprocessing.csv",
-        preprocessing_plot = "results/runtimes/preprocessing.json",
-        genotyping_table = "results/runtimes/genotyping.csv",
-        genotyping_plot = "results/runtimes/genotyping.json"
+        runtimes_table = "results/runtimes/runtimes.csv",
+        runtimes_plot = "results/runtimes/runtimes.json",
     conda:
         "../envs/gather_benchmarks.yaml"
     log:
@@ -286,19 +294,33 @@ rule gather_benchmark:
     script:
         "../scripts/runtimes.py"
 
-rule vg2svg:
+rule vg2svg_evaluation:
     input:
-        preprocessing = "results/runtimes/{plot}.json",
-        genotyping = "results/runtimes/{plot}.json",
-        evaluation ="results/evaluation/{plot}.json"
+        runtimes_plot = "results/runtimes/runtimes.json",
+        evaluation ="results/evaluation/evaluation_plot.json",
+        tp_fp_plot = "results/validation/tp_fp_plot.json"
     output:
-        "results/vega/{plot}.svg",
+        runtimes_svg="results/vega/runtimes.svg",
+        evaluation_svg="results/vega/evaluation.svg",
+        tp_fp_plot_svg = "results/vega/tp_fp_plot.svg",
+        runtimes_html=report("results/vega/runtimes.html", category="Runtimes"),
+        evaluation_html=report("results/vega/evaluation.html", category="Evaluation"),
+        tp_fp_plot_html=report("results/vega/tp_fp_plot.html", category="Tp_fp_plot")
     log:
-        "logs/vg2svg/{plot}.log",
+        "logs/vg2svg/evaluation_plots.log",
     conda:
         "../envs/vega.yaml"
     shell:
-        "vl2svg {input} {output} 2> {log}"
+        "vl2svg {input.runtimes_plot} {output.runtimes_svg} 2> {log} && "
+        "vl2svg {input.runtimes_plot} {output.runtimes_html} 2>> {log} && "
+        "vl2svg {input.evaluation} {output.evaluation_svg} 2>> {log} && "
+        "vl2svg {input.evaluation} {output.evaluation_html} 2>> {log} && "
+        "vl2svg {input.tp_fp_plot} {output.tp_fp_plot_svg} 2>> {log} && "
+        "vl2svg {input.tp_fp_plot} {output.tp_fp_plot_html} 2>> {log} "
+
+# rule report_from_evaluation:
+#     output:
+#         report(directory("results/vega"), caption="report/evaluation.rst", htmlindex="test.html")
 
 rule datavzrd_config:
     input:
@@ -311,8 +333,7 @@ rule datavzrd_config:
         samples_evaluated="resources/ground_truth/ground_truth_for_paper/samples_evaluated.tsv",
         individuals_no_fastq="resources/ground_truth/ground_truth_for_paper/individuals_wo_fastq_data.tsv",
         samples_low_coverage="resources/ground_truth/ground_truth_for_paper/samples_with_low_coverage.tsv",
-        preprocessing_table = "results/runtimes/preprocessing.csv",
-        genotyping_table = "results/runtimes/genotyping.csv",
+        runtimes_table = "results/runtimes/runtimes.csv"
     output:
         "results/datavzrd/validation_datavzrd.yaml"
     log:
@@ -331,8 +352,7 @@ rule datavzrd:
         samples_evaluated="resources/ground_truth/ground_truth_for_paper/samples_evaluated.tsv",
         individuals_no_fastq="resources/ground_truth/ground_truth_for_paper/individuals_wo_fastq_data.tsv",
         samples_low_coverage="resources/ground_truth/ground_truth_for_paper/samples_with_low_coverage.tsv",
-        preprocessing_table = "results/runtimes/preprocessing.csv",
-        genotyping_table = "results/runtimes/genotyping.csv",
+        runtimes_table = "results/runtimes/runtimes.csv"
     output:
         report(
             directory("results/datavzrd-report/validation"),
