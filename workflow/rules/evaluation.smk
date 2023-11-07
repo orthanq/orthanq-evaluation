@@ -294,6 +294,27 @@ rule gather_benchmark:
     script:
         "../scripts/runtimes.py"
 
+rule vg2svg_orthanq:
+    input:
+        three_field="results/orthanq/{sample}_{hla}/3_field_solutions.json",
+        two_field="results/orthanq/{sample}_{hla}/2_field_solutions.json",
+        lp_solution="results/orthanq/{sample}_{hla}/lp_solution.json",
+        final_solution="results/orthanq/{sample}_{hla}/final_solution.json"
+    output:
+        three_field=report("results/orthanq/{sample}_{hla}/3_field_solutions.html",category="Orthanq"),
+        two_field=report("results/orthanq/{sample}_{hla}/2_field_solutions.html",category="Orthanq"),
+        lp_solution=report("results/orthanq/{sample}_{hla}/lp_solution.html",category="Orthanq"),
+        final_solution=report("results/orthanq/{sample}_{hla}/final_solution.html",category="Orthanq")        
+    log:
+        "logs/vg2svg/orthanq/{sample}_{hla}.log",
+    conda:
+        "../envs/vega.yaml"
+    shell:
+        "vl2svg {input.three_field} {output.three_field} 2> {log} && "
+        "vl2svg {input.two_field} {output.two_field} 2>> {log} && "
+        "vl2svg {input.lp_solution} {output.lp_solution} 2>> {log} && "
+        "vl2svg {input.final_solution} {output.final_solution} 2>> {log}"
+
 rule vg2svg_evaluation:
     input:
         runtimes_plot = "results/runtimes/runtimes.json",
