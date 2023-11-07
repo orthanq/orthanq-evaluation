@@ -11,7 +11,8 @@
         "baseline": "middle",
         "dx": -9,
         "dy": -4,
-        "fontSize": 7
+        "fontSize": 7,
+        "tooltip": true
       },
       "encoding": {
         "text": {"field": "value", "type": "quantitative",  "format": ".2f"}

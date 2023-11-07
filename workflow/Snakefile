@@ -57,7 +57,7 @@ elif config["simulation"] == False and config["subclonal_sample_creation"] == Fa
             expand("results/orthanq/{sample}_{hla}/3_field_solutions.html",sample=samples.sample_name,
                 hla=loci
             ),
-            "results/vega/runtimes.html",
+            ["results/vega/runtimes.html", "results/vega/tp_fp_plot.html", "results/vega/evaluation.html"],
             "results/datavzrd-report/validation",
 
 elif config["subclonal_sample_creation"]:

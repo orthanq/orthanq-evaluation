@@ -301,10 +301,26 @@ rule vg2svg_orthanq:
         lp_solution="results/orthanq/{sample}_{hla}/lp_solution.json",
         final_solution="results/orthanq/{sample}_{hla}/final_solution.json"
     output:
-        three_field=report("results/orthanq/{sample}_{hla}/3_field_solutions.html",category="Orthanq"),
-        two_field=report("results/orthanq/{sample}_{hla}/2_field_solutions.html",category="Orthanq"),
-        lp_solution=report("results/orthanq/{sample}_{hla}/lp_solution.html",category="Orthanq"),
-        final_solution=report("results/orthanq/{sample}_{hla}/final_solution.html",category="Orthanq")        
+        three_field=report("results/orthanq/{sample}_{hla}/3_field_solutions.html",category="Orthanq detailed solutions", subcategory="{sample}_{hla}",labels={
+            "sample": "{sample}",
+            "locus": "{hla}",
+            "figure": "3-field solutions"
+        }),
+        two_field=report("results/orthanq/{sample}_{hla}/2_field_solutions.html",category="Orthanq detailed solutions", subcategory="{sample}_{hla}", labels={
+            "sample": "{sample}",
+            "locus": "{hla}",
+            "figure": "2-field solutions"
+        }),
+        lp_solution=report("results/orthanq/{sample}_{hla}/lp_solution.html",category="Orthanq detailed solutions", subcategory="{sample}_{hla}", labels={
+            "sample": "{sample}",
+            "locus": "{hla}",
+            "figure": "lp solution"
+        }),
+        final_solution=report("results/orthanq/{sample}_{hla}/final_solution.html",category="Orthanq detailed solutions", subcategory="{sample}_{hla}", labels={
+            "sample": "{sample}",
+            "locus": "{hla}",
+            "figure": "final solution"
+        })        
     log:
         "logs/vg2svg/orthanq/{sample}_{hla}.log",
     conda:
@@ -324,9 +340,15 @@ rule vg2svg_evaluation:
         runtimes_svg="results/vega/runtimes.svg",
         evaluation_svg="results/vega/evaluation.svg",
         tp_fp_plot_svg = "results/vega/tp_fp_plot.svg",
-        runtimes_html=report("results/vega/runtimes.html", category="Runtimes"),
-        evaluation_html=report("results/vega/evaluation.html", category="Evaluation"),
-        tp_fp_plot_html=report("results/vega/tp_fp_plot.html", category="Tp_fp_plot")
+        runtimes_html=report("results/vega/runtimes.html", category="Runtime performance", labels={
+            "figure": "runtimes plot"
+        }),
+        evaluation_html=report("results/vega/evaluation.html", category="Accuracy", labels={
+            "figure": "accuracy plot"
+        }),
+        tp_fp_plot_html=report("results/vega/tp_fp_plot.html", category="Orthanq density accuracy", labels={
+            "figure": "log-scaled density plot"
+        })
     log:
         "logs/vg2svg/evaluation_plots.log",
     conda:
@@ -339,10 +361,20 @@ rule vg2svg_evaluation:
         "vl2svg {input.tp_fp_plot} {output.tp_fp_plot_svg} 2>> {log} && "
         "vl2svg {input.tp_fp_plot} {output.tp_fp_plot_html} 2>> {log} "
 
-# rule report_from_evaluation:
-#     output:
-#         report(directory("results/vega"), caption="report/evaluation.rst", htmlindex="test.html")
-
+rule merge_sample_sheets:
+    input:
+        samples_evaluated="resources/ground_truth/ground_truth_for_paper/samples_evaluated.tsv",
+        indiv_no_fastq="resources/ground_truth/ground_truth_for_paper/individuals_wo_fastq_data.tsv",
+        samples_low_coverage="resources/ground_truth/ground_truth_for_paper/samples_with_low_coverage.tsv",
+    output:
+        merged="resources/ground_truth/merge_sample_sheet.csv"
+    conda:
+        "../envs/altair.yaml"
+    log:
+        "logs/merge_sample_sheets/merge_sample_sheets.log",
+    script:
+        "../scripts/merge_sample_sheets.py"
+    
 rule datavzrd_config:
     input:
         template="resources/datavzrd.yaml",
@@ -351,10 +383,8 @@ rule datavzrd_config:
         hla_la="results/HLA-LA/final_report.csv",
         arcasHLA="results/arcasHLA/final_report.csv",
         optitype="results/optitype/final_report.csv",
-        samples_evaluated="resources/ground_truth/ground_truth_for_paper/samples_evaluated.tsv",
-        individuals_no_fastq="resources/ground_truth/ground_truth_for_paper/individuals_wo_fastq_data.tsv",
-        samples_low_coverage="resources/ground_truth/ground_truth_for_paper/samples_with_low_coverage.tsv",
-        runtimes_table = "results/runtimes/runtimes.csv"
+        runtimes_table = "results/runtimes/runtimes.csv",
+        sample_sheet="resources/ground_truth/merge_sample_sheet.csv"
     output:
         "results/datavzrd/validation_datavzrd.yaml"
     log:
@@ -370,15 +400,16 @@ rule datavzrd:
         hla_la="results/HLA-LA/final_report.csv",
         arcasHLA="results/arcasHLA/final_report.csv",
         optitype="results/optitype/final_report.csv",
-        samples_evaluated="resources/ground_truth/ground_truth_for_paper/samples_evaluated.tsv",
-        individuals_no_fastq="resources/ground_truth/ground_truth_for_paper/individuals_wo_fastq_data.tsv",
-        samples_low_coverage="resources/ground_truth/ground_truth_for_paper/samples_with_low_coverage.tsv",
-        runtimes_table = "results/runtimes/runtimes.csv"
+        runtimes_table = "results/runtimes/runtimes.csv",
+        sample_sheet="resources/ground_truth/merge_sample_sheet.csv"
     output:
         report(
             directory("results/datavzrd-report/validation"),
             htmlindex="index.html",
-            category="Validation_results",
+            category="Evaluation results & sample sheets",
+            labels={
+            "type": "datavzrd report"
+        }
         ),
     log:
         "logs/datavzrd/validation.log",
