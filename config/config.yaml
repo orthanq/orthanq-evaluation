@@ -14,6 +14,10 @@ subclonal_sample_creation: False
 #samples
 samples: config/samples_w_removal_and_eliminated.tsv
 
+#fastq dir containing all samples, included and excluded from evaluation ( only necessary for read count and length info in sample sheet)
+all_fastq_dir: /projects/koesterlab/orthanq/HapMap_data #part1
+all_fastq_dir_additional: /projects/koesterlab/orthanq/HapMap_data/additional_data #part2 (to not trigger workflow run, samples were not put in one dir (see sample: samples_w_removal_and_eliminated.tsv))
+
 #alleles
 hla: config/alleles.tsv
 

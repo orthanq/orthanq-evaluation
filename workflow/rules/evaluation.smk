@@ -374,7 +374,22 @@ rule merge_sample_sheets:
         "logs/merge_sample_sheets/merge_sample_sheets.log",
     script:
         "../scripts/merge_sample_sheets.py"
-    
+
+rule find_read_length_and_count:
+    input:
+        sample_sheet="resources/ground_truth/merge_sample_sheet.csv",
+        fastq_dir=config["all_fastq_dir"],
+        fastq_dir_2=config["all_fastq_dir_additional"]
+    output:
+        sample_sheet="resources/ground_truth/merge_sample_sheet_w_read_info.csv"
+    conda:
+        "../envs/altair.yaml"
+    threads: 20
+    log:
+        "logs/insert_read_info/insert_read_info.log",
+    script:
+        "../scripts/insert_read_info.py"
+
 rule datavzrd_config:
     input:
         template="resources/datavzrd.yaml",
@@ -384,7 +399,7 @@ rule datavzrd_config:
         arcasHLA="results/arcasHLA/final_report.csv",
         optitype="results/optitype/final_report.csv",
         runtimes_table = "results/runtimes/runtimes.csv",
-        sample_sheet="resources/ground_truth/merge_sample_sheet.csv"
+        sample_sheet="resources/ground_truth/merge_sample_sheet_w_read_info.csv"
     output:
         "results/datavzrd/validation_datavzrd.yaml"
     log:
@@ -401,7 +416,7 @@ rule datavzrd:
         arcasHLA="results/arcasHLA/final_report.csv",
         optitype="results/optitype/final_report.csv",
         runtimes_table = "results/runtimes/runtimes.csv",
-        sample_sheet="resources/ground_truth/merge_sample_sheet.csv"
+        sample_sheet="resources/ground_truth/merge_sample_sheet_w_read_info.csv"
     output:
         report(
             directory("results/datavzrd-report/validation"),
