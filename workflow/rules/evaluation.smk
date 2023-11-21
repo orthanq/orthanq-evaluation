@@ -429,5 +429,5 @@ rule datavzrd:
     log:
         "logs/datavzrd/validation.log",
     wrapper:
-        "v1.21.4/utils/datavzrd"
+        "v2.13.0/utils/datavzrd"
         

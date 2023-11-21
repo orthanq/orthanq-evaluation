@@ -8,7 +8,7 @@ with open(snakemake.log[0], "w") as f:
     sys.stderr = sys.stdout = f
 
     #create the df
-    d = {'sample': [], 'tool': [], "max_rss": [], "s": []}
+    d = {'sample': [], 'tool': [], "max RSS mem in GB": [], "runtime in minutes": []}
     tool_runtimes = pd.DataFrame(data=d)
     # path = os.getcwd()
     path = snakemake.input.benchmarks
@@ -16,26 +16,26 @@ with open(snakemake.log[0], "w") as f:
     print(path)
     #the following function inserts values given in df to tool_runtimes.
     #It does this by firstly checking the sample and tool names and if they exist, the values are summed up and 
-    #max_rss and s are updated in GB and minutes, if not new entries are added.
+    #max_rss_mem_in_GB and s are updated in GB and minutes, if not new entries are added.
     def insert_values(tool_runtimes, df, sample_name, tool_name, filter1_sample_list):
         if (tool_name in tool_runtimes['tool']) or (sample_name in filter1_sample_list):
             idx = tool_runtimes.index[(tool_runtimes['tool'] == tool_name) & (tool_runtimes['sample'] == sample_name)]
-            max_rss = tool_runtimes.iloc[idx[0]]['max_rss'] #we know that there will only be one index
+            max_rss_mem_in_GB = tool_runtimes.iloc[idx[0]]['max RSS mem in GB'] #we know that there will only be one index
 
-            # new_max_rs = max_rss
-            # new_max_rs += (df.iloc[0]['max_rss'])/1024
+            # new_max_rs = max_rss_mem_in_GB
+            # new_max_rs += (df.iloc[0]['max RSS mem in GB'])/1024
             
-            max_max_rss = max(max_rss, (df.iloc[0]['max_rss'])/1024) # get the max of each processes
+            max_max_rss_mem_in_GB = max(max_rss_mem_in_GB, (df.iloc[0]['max_rss'])/1024) # get the max of each processes
             
-            minutes = tool_runtimes.iloc[idx]['s'] 
+            minutes = tool_runtimes.iloc[idx]["runtime in minutes"] 
 
             new_minutes = minutes
             new_minutes += (df.iloc[0]['s'])/60
             
-            tool_runtimes.loc[idx, ['max_rss']] = max_max_rss
-            tool_runtimes.loc[idx, ['s']] = new_minutes
+            tool_runtimes.loc[idx, ['max RSS mem in GB']] = max_max_rss_mem_in_GB
+            tool_runtimes.loc[idx, ["runtime in minutes"]] = new_minutes
         else:
-            new_record = pd.DataFrame([{'sample': sample_name, 'tool': tool_name, 'max_rss': (df.iloc[0]["max_rss"])/1024 , 's': (df.iloc[0]["s"])/60}])
+            new_record = pd.DataFrame([{'sample': sample_name, 'tool': tool_name, 'max RSS mem in GB': (df.iloc[0]["max_rss"])/1024 , "runtime in minutes": (df.iloc[0]["s"])/60}])
             tool_runtimes = pd.concat([tool_runtimes, new_record], ignore_index=True)
         return tool_runtimes
 
@@ -62,7 +62,7 @@ with open(snakemake.log[0], "w") as f:
             #check only loci that we evaluate in the paper
             if (tool_name == "orthanq (excl. vg)") or (tool_name == "arcasHLA"):
                 if locus_name == 'A' or locus_name == 'B' or locus_name == 'C' or locus_name == 'DQB1': #varlociraptor from preprocessing, orthanq_call and arcasHLA
-                    # update the value of max_rss and s in the final table, for rows having the same tool and sample name
+                    # update the value of max_rss_mem_in_GB and s in the final table, for rows having the same tool and sample name
                     tool_runtimes = insert_values(tool_runtimes,df, sample_name, tool_name, filter1_sample_list)
                 elif locus_name == "DQA1" or locus_name == "DRB1":
                     continue
@@ -74,23 +74,23 @@ with open(snakemake.log[0], "w") as f:
 
     #create a plot for final table
     def create_plot(tool_runtimes):
-        seconds = alt.Chart(tool_runtimes).mark_line(point=True, tooltip=True).encode(
+        runtime = alt.Chart(tool_runtimes).mark_line(point=True, tooltip=True).encode(
             x=alt.X('sample:N', axis=alt.Axis(labels=False, title=None)).sort(field="order", order= "descending"),
-            y=alt.Y('s:Q', title="runtime [m]").scale(type="log"),
+            y=alt.Y('runtime in minutes:Q', title="runtime [m]").scale(type="log"),
             color='tool:N',
         ).transform_joinaggregate(
-            order='min(s)',
+            order='min(runtime in minutes)',
             groupby=["sample"]
         )
-        max_rss = alt.Chart(tool_runtimes).mark_line(point=True, tooltip=True).encode(
+        max_rss_mem_in_GB = alt.Chart(tool_runtimes).mark_line(point=True, tooltip=True).encode(
             x=alt.X('sample:N', axis=alt.Axis(labels=False)).sort(field="order", order= "descending"),
-            y=alt.Y('max_rss:Q', title="RSS memory consumption [GB]").scale(type="log"),
+            y=alt.Y('max RSS mem in GB:Q', title="RSS memory consumption [GB]").scale(type="log"),
             color='tool:N',
         ).transform_joinaggregate(
-            order='min(s)',
+            order='min(runtime in minutes)',
             groupby=["sample"]
         )
-        final = seconds & max_rss
+        final = runtime & max_rss_mem_in_GB
         return final
 
     ## genotyping/calling with preprocessing combined ##
@@ -121,14 +121,14 @@ with open(snakemake.log[0], "w") as f:
     orthanq_vg_runtime.to_csv("orthanq_plus_vg_runtime.csv", index=False)
 
     #take the max of orthanq and vg
-    orthanq_vg_max_memory = pd.concat([vg, orthanq]).groupby(["sample"], as_index=False)['max_rss'].max()
+    orthanq_vg_max_memory = pd.concat([vg, orthanq]).groupby(["sample"], as_index=False)['max RSS mem in GB'].max()
     orthanq_vg_max_memory.to_csv("orthanq_vg_max_memory.csv", index=False)
 
-    #create a new dataframe for vg included orthanq results with new s and max_rss
+    #create a new dataframe for vg included orthanq results with new s and max_rss_mem_in_GB
     d = {'sample': orthanq_vg_runtime["sample"], 
         'tool': "orthanq (incl. vg)", 
-        "max_rss": orthanq_vg_max_memory["max_rss"], 
-        "s": orthanq_vg_runtime["s"]}
+        "max RSS mem in GB": orthanq_vg_max_memory["max RSS mem in GB"], 
+        "runtime in minutes": orthanq_vg_runtime["runtime in minutes"]}
     orthanq_plus_vg = pd.DataFrame(data=d)
 
     #append the vg included df to the tool runtimes df
