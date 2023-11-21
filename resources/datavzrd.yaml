@@ -148,6 +148,10 @@ views:
       ## Runtimes of all tools including preprocessing steps.
     render-table:
       columns:
+        sample:
+          link-to-url:
+            SRA:
+              url: "https://www.ncbi.nlm.nih.gov/sra/{value}"
         max RSS mem in GB:
           plot:
             ticks:
