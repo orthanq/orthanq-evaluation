@@ -1,0 +1,27 @@
+name: Runtime performance
+datasets:
+  runtimes:
+    path: ?input.runtimes_table
+    offer-excel: true
+views:
+  runtimes:
+    dataset: runtimes
+    desc: |
+      ## Runtime performances
+      Measurements for maximum memory usage and runtimes for all evaluated tools, Orthanq, Optitype, HLA-LA and arcasHLA for samples belonging to 1000 Genomes, a trio from Illumina Platinum Genomes and GIAB including preprocessing steps.
+      For Orthanq, there are two separate entries for measurements with and without including the measurements from vg.
+      Each sample has links to the corresponding SRA entries. 
+    render-table:
+      columns:
+        sample:
+          link-to-url:
+            SRA:
+              url: "https://www.ncbi.nlm.nih.gov/sra/{value}"
+        max RSS mem in GB:
+          plot:
+            ticks:
+              scale: linear
+        runtime in minutes:
+          plot:
+            ticks:
+              scale: linear

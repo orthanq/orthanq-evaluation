@@ -1,0 +1,29 @@
+name: Orthanq predictions
+datasets:
+  orthanq-report:
+    separator: "\t"
+    path: ?input.orthanq
+    offer-excel: true
+views:
+  orthanq-report:
+    dataset: orthanq-report
+    desc: |
+      ## Orthanq predictions
+      This table contains HLA typing results for five loci. The predictions are taken from the solutions with the highest density values. For some samples, there are multiple predictions of allele combinations with identical posterior densities.
+      Each sample contains links to corresponding SRA entries.
+    render-table:
+      columns:
+        sample:
+          link-to-url:
+            SRA:
+              url: "https://www.ncbi.nlm.nih.gov/sra/{value}"
+        A:
+          ellipsis: 21
+        B:
+          ellipsis: 21
+        C:
+          ellipsis: 21
+        DQA1:
+          ellipsis: 27
+        DQB1:
+          ellipsis: 27

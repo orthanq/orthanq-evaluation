@@ -1,0 +1,19 @@
+name: Optitype predictions
+datasets:
+  optitype-report:
+    separator: "\t"
+    path: ?input.optitype
+    offer-excel: true
+views:
+  optitype-report:
+    dataset: optitype-report
+    desc: |
+      ## Optitype predictions
+      This table contains HLA typing results performed for three loci.
+      Each sample contains links to corresponding SRA entries.
+    render-table:
+      columns:
+        sample:
+          link-to-url:
+            SRA:
+              url: "https://www.ncbi.nlm.nih.gov/sra/{value}"

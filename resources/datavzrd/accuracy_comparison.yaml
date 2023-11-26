@@ -1,0 +1,26 @@
+name: Accuracy comparison
+datasets:
+  validation:
+    separator: "\t"
+    path: ?input.validation
+    offer-excel: true
+views:
+  validation:
+    dataset: validation
+    desc: |
+      ### Accuracy comparison
+      Accuracy comparison is performed with Orthanq, Optitype, HLA-LA and arcasHLA, for four HLA loci.
+      Call rate is the fraction of samples for which the evaluated tool provides a prediction.
+      Accuracy is calculated as the fraction of correctly predicted HLA genotypes.
+    page-size: 25
+    render-table:
+      columns:
+        regex('.+Accuracy'):
+          plot:
+            ticks:
+              scale: linear
+              domain:
+                - 0
+                - 100
+        "arcasHLA_Call_Rate":
+          precision: 2

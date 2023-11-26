@@ -1,0 +1,19 @@
+name: arcasHLA predictions
+datasets:
+  arcashla-report:
+    separator: "\t"
+    path: ?input.arcasHLA
+    offer-excel: true
+views:
+  arcashla-report:
+    dataset: arcashla-report
+    desc: |
+      ## arcasHLA predictions
+      This table contains HLA typing results performed for five loci.
+      Each sample contains links to corresponding SRA entries.
+    render-table:
+      columns:
+        sample:
+          link-to-url:
+            SRA:
+              url: "https://www.ncbi.nlm.nih.gov/sra/{value}"

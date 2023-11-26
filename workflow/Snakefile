@@ -9,6 +9,8 @@ configfile: "config/config.yaml"
 
 ruleorder: orthanq_candidates > orthanq_call
 
+report: "report/workflow.rst"
+
 if config["simulation"] and config["subclonal_sample_creation"] == False:
 
     include: "rules/common.smk"
@@ -58,7 +60,14 @@ elif config["simulation"] == False and config["subclonal_sample_creation"] == Fa
                 hla=loci
             ),
             ["results/vega/runtimes.html", "results/vega/tp_fp_plot.html", "results/vega/evaluation.html"],
-            "results/datavzrd-report/validation",
+            "results/datavzrd-report/sample_sheet", 
+            "results/datavzrd-report/runtimes",
+            "results/datavzrd-report/orthanq",
+            "results/datavzrd-report/optitype",
+            "results/datavzrd-report/arcashla",
+            "results/datavzrd-report/hla_la",
+            "results/datavzrd-report/accuracy_comparison"
+
 
 elif config["subclonal_sample_creation"]:
     include: "rules/common.smk"

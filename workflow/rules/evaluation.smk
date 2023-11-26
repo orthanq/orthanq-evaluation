@@ -341,10 +341,11 @@ rule vg2svg_evaluation:
         evaluation_svg="results/vega/evaluation.svg",
         tp_fp_plot_svg = "results/vega/tp_fp_plot.svg",
         runtimes_html=report("results/vega/runtimes.html", category="Runtime performance", labels={
-            "figure": "runtimes plot"
+            "type": "figure"
         }),
         evaluation_html=report("results/vega/evaluation.html", category="Accuracy", labels={
-            "figure": "accuracy plot"
+            "name": "accuracy comparison",
+            "type": "figure"
         }),
         tp_fp_plot_html=report("results/vega/tp_fp_plot.html", category="Orthanq density accuracy", labels={
             "figure": "log-scaled density plot"
@@ -381,7 +382,7 @@ rule find_read_length_and_count:
         fastq_dir=config["all_fastq_dir"],
         fastq_dir_2=config["all_fastq_dir_additional"]
     output:
-        sample_sheet="resources/ground_truth/merge_sample_sheet_w_read_info.csv"
+        sample_sheet="resources/ground_truth/merged_sample_sheet_w_read_info.csv"
     conda:
         "../envs/altair.yaml"
     threads: 20
@@ -390,44 +391,207 @@ rule find_read_length_and_count:
     script:
         "../scripts/insert_read_info.py"
 
-rule datavzrd_config:
+rule datavzrd_config_runtimes:
     input:
-        template="resources/datavzrd.yaml",
-        validation="results/validation/validation.tsv",
-        orthanq="results/orthanq/final_report.csv",
-        hla_la="results/HLA-LA/final_report.csv",
-        arcasHLA="results/arcasHLA/final_report.csv",
-        optitype="results/optitype/final_report.csv",
+        template="resources/datavzrd/runtimes.yaml",
         runtimes_table = "results/runtimes/runtimes.csv",
-        sample_sheet="resources/ground_truth/merge_sample_sheet_w_read_info.csv"
     output:
-        "results/datavzrd/validation_datavzrd.yaml"
+        "results/datavzrd/runtimes.yaml"
+    log:
+        "logs/datavzrd-config/runtimes.log"
+    template_engine:
+        "yte"
+
+rule datavzrd_runtimes:
+    input:
+        config="results/datavzrd/runtimes.yaml",
+        runtimes_table = "results/runtimes/runtimes.csv",
+    output:
+        report(
+            directory("results/datavzrd-report/runtimes"),
+            htmlindex="index.html",
+            category="Runtime performance", labels={
+            "type": "table"
+        }
+        ),
+    log:
+        "logs/datavzrd/runtimes.log",
+    wrapper:
+        "v2.13.0/utils/datavzrd"
+
+rule datavzrd_config_orthanq:
+    input:
+        template="resources/datavzrd/orthanq.yaml",
+        orthanq="results/orthanq/final_report.csv",
+    output:
+        "results/datavzrd/orthanq.yaml"
+    log:
+        "logs/datavzrd-config/orthanq.log"
+    template_engine:
+        "yte"
+
+rule datavzrd_orthanq:
+    input:
+        config="results/datavzrd/orthanq.yaml",
+        orthanq="results/orthanq/final_report.csv",
+    output:
+        report(
+            directory("results/datavzrd-report/orthanq"),
+            htmlindex="index.html",
+            category="Accuracy", labels={
+            "type": "figure",
+            "name": "orthanq predictions"
+        }
+        ),
+    log:
+        "logs/datavzrd/orthanq.log",
+    wrapper:
+        "v2.13.0/utils/datavzrd"
+
+rule datavzrd_config_optitype:
+    input:
+        template="resources/datavzrd/optitype.yaml",
+        optitype="results/optitype/final_report.csv",
+    output:
+        "results/datavzrd/optitype.yaml"
+    log:
+        "logs/datavzrd-config/optitype.log"
+    template_engine:
+        "yte"
+
+rule datavzrd_optitype:
+    input:
+        config="results/datavzrd/optitype.yaml",
+        optitype="results/optitype/final_report.csv",
+    output:
+        report(
+            directory("results/datavzrd-report/optitype"),
+            htmlindex="index.html",
+            category="Accuracy", labels={
+            "type": "figure",
+            "name": "optitype predictions"
+        }
+        ),
+    log:
+        "logs/datavzrd/optitype.log",
+    wrapper:
+        "v2.13.0/utils/datavzrd"
+
+rule datavzrd_config_arcashla:
+    input:
+        template="resources/datavzrd/arcashla.yaml",
+        arcasHLA="results/arcasHLA/final_report.csv",
+    output:
+        "results/datavzrd/arcashla.yaml"
+    log:
+        "logs/datavzrd-config/arcashla.log"
+    template_engine:
+        "yte"
+
+rule datavzrd_arcashla:
+    input:
+        config="results/datavzrd/arcashla.yaml",
+        arcasHLA="results/arcasHLA/final_report.csv",
+    output:
+        report(
+            directory("results/datavzrd-report/arcashla"),
+            htmlindex="index.html",
+            category="Accuracy", labels={
+            "type": "figure",
+            "name": "arcasHLA predictions"
+        }
+        ),
+    log:
+        "logs/datavzrd/arcashla.log",
+    wrapper:
+        "v2.13.0/utils/datavzrd"
+
+
+rule datavzrd_config_hla_la:
+    input:
+        template="resources/datavzrd/hla_la.yaml",
+        hla_la="results/HLA-LA/final_report.csv",
+    output:
+        "results/datavzrd/hla_la.yaml"
+    log:
+        "logs/datavzrd-config/hla_la.log"
+    template_engine:
+        "yte"
+
+rule datavzrd_hla_la:
+    input:
+        config="results/datavzrd/hla_la.yaml",
+        hla_la="results/HLA-LA/final_report.csv",
+    output:
+        report(
+            directory("results/datavzrd-report/hla_la"),
+            htmlindex="index.html",
+            category="Accuracy", labels={
+            "type": "figure",
+            "name": "HLA-LA predictions"
+        }
+        ),
+    log:
+        "logs/datavzrd/hla_la.log",
+    wrapper:
+        "v2.13.0/utils/datavzrd"
+
+rule datavzrd_config_comparison:
+    input:
+        template="resources/datavzrd/accuracy_comparison.yaml",
+        validation="results/validation/validation.tsv",
+    output:
+        "results/datavzrd/accuracy_comparison.yaml"
+    log:
+        "logs/datavzrd-config/accuracy_comparison.log"
+    template_engine:
+        "yte"
+
+rule datavzrd_comparison:
+    input:
+        config="results/datavzrd/accuracy_comparison.yaml",
+        validation="results/validation/validation.tsv",
+    output:
+        report(
+            directory("results/datavzrd-report/accuracy_comparison"),
+            htmlindex="index.html",
+            category="Accuracy", labels={
+            "name": "accuracy comparison",
+            "type": "table"
+        }
+        ),
+    log:
+        "logs/datavzrd/accuracy_comparison.log",
+    wrapper:
+        "v2.13.0/utils/datavzrd"
+
+rule datavzrd_config_sample_sheet:
+    input:
+        template="resources/datavzrd/sample_sheet.yaml",
+        sample_sheet="resources/ground_truth/merged_sample_sheet_w_read_info.csv"
+    output:
+        "results/datavzrd/sample_sheet.yaml"
     log:
         "logs/datavzrd-config/template.log"
     template_engine:
         "yte"
 
-rule datavzrd:
+rule datavzrd_sample_sheet:
     input:
-        config="results/datavzrd/validation_datavzrd.yaml",
-        validation="results/validation/validation.tsv",
-        orthanq="results/orthanq/final_report.csv",
-        hla_la="results/HLA-LA/final_report.csv",
-        arcasHLA="results/arcasHLA/final_report.csv",
-        optitype="results/optitype/final_report.csv",
-        runtimes_table = "results/runtimes/runtimes.csv",
-        sample_sheet="resources/ground_truth/merge_sample_sheet_w_read_info.csv"
+        config="results/datavzrd/sample_sheet.yaml",
+        sample_sheet="resources/ground_truth/merged_sample_sheet_w_read_info.csv"
     output:
         report(
-            directory("results/datavzrd-report/validation"),
+            directory("results/datavzrd-report/sample_sheet"),
             htmlindex="index.html",
-            category="Evaluation results & sample sheets",
+            category="Sample sheet",
             labels={
-            "type": "datavzrd report"
+            "name": "sample sheet",
+            "type": "table"
         }
         ),
     log:
-        "logs/datavzrd/validation.log",
+        "logs/datavzrd/sample_sheet.log",
     wrapper:
         "v2.13.0/utils/datavzrd"
         

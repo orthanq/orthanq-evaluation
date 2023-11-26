@@ -1,0 +1,29 @@
+name: HLA-LA predictions
+datasets:
+  hla_la-report:
+    separator: "\t"
+    path: ?input.hla_la
+    offer-excel: true
+views:
+  hla_la-report:
+    dataset: hla_la-report
+    desc: |
+      ## HLA-LA predictions
+      This table contains HLA typing results performed for five loci. For some samples, there are multiple predictions for each chromosome.
+      Each sample contains links to corresponding SRA entries.
+    render-table:
+      columns:
+        sample:
+          link-to-url:
+            SRA:
+              url: "https://www.ncbi.nlm.nih.gov/sra/{value}"
+        A:
+          ellipsis: 27
+        B:
+          ellipsis: 27
+        C:
+          ellipsis: 27
+        DQA1:
+          ellipsis: 33
+        DQB1:
+          ellipsis: 33   
