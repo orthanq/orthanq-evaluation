@@ -101,9 +101,11 @@ rule vg_giraffe:
         "benchmarks/vg_giraffe/{sample}.tsv"
     conda:
         "../envs/vg.yaml"
+    resources:
+      io=1
     threads: 40
     shell:
-        "vg giraffe -x {input.idx} -f {input.reads_1} -f {input.reads_2} --max-multimaps 3 --output-format BAM -t {threads}  > {output} 2> {log}"
+        "vg giraffe -x {input.idx} -f {input.reads_1} -f {input.reads_2} --output-format BAM -t {threads}  > {output} 2> {log}"
 
 rule samtools_sort:
     input:
