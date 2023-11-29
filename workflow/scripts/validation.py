@@ -73,7 +73,7 @@ with open(snakemake.log[0], "w") as f:
                     collected+=1
                 print("collected: " + str(collected))
         call_rate = samples_called/len(arcasHLA_input.index)
-        accuracy = 100*collected/samples_called
+        accuracy = 100*collected/len(arcasHLA_input.index)
         # new_row = {'Locus': locus, 'N': len(arcasHLA_input.index), 'arcasHLA - Call Rate': 1.00, 'arcasHLA - Accuracy': accuracy}
         new_row = pd.DataFrame([[locus, len(arcasHLA_input.index), call_rate, accuracy]],
                     columns=['Locus', 'N', 'arcasHLA_Call_Rate', 'arcasHLA_Accuracy'])
@@ -87,9 +87,9 @@ with open(snakemake.log[0], "w") as f:
     for locus in loci:
         values = hla_la_input[locus]
         collected = 0
-        samples_called = 0 #some samples in arcashla have some loci that is uncalled, so we need to count the number of samples that are called here.
+        samples_called = 0 #some samples in hla-la have some loci that is uncalled, so we need to count the number of samples that are called here.
         for (index, value_in_hla_la) in enumerate(values):
-            if pd.isnull(value_in_arcasHLA):
+            if pd.isnull(value_in_hla_la):
                 continue
             else:
                 sample_name = hla_la_input.loc[index,'sample']
@@ -147,7 +147,7 @@ with open(snakemake.log[0], "w") as f:
                 print("collected: " + str(collected))
                 samples_called+=1
         call_rate = samples_called/len(arcasHLA_input.index)
-        accuracy = 100*collected/samples_called
+        accuracy = 100*collected/len(hla_la_input.index)
         # accuracy = 100*collected/(2*len(hla_la_input.index))
         # new_row = {'Locus': locus, 'N': len(hla_la_input.index), 'HLA-LA - Call Rate': 1.00, 'HLA-LA - Accuracy': accuracy}
         # hla_la_validation_table = hla_la_validation_table.append(new_row, ignore_index=True)
@@ -164,7 +164,7 @@ with open(snakemake.log[0], "w") as f:
     for locus in loci:
         values = optitype_input[locus]
         collected = 0
-        samples_called = 0 #some samples in arcashla have some loci that is uncalled, so we need to count the number of samples that are called here.
+        samples_called = 0 #some samples in optitype have some loci that is uncalled, so we need to count the number of samples that are called here.
         for (index, value_in_optitype) in enumerate(values):
             if pd.isnull(value_in_optitype):
                 continue
@@ -215,7 +215,7 @@ with open(snakemake.log[0], "w") as f:
                 print("collected: " + str(collected))
                 samples_called+=1
         call_rate = samples_called/len(optitype_input.index)
-        accuracy = 100*collected/samples_called
+        accuracy = 100*collected/len(optitype_input.index)
         new_row = pd.DataFrame([[locus, len(optitype_input.index), call_rate, accuracy]],
                     columns=['Locus', 'N', 'Optitype_Call_Rate', 'Optitype_Accuracy'])
         optitype_validation_table = pd.concat([optitype_validation_table, new_row], ignore_index=True)

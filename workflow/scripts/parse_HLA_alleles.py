@@ -31,27 +31,30 @@ with open(snakemake.log[0], "w") as f:
         ##find the records that have the same density
         best_odds = [1, 1.0, 1.00]
         best_results = results[results.odds.isin(best_odds)]
-        # print("best results: ", best_results)
-        
-        #retrieve the predicted haplotypes
-        #collect locus names
-        filtered_cols = []
-        filtered_cols = [col for col in results if col.startswith(locus_name)]
-        # print(filtered_cols)
-        #loop over best results
+        print(sample_name)
+        print(locus_name)
+        print("best results: ", best_results)
+
         all_combinations=[]
-        for (i,result_row) in best_results.iterrows():
-            value_to_add = []     
-            #collect first two fields and cumulative fractions of haplotypes
-            for col in filtered_cols:
-                if best_results[col][i] == 0.5:
-                    value_to_add.append(col)
-                elif best_results[col][i] == 1.0:
-                    value_to_add.append(col) #two times the value, homozygous sample handling
-                    value_to_add.append(col)
-            value_to_add = '/'.join(value_to_add)
-            all_combinations.append(value_to_add)
-        
+        if not best_results.empty: #orthanq doesn't have predictions for some samples
+            #retrieve the predicted haplotypes
+            #collect locus names
+            filtered_cols = []
+            filtered_cols = [col for col in results if col.startswith(locus_name)]
+            # print(filtered_cols)
+            #loop over best results
+            for (i,result_row) in best_results.iterrows():
+                value_to_add = []     
+                #collect first two fields and cumulative fractions of haplotypes
+                for col in filtered_cols:
+                    if best_results[col][i] == 0.5:
+                        value_to_add.append(col)
+                    elif best_results[col][i] == 1.0:
+                        value_to_add.append(col) #two times the value, homozygous sample handling
+                        value_to_add.append(col)
+                value_to_add = '/'.join(value_to_add)
+                all_combinations.append(value_to_add)
+        print(all_combinations) 
         orthanq_final_table.loc[orthanq_final_table['sample'] == sample_name, locus_name] = ','.join(all_combinations)
 
     orthanq_final_table.to_csv(
@@ -169,16 +172,22 @@ with open(snakemake.log[0], "w") as f:
         B = []
         C = []
 
-        A.append(data.loc[0,'A1'])
-        A.append(data.loc[0,'A2'])
+        if not data['A1'].isnull().values.any(): #optitype does not may not output predictions for some samples and loci
+            A.append(data.loc[0,'A1'])  
+        if not data['A2'].isnull().values.any():
+            A.append(data.loc[0,'A2'])
         A = '/'.join(A)
 
-        B.append(data.loc[0,'B1'])
-        B.append(data.loc[0,'B2'])
+        if not data['B1'].isnull().values.any():
+            B.append(data.loc[0,'B1'])
+        if not data['B2'].isnull().values.any():
+            B.append(data.loc[0,'B2'])
         B = '/'.join(B)
 
-        C.append(data.loc[0,'C1'])
-        C.append(data.loc[0,'C2'])
+        if not data['C1'].isnull().values.any():
+            C.append(data.loc[0,'C1'])
+        if not data['C2'].isnull().values.any():
+            C.append(data.loc[0,'C2'])
         C = '/'.join(C)
 
         new_row = pd.DataFrame([[sample_name, A, B, C]],

@@ -242,7 +242,7 @@ rule validate_orthanq:
     log:
         "logs/validate_orthanq/validate_orthanq.log"
     script:
-        "../scripts/parse_and_validate_diploid_subclonal.py"
+        "../scripts/parse_and_validate_diploid.py"
 
 rule plot_tp_fp:
     input:
