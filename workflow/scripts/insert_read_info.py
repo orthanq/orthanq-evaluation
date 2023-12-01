@@ -32,7 +32,8 @@ with open(snakemake.log[0], "w") as f:
     #initialize columns for read length and count 
     sample_sheet["Read Length 1"] = ""
     sample_sheet["Read Length 2"] = ""
-    sample_sheet["Read Count"] = ""
+    sample_sheet["Read Count 1"] = ""
+    sample_sheet["Read Count 2"] = ""
 
     def insert_read_info(sample_sheet, fq):       
         #find read length and read count of each fastq file
@@ -73,13 +74,14 @@ with open(snakemake.log[0], "w") as f:
         print(read_pair)
         read_length_pair_name = "Read Length " + read_pair
         print(read_length_pair_name)
+        read_count_pair_name = "Read Count " + read_pair
         # print(len(read_length_dict))
         # len(read_length_dict) == 1 # there should only be one read length
         # print(read_length_dict)
 
         #append the read length and read count to the sample sheet
         sample_sheet.loc[sample_sheet["Run_Accession"] == sample_name, read_length_pair_name] = read_length
-        sample_sheet.loc[sample_sheet["Run_Accession"] == sample_name, "Read Count"] = read_count
+        sample_sheet.loc[sample_sheet["Run_Accession"] == sample_name, read_count_pair_name] = read_count
 
         return sample_sheet
 

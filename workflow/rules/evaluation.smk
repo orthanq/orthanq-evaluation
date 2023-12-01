@@ -235,7 +235,7 @@ rule validate_orthanq:
         sample=samples.sample_name,
         hla=loci
         ),
-        ground_truth="resources/ground_truth/HLA-ground-truth-CEU-for-paper.tsv"
+        ground_truth="resources/ground_truth/1K_CEU_evaluated.tsv"
     output:
         validation="results/validation/orthanq_validation.tsv",
         tp_fp_table="results/validation/tp_fp_table.tsv",
@@ -261,7 +261,7 @@ rule validate_tools:
         orthanq="results/validation/orthanq_validation.tsv",
         hla_la="results/HLA-LA/final_report.csv",
         arcasHLA="results/arcasHLA/final_report.csv",
-        ground_truth="resources/ground_truth/HLA-ground-truth-CEU-for-paper.tsv",
+        ground_truth="resources/ground_truth/1K_CEU_evaluated.tsv",
         optitype="results/optitype/final_report.csv"
     output:
         validation="results/validation/validation.tsv"
@@ -364,11 +364,11 @@ rule vg2svg_evaluation:
 
 rule merge_sample_sheets:
     input:
-        samples_evaluated="resources/ground_truth/ground_truth_for_paper/samples_evaluated.tsv",
-        indiv_no_fastq="resources/ground_truth/ground_truth_for_paper/individuals_wo_fastq_data.tsv",
-        samples_low_coverage="resources/ground_truth/ground_truth_for_paper/samples_with_low_coverage.tsv",
+        samples_evaluated="resources/ground_truth/1K_CEU_evaluated.tsv",
+        samples_incomplete_truth="resources/ground_truth/1K_CEU_incomplete_HLA.tsv",
+        # samples_low_coverage="resources/ground_truth/ground_truth_for_paper/samples_with_low_coverage.tsv",
     output:
-        merged="resources/ground_truth/merge_sample_sheet.csv"
+        merged="resources/ground_truth/merged_sample_sheet.csv"
     conda:
         "../envs/altair.yaml"
     log:
@@ -378,7 +378,7 @@ rule merge_sample_sheets:
 
 rule find_read_length_and_count:
     input:
-        sample_sheet="resources/ground_truth/merge_sample_sheet.csv",
+        sample_sheet="resources/ground_truth/merged_sample_sheet.csv",
         fastq_dir=config["all_fastq_dir"],
         fastq_dir_2=config["all_fastq_dir_additional"]
     output:
