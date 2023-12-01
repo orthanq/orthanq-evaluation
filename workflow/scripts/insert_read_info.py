@@ -80,8 +80,8 @@ with open(snakemake.log[0], "w") as f:
         # print(read_length_dict)
 
         #append the read length and read count to the sample sheet
-        sample_sheet.loc[sample_sheet["Run_Accession"] == sample_name, read_length_pair_name] = read_length
-        sample_sheet.loc[sample_sheet["Run_Accession"] == sample_name, read_count_pair_name] = read_count
+        sample_sheet.loc[sample_sheet["Run Accession"] == sample_name, read_length_pair_name] = read_length
+        sample_sheet.loc[sample_sheet["Run Accession"] == sample_name, read_count_pair_name] = read_count
 
         return sample_sheet
 
