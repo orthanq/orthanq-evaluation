@@ -17,7 +17,7 @@ with open(snakemake.log[0], "w") as f:
     samples_evaluated["Inclusion"] = "yes"
     samples_incomplete["Inclusion"] = "no (incompletely typed)"
     #add the second reason for NA11894
-    samples_incomplete.loc[samples_incomplete["Sample_ID"] == "NA11894", "Inclusion"] = "no (incompletely typed & no WES or WGS data)"
+    samples_incomplete.loc[samples_incomplete["Sample ID"] == "NA11894", "Inclusion"] = "no (incompletely typed & no WES or WGS data)"
 
     #write SRR071132 the exclusion reason with "Inclusion" to "no"
     samples_evaluated.loc[samples_evaluated["Run Accession"] == "SRR071132", "Inclusion"] = "no (discrepancy in ground truth)"
