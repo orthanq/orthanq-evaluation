@@ -53,6 +53,8 @@ elif config["simulation"] == False and config["subclonal_sample_creation"] == Fa
             hla=loci
             ),
             expand("results/optitype/{sample}_result.tsv",sample=samples.sample_name),
+            expand("results/HLA-LA/{sample}/hla/R1_bestguess_G.txt",sample=samples.sample_name),
+            expand("results/vg/alignment/{sample}_vg.bam",sample=samples.sample_name),
             expand("results/orthanq/{sample}_{hla}/{sample}_{hla}.csv",sample=samples.sample_name,
                 hla=loci,
             ),
@@ -60,14 +62,16 @@ elif config["simulation"] == False and config["subclonal_sample_creation"] == Fa
                 hla=loci
             ),
             ["results/vega/runtimes.html", "results/vega/tp_fp_plot.html", "results/vega/evaluation.html"],
+            # "results/vega/tp_fp_plot.html",
+            # "results/orthanq/final_report.csv"
+            "results/validation/validation.tsv",
             "results/datavzrd-report/sample_sheet", 
             "results/datavzrd-report/runtimes",
             "results/datavzrd-report/orthanq",
             "results/datavzrd-report/optitype",
             "results/datavzrd-report/arcashla",
             "results/datavzrd-report/hla_la",
-            "results/datavzrd-report/accuracy_comparison"
-
+            "results/datavzrd-report/accuracy_comparison",
 
 elif config["subclonal_sample_creation"]:
     include: "rules/common.smk"

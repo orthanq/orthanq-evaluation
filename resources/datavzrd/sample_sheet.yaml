@@ -38,7 +38,11 @@ views:
           plot:
             ticks:
               scale: linear
-        Read Count:
+        Read Count 1:
+          plot:
+            ticks:
+              scale: linear
+        Read Count 2:
           plot:
             ticks:
               scale: linear
