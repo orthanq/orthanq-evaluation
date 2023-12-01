@@ -11,7 +11,7 @@ with open(snakemake.log[0], "w") as f:
     samples_incomplete = pd.read_csv(samples_incomplete, sep = "\t")
 
     #add NAs for the column "Run Accession" tp the table with no FASTQ data
-    samples_incomplete["Run_Accession"] = "NA"
+    samples_incomplete["Run Accession"] = "NA"
 
     #add a column for inclusion to the evaluation
     samples_evaluated["Inclusion"] = "yes"
@@ -20,8 +20,8 @@ with open(snakemake.log[0], "w") as f:
     samples_incomplete.loc[samples_incomplete["Sample_ID"] == "NA11894", "Inclusion"] = "no (incompletely typed & no WES or WGS data)"
 
     #write SRR071132 the exclusion reason with "Inclusion" to "no"
-    samples_evaluated.loc[samples_evaluated["Run_Accession"] == "SRR071132", "Inclusion"] = "no (discrepancy in ground truth)"
-    samples_evaluated.loc[samples_evaluated["Run_Accession"] == "SRR1601876", "Inclusion"] = "no (discrepancy in ground truth)"
+    samples_evaluated.loc[samples_evaluated["Run Accession"] == "SRR071132", "Inclusion"] = "no (discrepancy in ground truth)"
+    samples_evaluated.loc[samples_evaluated["Run Accession"] == "SRR1601876", "Inclusion"] = "no (discrepancy in ground truth)"
     
     #concetanate all tables together
     # samples_evaluated = pd.concat([samples_evaluated,indiv_no_fastq,samples_low_coverage])
@@ -31,10 +31,10 @@ with open(snakemake.log[0], "w") as f:
     samples_evaluated["Sequencing method"] = "WES"
 
     # correct the sequencing method for the following WGS samples, SRR1601854, ERR194147, ERR194160, ERR194161
-    samples_evaluated.loc[samples_evaluated["Run_Accession"] == "SRR1601854", "Sequencing method"] = "WGS"
-    samples_evaluated.loc[samples_evaluated["Run_Accession"] == "ERR194147", "Sequencing method"] = "WGS"
-    samples_evaluated.loc[samples_evaluated["Run_Accession"] == "ERR194160", "Sequencing method"] = "WGS"
-    samples_evaluated.loc[samples_evaluated["Run_Accession"] == "ERR194161", "Sequencing method"] = "WGS"
+    samples_evaluated.loc[samples_evaluated["Run Accession"] == "SRR1601854", "Sequencing method"] = "WGS"
+    samples_evaluated.loc[samples_evaluated["Run Accession"] == "ERR194147", "Sequencing method"] = "WGS"
+    samples_evaluated.loc[samples_evaluated["Run Accession"] == "ERR194160", "Sequencing method"] = "WGS"
+    samples_evaluated.loc[samples_evaluated["Run Accession"] == "ERR194161", "Sequencing method"] = "WGS"
 
     print(samples_evaluated)
 
