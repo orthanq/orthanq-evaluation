@@ -74,6 +74,7 @@ with open(snakemake.log[0], "w") as f:
                 print("collected: " + str(collected))
         call_rate = samples_called/len(arcasHLA_input.index)
         accuracy = 100*collected/len(arcasHLA_input.index)
+        print("len(arcasHLA_input.index):"+str(len(arcasHLA_input.index)))
         # new_row = {'Locus': locus, 'N': len(arcasHLA_input.index), 'arcasHLA - Call Rate': 1.00, 'arcasHLA - Accuracy': accuracy}
         new_row = pd.DataFrame([[locus, len(arcasHLA_input.index), call_rate, accuracy]],
                     columns=['Locus', 'N', 'arcasHLA_Call_Rate', 'arcasHLA_Accuracy'])
@@ -146,8 +147,9 @@ with open(snakemake.log[0], "w") as f:
                     collected+=1
                 print("collected: " + str(collected))
                 samples_called+=1
-        call_rate = samples_called/len(arcasHLA_input.index)
+        call_rate = samples_called/len(hla_la_input.index)
         accuracy = 100*collected/len(hla_la_input.index)
+        print("len(hla_la_input.index):"+str(len(hla_la_input.index)))        
         # accuracy = 100*collected/(2*len(hla_la_input.index))
         # new_row = {'Locus': locus, 'N': len(hla_la_input.index), 'HLA-LA - Call Rate': 1.00, 'HLA-LA - Accuracy': accuracy}
         # hla_la_validation_table = hla_la_validation_table.append(new_row, ignore_index=True)
@@ -216,6 +218,7 @@ with open(snakemake.log[0], "w") as f:
                 samples_called+=1
         call_rate = samples_called/len(optitype_input.index)
         accuracy = 100*collected/len(optitype_input.index)
+        print("len(optitype_input.index):"+str(len(optitype_input.index)))        
         new_row = pd.DataFrame([[locus, len(optitype_input.index), call_rate, accuracy]],
                     columns=['Locus', 'N', 'Optitype_Call_Rate', 'Optitype_Accuracy'])
         optitype_validation_table = pd.concat([optitype_validation_table, new_row], ignore_index=True)
