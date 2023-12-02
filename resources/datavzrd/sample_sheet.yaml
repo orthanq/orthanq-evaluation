@@ -8,7 +8,8 @@ views:
     dataset: sample_sheet
     desc: |
       ## Sample sheet
-      This table contains all samples that are evaluated as well as ground truth HLA types provided by Abi-Rached, Laurent, et al. 2018.
+      This table contains all individuals and corresponding samples (all individuals in CEU population of 1000 Genomes project) that are evaluated in this paper together with their HLA types as provided by Abi-Rached, Laurent, et al. 2018 (link to table: http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HLA_types/).
+      In addition to 1000 Genomes, a trio from Illumina Platinum Genomes and an individual from GIAB are included as well.
       It contains both included and excluded samples due to discrepancy in ground truth or incomplete truth values as it can be seen in "Inclusion" column.
       Samples/individuals have entries for SRA IDs ("Run_Accession"), read length and count information.
     render-table:
