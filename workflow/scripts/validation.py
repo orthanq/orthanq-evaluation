@@ -95,7 +95,11 @@ with open(snakemake.log[0], "w") as f:
                         collected+=1
                     print("collected: " + str(collected))
             call_rate = samples_called/len(arcasHLA_results.index)
-            accuracy = 100*collected/len(arcasHLA_results.index)
+            # to be fair to all tools, the denominator should be the number of samples that the tool results in a prediction.
+            if samples_called != 0:
+                accuracy = 100*collected/samples_called
+            else:
+                 accuracy = 0
             print("len(arcasHLA_results.index):"+str(len(arcasHLA_results.index)))
             # new_row = {'Locus': locus, 'N': len(arcasHLA_input.index), 'arcasHLA - Call Rate': 1.00, 'arcasHLA - Accuracy': accuracy}
             new_row = pd.DataFrame([[locus, len(arcasHLA_results.index), call_rate, accuracy]],
@@ -170,11 +174,9 @@ with open(snakemake.log[0], "w") as f:
                     print("collected: " + str(collected))
                     samples_called+=1
             call_rate = samples_called/len(hla_la_results.index)
-            accuracy = 100*collected/len(hla_la_results.index)
+            # to be fair to all tools, the denominator should be the number of samples that the tool results in a prediction.
+            accuracy = 100*collected/samples_called
             print("len(hla_la_results.index):"+str(len(hla_la_results.index)))        
-            # accuracy = 100*collected/(2*len(hla_la_results.index))
-            # new_row = {'Locus': locus, 'N': len(hla_la_results.index), 'HLA-LA - Call Rate': 1.00, 'HLA-LA - Accuracy': accuracy}
-            # hla_la_validation_table = hla_la_validation_table.append(new_row, ignore_index=True)
             new_row = pd.DataFrame([[locus, len(hla_la_results.index), call_rate, accuracy]],
                         columns=['Locus', 'N', 'HLA_LA_Call_Rate', 'HLA_LA_Accuracy'])
             hla_la_validation_table = pd.concat([hla_la_validation_table, new_row], ignore_index=True)
@@ -239,7 +241,8 @@ with open(snakemake.log[0], "w") as f:
                     print("collected: " + str(collected))
                     samples_called+=1
             call_rate = samples_called/len(optitype_results.index)
-            accuracy = 100*collected/len(optitype_results.index)
+            # to be fair to all tools, the denominator should be the number of samples that the tool results in a prediction.
+            accuracy = 100*collected/samples_called
             print("len(optitype_results.index):"+str(len(optitype_results.index)))        
             new_row = pd.DataFrame([[locus, len(optitype_results.index), call_rate, accuracy]],
                         columns=['Locus', 'N', 'Optitype_Call_Rate', 'Optitype_Accuracy'])

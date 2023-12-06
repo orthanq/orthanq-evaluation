@@ -270,7 +270,7 @@ rule validate_orthanq:
         validation_low="results/validation/orthanq_validation_low.tsv",
         validation_high="results/validation/orthanq_validation_high.tsv",
         validation_all="results/validation/orthanq_validation_all.tsv",
-        tp_fp_table="results/validation/tp_fp_table.tsv",
+        tp_fp_table="results/validation/tp_fp_table_all.tsv",
     log:
         "logs/validate_orthanq/validate_orthanq.log"
     script:
@@ -278,9 +278,9 @@ rule validate_orthanq:
 
 rule plot_tp_fp:
     input:
-        tp_fp_table="results/validation/tp_fp_table.tsv",
+        tp_fp_table="results/validation/tp_fp_table_all.tsv",
     output:
-        tp_fp_plot="results/validation/tp_fp_plot.json",
+        tp_fp_plot="results/validation/tp_fp_table_all.json",
     conda:
         "../envs/altair.yaml"
     log:
@@ -376,12 +376,12 @@ rule vg2svg_evaluation:
         runtimes_plot = "results/runtimes/runtimes.json",
         evaluation_low = "results/evaluation/evaluation_plot_low.json",
         evaluation_high = "results/evaluation/evaluation_plot_high.json",
-        tp_fp_plot = "results/validation/tp_fp_plot.json"
+        tp_fp_plot = "results/validation/tp_fp_table_all.json"
     output:
         runtimes_svg="results/vega/runtimes.svg",
         evaluation_low_svg="results/vega/evaluation_low.svg",
         evaluation_high_svg="results/vega/evaluation_high.svg",
-        tp_fp_plot_svg = "results/vega/tp_fp_plot.svg",
+        tp_fp_plot_svg = "results/vega/tp_fp_table_all.svg",
         runtimes_html=report("results/vega/runtimes.html", category="Runtime performance", labels={
             "type": "figure"
         }),
@@ -393,7 +393,7 @@ rule vg2svg_evaluation:
             "name": "accuracy comparison",
             "type": "figure"
         }),
-        tp_fp_plot_html=report("results/vega/tp_fp_plot.html", category="Orthanq density accuracy", labels={
+        tp_fp_plot_html=report("results/vega/tp_fp_table_all.html", category="Orthanq density accuracy", labels={
             "figure": "log-scaled density plot"
         })
     log:

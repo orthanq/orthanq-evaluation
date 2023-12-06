@@ -53,9 +53,7 @@ with open(snakemake.log[0], "w") as f:
                     best_results = results[results.odds.isin(best_odds)]
 
                     if not best_results.empty: #orthanq has no predictions for some samples
-                        # print("best results: ", best_results)
-                        if locus == locus_name:
-                            samples_called += 1
+
                         #retrieve the predicted haplotypes
                         haplotypes = []
                         haplotypes = [col for col in results if col.startswith(locus)]
@@ -69,82 +67,93 @@ with open(snakemake.log[0], "w") as f:
                                 columns=['Sample', 'Locus', 'TP', 'Best_Density'])
                             orthanq_tp_fp_table = pd.concat([orthanq_tp_fp_table, row_to_add], ignore_index=True)
 
-                        #loop over best results (rows that share the same best odds score, i.e. same density and solutions but different haplotypes)
-                        for (i,_) in best_results.iterrows():
+                        #only include predictions having density above determined threshold
+                        threshold = 0.7
+                        sum_of_densities = 0
+                        sum_of_densities = best_results["density"].sum()
+                        print(sample_name)
+                        print(best_results)
+                        print(sum_of_densities)
+                        if sum_of_densities > threshold:
+                            #count the number of samples that are called
+                            if locus == locus_name:
+                                samples_called += 1
+                            #loop over best results (rows that share the same best odds score, i.e. same density and solutions but different haplotypes)
+                            for (i,_) in best_results.iterrows():
+                                #collect first two fields and cumulative fractions of haplotypes
+                                #required to group haplotypes with identical two field values (ground truth contains two field information)
+                                two_field_fractions = {}
+                                for haplo in haplotypes:
+                                    haplo_splt = haplo.split(":")
+                                    two_field = haplo_splt[0] + ":" + haplo_splt[1]
+                                    if two_field in two_field_fractions:
+                                        two_field_fractions[two_field] += best_results[haplo][i]
+                                    else:
+                                        two_field_fractions[two_field] = best_results[haplo][i]
+                                print("two_field_fractions: ",two_field_fractions)
 
-                            #collect first two fields and cumulative fractions of haplotypes
-                            #required to group haplotypes with identical two field values (ground truth contains two field information)
-                            two_field_fractions = {}
-                            for haplo in haplotypes:
-                                haplo_splt = haplo.split(":")
-                                two_field = haplo_splt[0] + ":" + haplo_splt[1]
-                                if two_field in two_field_fractions:
-                                    two_field_fractions[two_field] += best_results[haplo][i]
-                                else:
-                                    two_field_fractions[two_field] = best_results[haplo][i]
-                            print("two_field_fractions: ",two_field_fractions)
+                                #collect ground truth in values_in_truth, handle special cases e.g. 23:01/02/04
+                                values_in_truth = {}
+                                for (chr_index,chr_number) in enumerate([1, 2]):
 
-                            #collect ground truth in values_in_truth, handle special cases e.g. 23:01/02/04
-                            values_in_truth = {}
-                            for (chr_index,chr_number) in enumerate([1, 2]):
+                                    #get ground truth values for the sample and locus
+                                    locus_in_truth = "HLA-" + locus + " " + str(chr_number)
+                                    value_in_truth = locus+"*"+ground_truth.loc[ground_truth['Run Accession'] == sample_name, locus_in_truth].array[0] ##array[0] to reach what's inside the Series
+                                    print("values_in_truth: ",values_in_truth)
 
-                                #get ground truth values for the sample and locus
-                                locus_in_truth = "HLA-" + locus + " " + str(chr_number)
-                                value_in_truth = locus+"*"+ground_truth.loc[ground_truth['Run Accession'] == sample_name, locus_in_truth].array[0] ##array[0] to reach what's inside the Series
+                                    ##split in case of alleles that have 
+                                    #e.g. 23:01/02/04 in the truth
+                                    ##the sample that has multiple possible alleles, the maximum allele is being added to the cumulative fractions (1st condition below)
+                                    tmp_alleles = []
+                                    if "/" in value_in_truth:
+                                        first_split = value_in_truth.split("/")
+                                        first_field = first_split[0].split(":")[0]
+                                        tmp_alleles.append(first_split[0])
+                                        for splitted in first_split[1:]:
+                                            tmp_alleles.append(first_field + ":" +splitted)
+                                        values_in_truth["{0}".format(chr_index)] = tmp_alleles
+                                    elif value_in_truth.endswith("*"):  #also handle the cases where samples have '*' character in the end; remove the character.
+                                        value_in_truth=value_in_truth.rstrip("*")
+                                        values_in_truth["{0}".format(chr_index)] = [value_in_truth]
+                                    else: #the normal case
+                                        values_in_truth["{0}".format(chr_index)] = [value_in_truth]
                                 print("values_in_truth: ",values_in_truth)
 
-                                ##split in case of alleles that have 
-                                #e.g. 23:01/02/04 in the truth
-                                ##the sample that has multiple possible alleles, the maximum allele is being added to the cumulative fractions (1st condition below)
-                                tmp_alleles = []
-                                if "/" in value_in_truth:
-                                    first_split = value_in_truth.split("/")
-                                    first_field = first_split[0].split(":")[0]
-                                    tmp_alleles.append(first_split[0])
-                                    for splitted in first_split[1:]:
-                                        tmp_alleles.append(first_field + ":" +splitted)
-                                    values_in_truth["{0}".format(chr_index)] = tmp_alleles
-                                elif value_in_truth.endswith("*"):  #also handle the cases where samples have '*' character in the end; remove the character.
-                                    value_in_truth=value_in_truth.rstrip("*")
-                                    values_in_truth["{0}".format(chr_index)] = [value_in_truth]
-                                else: #the normal case
-                                    values_in_truth["{0}".format(chr_index)] = [value_in_truth]
-                            print("values_in_truth: ",values_in_truth)
+                                #collect the fractions of haplotypes matching with ground truth
+                                #loop over values in truth and stop when one matches an allele from the output of orthanq
+                                #prev_value is used to stop collecting the fraction from the identical allele match
+                                ##1-)the ground truth might have multiple possible alleles for single haplotypes (chromosomes)
+                                ##  in that case, collect all allele-fraction combinations to collected_fractions
+                                ##  and take account the allele that has the highest fraction
+                                
+                                prev_value = ""
+                                fractions = 0.0
+                                for chr_index, (_,chr_values) in enumerate(values_in_truth.items()):
+                                    for chr_value in chr_values:
+                                        collected_fractions = {}
+                                        if chr_value in two_field_fractions.keys() and chr_value != prev_value:
+                                            collected_fractions[chr_value]=two_field_fractions[chr_value]
+                                        if collected_fractions:
+                                            fractions += collected_fractions[max(collected_fractions)] ##get a random one, max() can be used (orders allele names alphabetically), it doesn't matter anyways in case of diploid priors
+                                            prev_value = max(collected_fractions)
+                                print("fractions: ",fractions)
 
-                            #collect the fractions of haplotypes matching with ground truth
-                            #loop over values in truth and stop when one matches an allele from the output of orthanq
-                            #prev_value is used to stop collecting the fraction from the identical allele match
-                            ##1-)the ground truth might have multiple possible alleles for single haplotypes (chromosomes)
-                            ##  in that case, collect all allele-fraction combinations to collected_fractions
-                            ##  and take account the allele that has the highest fraction
-                            
-                            prev_value = ""
-                            fractions = 0.0
-                            for chr_index, (_,chr_values) in enumerate(values_in_truth.items()):
-                                for chr_value in chr_values:
-                                    collected_fractions = {}
-                                    if chr_value in two_field_fractions.keys() and chr_value != prev_value:
-                                        collected_fractions[chr_value]=two_field_fractions[chr_value]
-                                    if collected_fractions:
-                                        fractions += collected_fractions[max(collected_fractions)] ##get a random one, max() can be used (orders allele names alphabetically), it doesn't matter anyways in case of diploid priors
-                                        prev_value = max(collected_fractions)
-                            print("fractions: ",fractions)
+                                #score only haplotypes that make up more than 50%
+                                #also enter the entry to the tp_fp table to use in the plots in further rules
+                                if fractions > 0.5: 
+                                    collected += 1.0
 
-                            #score only haplotypes that make up more than 50%
-                            #also enter the entry to the tp_fp table to use in the plots in further rules
-                            if fractions > 0.5: 
-                                collected += 1.0
-
-                                #fill up the orthanq_tp_fp_table with 1 for TP
-                                orthanq_tp_fp_table.loc[(orthanq_tp_fp_table.Sample == sample_name) & (orthanq_tp_fp_table.Locus == locus_name) & (orthanq_tp_fp_table.Best_Density == best_density),'TP'] = 1
-                                print("inner loop collected: ", collected)
-                                break ##break as soon as the collected gets +1 
+                                    #fill up the orthanq_tp_fp_table with 1 for TP
+                                    orthanq_tp_fp_table.loc[(orthanq_tp_fp_table.Sample == sample_name) & (orthanq_tp_fp_table.Locus == locus_name) & (orthanq_tp_fp_table.Best_Density == best_density),'TP'] = 1
+                                    print("inner loop collected: ", collected)
+                                    break ##break as soon as the collected gets +1 
             print("collected: ",collected)
 
             #calculate accuracy and call rate
             n_samples_collected = len(list(set(samples_collected)))
             print("n_samples_collected: ",n_samples_collected)
-            accuracy = 100*collected/n_samples_collected
+            # to be fair to all tools, the denominator should be the number of samples that the tool results in a prediction.
+            accuracy = 100*collected/samples_called
             print("samples_called: ",samples_called)
             call_rate = samples_called/n_samples_collected
 
