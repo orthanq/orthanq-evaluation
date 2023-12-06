@@ -5,57 +5,68 @@ with open(snakemake.log[0], "w") as f:
     sys.stderr = sys.stdout = f
     # Opening JSON file
     f = open(snakemake.input.template)
-    # f = open("resources/templates/evaluation_plot.json")
 
     # open the validation table
-    # validation = pd.read_table()
-    validation = pd.read_table(snakemake.input.validation, sep="\t", keep_default_na=False)
+    validation_low = pd.read_table(snakemake.input.validation_low, sep="\t", keep_default_na=False)
+    validation_high = pd.read_table(snakemake.input.validation_high, sep="\t", keep_default_na=False)
+
     # validation = pd.read_table("results/comparison/validation.tsv", sep="\t")
     
-    # returns JSON object as a dictionary
-    template = json.load(f)
+    def create_evaluation_plot(validation_table, template_file):
+        # returns JSON object as a dictionary
+        template = json.load(f)
 
-    #initialize a list to collect tool_accuracies
-    tool_accuracies = []
+        #initialize a list to collect tool_accuracies
+        tool_accuracies = []
 
-    #loop through the validation table and fill in the json template
-    for row in validation.itertuples():
-        arcashla = {
-            "category": row.Locus,
-            "group": "arcasHLA",
-            "value": row.arcasHLA_Accuracy
-        }
-        hla_la = {
-            "category": row.Locus,
-            "group": "HLA-LA",
-            "value": row.HLA_LA_Accuracy
-        }
-        optitype = {
-            "category": row.Locus,
-            "group": "Optitype",
-            "value": row.Optitype_Accuracy
-        }
-        orthanq = {
-            "category": row.Locus,
-            "group": "Orthanq",
-            "value": row.Orthanq_Accuracy
-        }
-        tool_accuracies.append(arcashla)
-        tool_accuracies.append(hla_la)
-        tool_accuracies.append(optitype)
-        tool_accuracies.append(orthanq)
+        #loop through the validation table and fill in the json template
+        for row in validation_table.itertuples():
+            arcashla = {
+                "category": row.Locus,
+                "group": "arcasHLA",
+                "value": row.arcasHLA_Accuracy
+            }
+            hla_la = {
+                "category": row.Locus,
+                "group": "HLA-LA",
+                "value": row.HLA_LA_Accuracy
+            }
+            optitype = {
+                "category": row.Locus,
+                "group": "Optitype",
+                "value": row.Optitype_Accuracy
+            }
+            orthanq = {
+                "category": row.Locus,
+                "group": "Orthanq",
+                "value": row.Orthanq_Accuracy
+            }
+            tool_accuracies.append(arcashla)
+            tool_accuracies.append(hla_la)
+            tool_accuracies.append(optitype)
+            tool_accuracies.append(orthanq)
 
-    template['datasets']['tool_accuracies'] = tool_accuracies
+        template['datasets']['tool_accuracies'] = tool_accuracies
 
-    jsonData = json.dumps(template)
-    print(jsonData)
+        jsonData = json.dumps(template)
+        print(jsonData)
+        return jsonData
+
+    #evaluation plot for low coverage
+    json_data_low = create_evaluation_plot(validation_low, f)
 
     #write json to file
-    # output_path = "results/comparison/evaluation_plot.json"
-    output_path = snakemake.output.plot
+    output_path_low = snakemake.output.plot_low
 
-    # with open(output_path, 'w', encoding='utf-8') as f:
-    #     json.dump(jsonData, f, ensure_ascii=False, indent=4)
+    with open(output_path_low, "w") as text_file:
+        text_file.write(json_data_low)
 
-    with open(output_path, "w") as text_file:
-        text_file.write(jsonData)
+    #evaluation plot for high coverage
+    f = open(snakemake.input.template)
+    json_data_high = create_evaluation_plot(validation_high, f)
+
+    #write json to file
+    output_path_high = snakemake.output.plot_high
+
+    with open(output_path_high, "w") as text_file:
+        text_file.write(json_data_high)

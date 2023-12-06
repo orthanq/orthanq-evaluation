@@ -6,9 +6,11 @@ with open(snakemake.log[0], "w") as f:
     #read the tables into a pd df
     samples_evaluated = snakemake.input.samples_evaluated
     samples_incomplete = snakemake.input.samples_incomplete_truth
-
+    samples_low_coverage = snakemake.input.samples_low_coverage
+    
     samples_evaluated = pd.read_csv(samples_evaluated, sep = "\t", keep_default_na=False)
     samples_incomplete = pd.read_csv(samples_incomplete, sep = "\t")
+    samples_low_coverage = pd.read_csv(samples_low_coverage, sep = "\t")
 
     #add NAs for the column "Run Accession" tp the table with no FASTQ data
     samples_incomplete["Run Accession"] = "NA"
@@ -16,6 +18,8 @@ with open(snakemake.log[0], "w") as f:
     #add a column for inclusion to the evaluation
     samples_evaluated["Inclusion"] = "yes"
     samples_incomplete["Inclusion"] = "no (incompletely typed)"
+    samples_low_coverage["Inclusion"] = "no (low coverage)"
+
     #add the second reason for NA11894
     samples_incomplete.loc[samples_incomplete["Sample ID"] == "NA11894", "Inclusion"] = "no (incompletely typed & no WES or WGS data)"
 
@@ -24,8 +28,7 @@ with open(snakemake.log[0], "w") as f:
     samples_evaluated.loc[samples_evaluated["Run Accession"] == "SRR1601876", "Inclusion"] = "no (discrepancy in ground truth)"
     
     #concetanate all tables together
-    # samples_evaluated = pd.concat([samples_evaluated,indiv_no_fastq,samples_low_coverage])
-    samples_evaluated = pd.concat([samples_evaluated,samples_incomplete])
+    samples_evaluated = pd.concat([samples_evaluated, samples_incomplete, samples_low_coverage])
 
     # add a column for sequencing method
     samples_evaluated["Sequencing method"] = "WES"
@@ -39,5 +42,4 @@ with open(snakemake.log[0], "w") as f:
     print(samples_evaluated)
 
     #write concatenated table to file
-    # samples_evaluated.to_csv("whole_sample_sheet.csv", index=False)
     samples_evaluated.to_csv(snakemake.output.merged, index=False)
