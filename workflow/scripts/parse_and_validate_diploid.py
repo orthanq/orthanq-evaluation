@@ -19,11 +19,37 @@ with open(snakemake.log[0], "w") as f:
     # ground_truth = pd.read_csv(snakemake.input.ground_truth, sep = "\t")
 
     # read sample sheets with truth values for evaluated and low coverage samples
-    samples_evaluated = pd.read_csv(snakemake.input.samples_evaluated, sep = "\t")
-    samples_low_coverage = pd.read_csv(snakemake.input.samples_low_coverage, sep = "\t")
-    samples_all = pd.concat([samples_evaluated, samples_low_coverage], ignore_index=True)
+    ground_truth_evaluated = pd.read_csv(snakemake.input.ground_truth_evaluated, sep = "\t")
+    ground_truth_low_coverage = pd.read_csv(snakemake.input.ground_truth_low_coverage, sep = "\t")
+    ground_truth_all = pd.concat([ground_truth_evaluated, ground_truth_low_coverage], ignore_index=True)
 
-    def validate_orthanq(orthanq_input, validation_table, orthanq_tp_fp_table, ground_truth, sample_list):
+    def truth_for_sample(locus, values_in_truth, ground_truth, sample_name):
+        for (chr_index,chr_number) in enumerate([1, 2]):
+            locus_in_truth= "HLA-" + locus + " " + str(chr_number)
+            print(sample_name)
+            print(ground_truth)
+            print(locus_in_truth)
+            value_in_truth = ground_truth.loc[ground_truth['Run Accession'] == sample_name, locus_in_truth].array[0] ##array[0] to reach what's inside the Series
+            print(value_in_truth)
+            ##split in case of alles that have e.g. 23:01/02/04 in the truth
+            tmp_alleles = []
+            if "/" in value_in_truth:
+                first_split = value_in_truth.split("/")
+                first_field = first_split[0].split(":")[0]
+                first_field = first_field.split("*")[1]
+                tmp_alleles.append(first_split[0])
+                for splitted in first_split[1:]:
+                    tmp_alleles.append(first_field + ":" +splitted)
+                values_in_truth["{0}".format(chr_index)] = tmp_alleles
+            elif value_in_truth.endswith("*"):
+                value_in_truth=value_in_truth.rstrip("*")
+                values_in_truth["{0}".format(chr_index)] = [value_in_truth]
+            else:
+                values_in_truth["{0}".format(chr_index)] = [value_in_truth]
+            print(values_in_truth)
+        return values_in_truth
+
+    def validate_orthanq(orthanq_input, validation_table, orthanq_tp_fp_table, ground_truth, sample_list, orthanq_tp_fp_A, orthanq_tp_fp_B, orthanq_tp_fp_C, orthanq_tp_fp_DQB1):
         #loop over loci and orthanq results
         loci = ['A', 'B', 'C', 'DQB1']
         for locus in loci:   
@@ -32,11 +58,16 @@ with open(snakemake.log[0], "w") as f:
             collected = 0.0
             samples_called = 0 #some samples in orthanq have some loci that is uncalled, so we need to count the number of samples that are called here.
             for (index, _) in enumerate(orthanq_input):
+                #collect ground truth in values_in_truth, handle special cases e.g. 23:01/02/04
 
                 #retrieve sample and locus names
                 splitted = os.path.basename(orthanq_input[index]).split("_")
                 sample_name = splitted[0]
+
                 if sample_name in sample_list:
+                    values_in_truth = {}
+                    values_in_truth = truth_for_sample(locus, values_in_truth, ground_truth, sample_name)
+
                     samples_collected.append(sample_name) #keep track of samples that are evaluated
                     locus_name = splitted[1].split(".")[0]
                     print("sample name: ", sample_name)
@@ -52,6 +83,30 @@ with open(snakemake.log[0], "w") as f:
                     best_odds = [1, 1.0, 1.00]
                     best_results = results[results.odds.isin(best_odds)]
 
+                    #fill in the tp fp table
+                    print(orthanq_tp_fp_A)
+                    print(values_in_truth)
+                    print(sum(values_in_truth.values(), []))
+                    print('/'.join(sum(values_in_truth.values(), [])))
+                    print("checkpoint2323")
+                    if locus == 'A':
+                        new_row_tp = pd.DataFrame([sample_name, '/'.join(sum(values_in_truth.values(), [])), '/'.join(alleles), ''],
+                            columns=['sample', 'ground', 'orthanq', 'orthanq evaluation'])
+                        orthanq_tp_fp_A = pd.concat([orthanq_tp_fp_A, new_row_tp], ignore_index=True)
+                    print(orthanq_tp_fp_A)
+                    if locus == 'B':
+                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(sum(values_in_truth.values(), [])), '/'.join(alleles), '']],
+                            columns=['sample', 'ground', 'orthanq', 'orthanq evaluation'])
+                        orthanq_tp_fp_B = pd.concat([orthanq_tp_fp_B, new_row_tp], ignore_index=True)
+                    if locus == 'C':
+                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(sum(values_in_truth.values(), [])), '/'.join(alleles), '']],
+                            columns=['sample', 'ground', 'orthanq', 'orthanq evaluation'])
+                        orthanq_tp_fp_C = pd.concat([orthanq_tp_fp_C, new_row_tp], ignore_index=True)
+                    if locus == 'DQB1':
+                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(sum(values_in_truth.values(), [])), '/'.join(alleles), '']],
+                            columns=['sample', 'ground', 'orthanq', 'orthanq evaluation'])
+                        orthanq_tp_fp_DQB1 = pd.concat([orthanq_tp_fp_DQB1, new_row_tp], ignore_index=True)
+                    print("checkpoint")
                     if not best_results.empty: #orthanq has no predictions for some samples
 
                         #retrieve the predicted haplotypes
@@ -85,39 +140,17 @@ with open(snakemake.log[0], "w") as f:
                                 two_field_fractions = {}
                                 for haplo in haplotypes:
                                     haplo_splt = haplo.split(":")
-                                    two_field = haplo_splt[0] + ":" + haplo_splt[1]
+                                    first_field = haplo_splt[0].split("*")[1]
+                                    two_field = first_field + ":" + haplo_splt[1]
                                     if two_field in two_field_fractions:
                                         two_field_fractions[two_field] += best_results[haplo][i]
                                     else:
                                         two_field_fractions[two_field] = best_results[haplo][i]
                                 print("two_field_fractions: ",two_field_fractions)
 
-                                #collect ground truth in values_in_truth, handle special cases e.g. 23:01/02/04
-                                values_in_truth = {}
-                                for (chr_index,chr_number) in enumerate([1, 2]):
-
-                                    #get ground truth values for the sample and locus
-                                    locus_in_truth = "HLA-" + locus + " " + str(chr_number)
-                                    value_in_truth = locus+"*"+ground_truth.loc[ground_truth['Run Accession'] == sample_name, locus_in_truth].array[0] ##array[0] to reach what's inside the Series
-                                    print("values_in_truth: ",values_in_truth)
-
-                                    ##split in case of alleles that have 
-                                    #e.g. 23:01/02/04 in the truth
-                                    ##the sample that has multiple possible alleles, the maximum allele is being added to the cumulative fractions (1st condition below)
-                                    tmp_alleles = []
-                                    if "/" in value_in_truth:
-                                        first_split = value_in_truth.split("/")
-                                        first_field = first_split[0].split(":")[0]
-                                        tmp_alleles.append(first_split[0])
-                                        for splitted in first_split[1:]:
-                                            tmp_alleles.append(first_field + ":" +splitted)
-                                        values_in_truth["{0}".format(chr_index)] = tmp_alleles
-                                    elif value_in_truth.endswith("*"):  #also handle the cases where samples have '*' character in the end; remove the character.
-                                        value_in_truth=value_in_truth.rstrip("*")
-                                        values_in_truth["{0}".format(chr_index)] = [value_in_truth]
-                                    else: #the normal case
-                                        values_in_truth["{0}".format(chr_index)] = [value_in_truth]
-                                print("values_in_truth: ",values_in_truth)
+                                ##split in case of alleles that have 
+                                #e.g. 23:01/02/04 in the truth
+                                ##the sample that has multiple possible alleles, the maximum allele is being added to the cumulative fractions (1st condition below)
 
                                 #collect the fractions of haplotypes matching with ground truth
                                 #loop over values in truth and stop when one matches an allele from the output of orthanq
@@ -146,6 +179,16 @@ with open(snakemake.log[0], "w") as f:
                                     #fill up the orthanq_tp_fp_table with 1 for TP
                                     orthanq_tp_fp_table.loc[(orthanq_tp_fp_table.Sample == sample_name) & (orthanq_tp_fp_table.Locus == locus_name) & (orthanq_tp_fp_table.Best_Density == best_density),'TP'] = 1
                                     print("inner loop collected: ", collected)
+                                    print("checkpoint 1")
+                                    #fill in the table for tp fp info
+                                    if locus == "A":
+                                        orthanq_tp_fp_A.loc[orthanq_tp_fp_A['sample'] == sample_name, 'orthanq evaluation'] = 'TP'
+                                    if locus == "B":
+                                        orthanq_tp_fp_B.loc[orthanq_tp_fp_B['sample'] == sample_name, 'orthanq evaluation'] = 'TP'
+                                    if locus == "C":
+                                        orthanq_tp_fp_C.loc[orthanq_tp_fp_C['sample'] == sample_name, 'orthanq evaluation'] = 'TP'
+                                    if locus == "DQB1":
+                                        orthanq_tp_fp_DQB1.loc[orthanq_tp_fp_DQB1['sample'] == sample_name, 'orthanq evaluation'] = 'TP'
                                     break ##break as soon as the collected gets +1 
             print("collected: ",collected)
 
@@ -161,16 +204,22 @@ with open(snakemake.log[0], "w") as f:
             new_row = pd.DataFrame([[locus, n_samples_collected, call_rate, accuracy]],
                             columns=['Locus', 'N', 'Orthanq_Call_Rate', 'Orthanq_Accuracy'])
             validation_table = pd.concat([validation_table, new_row], ignore_index=True)
-        return validation_table, orthanq_tp_fp_table
+        return validation_table, orthanq_tp_fp_table, orthanq_tp_fp_A, orthanq_tp_fp_B, orthanq_tp_fp_C, orthanq_tp_fp_DQB1
 
     ##low
     #initialize the table to output TP and FP samples
     orthanq_validation_table_low= pd.DataFrame(columns=('Locus', 'N', 'Orthanq_Call_Rate', 'Orthanq_Accuracy'))
     orthanq_tp_fp_table_low = pd.DataFrame(columns=('Sample', 'Locus', 'TP', 'Best_Density'))
 
+    #initialize locus-wise tp fp table for orthanq
+    orthanq_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'orthanq', 'orthanq evaluation'))
+    orthanq_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'orthanq', 'orthanq evaluation'))
+    orthanq_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'orthanq', 'orthanq evaluation'))
+    orthanq_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'orthanq', 'orthanq evaluation'))
+
     #validate low samples
-    sample_list_low = samples_low_coverage["Run Accession"].to_list()
-    orthanq_validation_table_low = validate_orthanq(orthanq_input, orthanq_validation_table_low, orthanq_tp_fp_table_low, samples_low_coverage, sample_list_low)
+    sample_list_low = ground_truth_low_coverage["Run Accession"].to_list()
+    orthanq_validation_table_low = validate_orthanq(orthanq_input, orthanq_validation_table_low, orthanq_tp_fp_table_low, ground_truth_low_coverage, sample_list_low, orthanq_tp_fp_A, orthanq_tp_fp_B, orthanq_tp_fp_C, orthanq_tp_fp_DQB1)
     print("orthanq_validation_table_low")
     print(orthanq_validation_table_low)
     final_orthanq_low = orthanq_validation_table_low[0]
@@ -183,8 +232,8 @@ with open(snakemake.log[0], "w") as f:
     orthanq_tp_fp_table_high = pd.DataFrame(columns=('Sample', 'Locus', 'TP', 'Best_Density'))
 
     #validate high samples
-    sample_list_evaluated = samples_evaluated["Run Accession"].to_list()
-    orthanq_validation_table_high = validate_orthanq(orthanq_input, orthanq_validation_table_high, orthanq_tp_fp_table_high, samples_evaluated, sample_list_evaluated)
+    sample_list_evaluated = ground_truth_evaluated["Run Accession"].to_list()
+    orthanq_validation_table_high = validate_orthanq(orthanq_input, orthanq_validation_table_high, orthanq_tp_fp_table_high, ground_truth_evaluated, sample_list_evaluated, orthanq_tp_fp_A, orthanq_tp_fp_B, orthanq_tp_fp_C, orthanq_tp_fp_DQB1)
     
     final_orthanq_high = orthanq_validation_table_high[0]
 
@@ -193,15 +242,20 @@ with open(snakemake.log[0], "w") as f:
     orthanq_validation_table_all= pd.DataFrame(columns=('Locus', 'N', 'Orthanq_Call_Rate', 'Orthanq_Accuracy'))
     orthanq_tp_fp_table_all = pd.DataFrame(columns=('Sample', 'Locus', 'TP', 'Best_Density'))
 
+    #initialize locus-wise tp fp table for orthanq
+    orthanq_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'orthanq', 'orthanq evaluation'))
+    orthanq_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'orthanq', 'orthanq evaluation'))
+    orthanq_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'orthanq', 'orthanq evaluation'))
+    orthanq_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'orthanq', 'orthanq evaluation'))
+
     #validate all samples
-    sample_list_all = samples_all["Run Accession"].to_list()
-    orthanq_validation_results_all = validate_orthanq(orthanq_input, orthanq_validation_table_all, orthanq_tp_fp_table_all, samples_all, sample_list_all)
+    sample_list_all = ground_truth_all["Run Accession"].to_list()
+    orthanq_validation_results_all = validate_orthanq(orthanq_input, orthanq_validation_table_all, orthanq_tp_fp_table_all, ground_truth_all, sample_list_all, orthanq_tp_fp_A, orthanq_tp_fp_B, orthanq_tp_fp_C, orthanq_tp_fp_DQB1)
 
     final_orthanq_all = orthanq_validation_results_all[0]
     final_tp_fp_table_all = orthanq_validation_results_all[1]
 
     #write the validation table
-
 
     final_orthanq_high.to_csv(
         snakemake.output.validation_high, sep="\t", index=False, header=True
@@ -218,4 +272,21 @@ with open(snakemake.log[0], "w") as f:
     #write the orthanq_tp_fp_table table for all
     final_tp_fp_table_all.to_csv(
         snakemake.output.tp_fp_table, sep="\t", index=False, header=True
+    )
+
+    #write locus wise tables
+    orthanq_validation_results_all[2].to_csv(
+        snakemake.output.orthanq_A_tp_fp, sep="\t", index=False, header=True
+    )
+
+    orthanq_validation_results_all[3].to_csv(
+        snakemake.output.orthanq_B_tp_fp, sep="\t", index=False, header=True
+    )
+
+    orthanq_validation_results_all[4].to_csv(
+        snakemake.output.orthanq_C_tp_fp, sep="\t", index=False, header=True
+    )
+
+    orthanq_validation_results_all[5].to_csv(
+        snakemake.output.orthanq_DQB1_tp_fp, sep="\t", index=False, header=True
     )
