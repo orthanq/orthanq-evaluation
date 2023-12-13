@@ -80,11 +80,15 @@ with open(snakemake.log[0], "w") as f:
                 values_in_truth = truth_for_sample(locus, values_in_truth, ground_truth, sample_name)
                 
                 values_in_truth_list = []
-                for chr_number in [1, 2]:
-                    locus_name_in_truth = "HLA-" + locus + " " + str(chr_number)
-                    value_in_truth = ground_truth.loc[ground_truth['Run Accession'] == sample_name, locus_name_in_truth].array[0]
-                    values_in_truth_list.append(locus + "*" + value_in_truth)
+                # for chr_number in [1, 2]:
+                #     locus_name_in_truth = "HLA-" + locus + " " + str(chr_number)
+                #     value_in_truth = ground_truth.loc[ground_truth['Run Accession'] == sample_name, locus_name_in_truth].array[0]
+                #     value_in_truth=value_in_truth.rstrip("*") #remove the alleles ending with "*"
+                #     values_in_truth_list.append(locus + "*" + value_in_truth)
+                for key,values in values_in_truth.items():
+                    values_in_truth_list.append(";".join(values))
                 print(values_in_truth_list)
+
                 if pd.isnull(value_in_arcasHLA):
                     #fill in the tp fp table
                     if locus == "A":
@@ -203,10 +207,14 @@ with open(snakemake.log[0], "w") as f:
                 values_in_truth = truth_for_sample(locus, values_in_truth, ground_truth, sample_name)
                 
                 values_in_truth_list = []
-                for chr_number in [1, 2]:
-                    locus_name_in_truth = "HLA-" + locus + " " + str(chr_number)
-                    value_in_truth = ground_truth.loc[ground_truth['Run Accession'] == sample_name, locus_name_in_truth].array[0]
-                    values_in_truth_list.append(locus + "*" + value_in_truth)
+                # for chr_number in [1, 2]:
+                #     locus_name_in_truth = "HLA-" + locus + " " + str(chr_number)
+                #     value_in_truth = ground_truth.loc[ground_truth['Run Accession'] == sample_name, locus_name_in_truth].array[0]
+                #     value_in_truth=value_in_truth.rstrip("*") #remove the alleles ending with "*"                    
+                #     values_in_truth_list.append(locus + "*" + value_in_truth)
+                for key,values in values_in_truth.items():
+                    values_in_truth_list.append(";".join(values))
+                print(values_in_truth_list)
 
                 if pd.isnull(value_in_hla_la):
                     #fill in the tp fp table
@@ -339,11 +347,15 @@ with open(snakemake.log[0], "w") as f:
                 values_in_truth = truth_for_sample(locus, values_in_truth, ground_truth, sample_name)
                 
                 values_in_truth_list = []
-                for chr_number in [1, 2]:
-                    locus_name_in_truth = "HLA-" + locus + " " + str(chr_number)
-                    value_in_truth = ground_truth.loc[ground_truth['Run Accession'] == sample_name, locus_name_in_truth].array[0]
-                    values_in_truth_list.append(locus + "*" + value_in_truth)
-                    
+                # for chr_number in [1, 2]:
+                #     locus_name_in_truth = "HLA-" + locus + " " + str(chr_number)
+                #     value_in_truth = ground_truth.loc[ground_truth['Run Accession'] == sample_name, locus_name_in_truth].array[0]
+                #     value_in_truth=value_in_truth.rstrip("*") #remove the alleles ending with "*"
+                #     values_in_truth_list.append(locus + "*" + value_in_truth)
+                for key,values in values_in_truth.items():
+                    values_in_truth_list.append(";".join(values))
+                print(values_in_truth_list)
+
                 if pd.isnull(value_in_optitype):
                     #fill in the tp fp table
                     if locus == "A":
@@ -616,31 +628,29 @@ with open(snakemake.log[0], "w") as f:
     #merge locus wise tp fp tables 1:A, 2:B, 3:C, 4:DQB1
 
     #A
-    A_tp_fp = pd.merge(arcasHLA_freq_checked_A, optitype_freq_checked_A, on=['sample','ground'])
-    A_tp_fp = pd.merge(A_tp_fp, hla_la_freq_checked_A, on=['sample','ground'])
-    A_tp_fp = pd.merge(A_tp_fp, orthanq_A_tp_fp, on=['sample','ground'])
+    A_tp_fp = pd.merge(arcasHLA_freq_checked_A, optitype_freq_checked_A, on=['sample', 'ground'])
+    A_tp_fp = pd.merge(A_tp_fp, hla_la_freq_checked_A, on=['sample', 'ground'])
+    A_tp_fp = pd.merge(A_tp_fp, orthanq_A_tp_fp, on=['sample', 'ground'])
 
     #B
-    B_tp_fp = pd.merge(arcasHLA_freq_checked_B, optitype_freq_checked_B, on=['sample','ground'])
-    B_tp_fp = pd.merge(B_tp_fp, hla_la_freq_checked_B, on=['sample','ground'])
-    B_tp_fp = pd.merge(B_tp_fp, orthanq_B_tp_fp, on=['sample','ground'])
+    B_tp_fp = pd.merge(arcasHLA_freq_checked_B, optitype_freq_checked_B, on=['sample', 'ground'])
+    B_tp_fp = pd.merge(B_tp_fp, hla_la_freq_checked_B, on=['sample', 'ground'])
+    B_tp_fp = pd.merge(B_tp_fp, orthanq_B_tp_fp, on=['sample', 'ground'])
 
     #C
-    C_tp_fp = pd.merge(arcasHLA_freq_checked_C, optitype_freq_checked_C, on=['sample','ground'])
-    C_tp_fp = pd.merge(C_tp_fp, hla_la_freq_checked_C, on=['sample','ground'])
-    C_tp_fp = pd.merge(C_tp_fp, orthanq_C_tp_fp, on=['sample','ground'])
+    C_tp_fp = pd.merge(arcasHLA_freq_checked_C, optitype_freq_checked_C, on=['sample', 'ground'])
+    C_tp_fp = pd.merge(C_tp_fp, hla_la_freq_checked_C, on=['sample', 'ground'])
+    C_tp_fp = pd.merge(C_tp_fp, orthanq_C_tp_fp, on=['sample', 'ground'])
 
     #DQB1 
-    DQB1_tp_fp = pd.merge(arcasHLA_freq_checked_DQB1, hla_la_freq_checked_DQB1, on=['sample','ground'])
-    DQB1_tp_fp = pd.merge(DQB1_tp_fp, orthanq_DQB1_tp_fp, on=['sample','ground'])
+    DQB1_tp_fp = pd.merge(arcasHLA_freq_checked_DQB1, hla_la_freq_checked_DQB1, on=['sample', 'ground'])
+    DQB1_tp_fp = pd.merge(DQB1_tp_fp, orthanq_DQB1_tp_fp, on=['sample', 'ground'])
 
     #finally,
     A_tp_fp["coverage"] = ""
     B_tp_fp["coverage"] = ""
     C_tp_fp["coverage"] = ""
     DQB1_tp_fp["coverage"] = ""
-    print("A_tp_fp")
-    print(A_tp_fp)
 
     def label_coverage(table, low_sample_sheet):
         for i, row in table[["sample"]].iterrows():
