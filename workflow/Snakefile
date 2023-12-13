@@ -58,9 +58,11 @@ elif config["simulation"] == False and config["subclonal_sample_creation"] == Fa
             # expand("results/orthanq/{sample}_{hla}/{sample}_{hla}.csv",sample=samples.sample_name,
             #     hla=loci,
             # ),
+            "results/vega/evaluation_low.html",
             expand("results/orthanq/{sample}_{hla}/3_field_solutions.html",sample=samples.sample_name,
                 hla=loci
             ),
+            "results/validation/validation_low.tsv",
             "results/vega/evaluation_high.svg",
             "results/datavzrd-report/sample_sheet", 
             "results/datavzrd-report/runtimes",
@@ -70,6 +72,8 @@ elif config["simulation"] == False and config["subclonal_sample_creation"] == Fa
             "results/datavzrd-report/hla_la",
             "results/datavzrd-report/accuracy_comparison_low",
             "results/datavzrd-report/accuracy_comparison_high",
+            "results/validation/orthanq_validation_low.tsv",
+            "results/datavzrd-report/evaluation_tables",
 
 elif config["subclonal_sample_creation"]:
     include: "rules/common.smk"

@@ -418,11 +418,11 @@ rule vg2svg_evaluation:
     shell:
         "vl2svg {input.runtimes_plot} {output.runtimes_svg} 2> {log} && "
         "vl-convert vl2html --input {input.runtimes_plot} --output {output.runtimes_html} 2>> {log} && "
-        "vl2svg {input.evaluation_low} --output {output.evaluation_low_svg} 2>> {log} && "
+        "vl2svg {input.evaluation_low} {output.evaluation_low_svg} 2>> {log} && "
         "vl-convert vl2html --input {input.evaluation_low} --output {output.evaluation_low_html} 2>> {log} && "
-        "vl2svg {input.evaluation_high} --output {output.evaluation_high_svg} 2>> {log} && "
+        "vl2svg {input.evaluation_high} {output.evaluation_high_svg} 2>> {log} && "
         "vl-convert vl2html --input {input.evaluation_high} --output {output.evaluation_high_html} 2>> {log} && "
-        "vl2svg {input.tp_fp_plot} --output {output.tp_fp_plot_svg} 2>> {log} && "
+        "vl2svg {input.tp_fp_plot} {output.tp_fp_plot_svg} 2>> {log} && "
         "vl-convert vl2html --input {input.tp_fp_plot} --output {output.tp_fp_plot_html} 2>> {log} "
 
 rule datavzrd_config_runtimes:

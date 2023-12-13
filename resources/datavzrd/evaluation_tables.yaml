@@ -3,15 +3,20 @@ datasets:
   A_tp_fp:
     path: ?input.A_tp_fp
     offer-excel: true
+    separator: "\t"
   B_tp_fp:
     path: ?input.B_tp_fp
     offer-excel: true
+    separator: "\t"
   C_tp_fp:
     path: ?input.C_tp_fp
     offer-excel: true
+    separator: "\t"
   DQB1_tp_fp:
     path: ?input.DQB1_tp_fp
     offer-excel: true
+    separator: "\t"
+default-view: A_tp_fp
 views:     
   A_tp_fp:
     dataset: A_tp_fp
@@ -25,10 +30,10 @@ views:
         4. call, but the allele that was called is not considered in the truth set according to the criteria in the truth paper (i.e., not in the database at that time, VAF too low).
     render-table:
       columns:
-        arcasHLA evaluation:
-          display-mode: hidden
-          label: arcasHLA_evaluation
         arcasHLA:
+          display-mode: hidden
+        arcasHLA evaluation:
+          label: arcasHLA
           plot:
             heatmap:
               scale: ordinal
@@ -38,16 +43,16 @@ views:
                 - no call
                 - allele not considered in the truth set
               range:
-                - blue
-                - red
-                - white
-                - orange
+                - "#4A7BB7"
+                - "#DD3D2D"
+                - "#FFFFFF"
+                - "#F67E4B"
               custom-content: |
-                function(value, row) { return row.arcasHLA_evaluation } 
-        optitype evaluation:
-          display-mode: hidden
-          label: optitype_evaluation
+                function(value, row) { return row["arcasHLA"] } 
         optitype:
+          display-mode: hidden
+        optitype evaluation:
+          label: optitype
           plot:
             heatmap:
               scale: ordinal
@@ -57,16 +62,16 @@ views:
                 - no call
                 - allele not considered in the truth set
               range:
-                - blue
-                - red
-                - white
-                - orange
+                - "#4A7BB7"
+                - "#DD3D2D"
+                - "#FFFFFF"
+                - "#F67E4B"
               custom-content: |
-                function(value, row) { return row.optitype_evaluation } 
-        HLA-LA evaluation:
-          display-mode: hidden
-          label: HLA_LA_evaluation
+                function(value, row) { return row["optitype"] } 
         HLA-LA:
+          display-mode: hidden
+        HLA-LA evaluation:
+          label: HLA-LA
           ellipsis: 27
           plot:
             heatmap:
@@ -77,16 +82,16 @@ views:
                 - no call
                 - allele not considered in the truth set
               range:
-                - blue
-                - red
-                - white
-                - orange
+                - "#4A7BB7"
+                - "#DD3D2D"
+                - "#FFFFFF"
+                - "#F67E4B"
               custom-content: |
-                function(value, row) { return row.HLA_LA_evaluation } 
-        orthanq evaluation:
-          display-mode: hidden
-          label: orthanq_evaluation
+                function(value, row) { return row["HLA-LA"] } 
         orthanq:
+          display-mode: hidden
+        orthanq evaluation:
+          label: orthanq
           ellipsis: 21
           plot:
             heatmap:
@@ -97,12 +102,12 @@ views:
                 - no call
                 - allele not considered in the truth set
               range:
-                - blue
-                - red
-                - white
-                - orange
+                - "#4A7BB7"
+                - "#DD3D2D"
+                - "#FFFFFF"
+                - "#F67E4B"
               custom-content: |
-                function(value, row) { return row.orthanq_evaluation } 
+                function(value, row) { return row["orthanq"] } 
   B_tp_fp:
     dataset: B_tp_fp
     desc: |
@@ -115,10 +120,10 @@ views:
         4. call, but the allele that was called is not considered in the truth set according to the criteria in the truth paper (i.e., not in the database at that time, VAF too low).
     render-table:
       columns:
-        arcasHLA evaluation:
-          display-mode: hidden
-          label: arcasHLA_evaluation
         arcasHLA:
+          display-mode: hidden
+        arcasHLA evaluation:
+          label: arcasHLA
           plot:
             heatmap:
               scale: ordinal
@@ -128,16 +133,16 @@ views:
                 - no call
                 - allele not considered in the truth set
               range:
-                - blue
-                - red
-                - white
-                - orange
+                - "#4A7BB7"
+                - "#DD3D2D"
+                - "#FFFFFF"
+                - "#F67E4B"
               custom-content: |
-                function(value, row) { return row.arcasHLA_evaluation } 
-        optitype evaluation:
-          display-mode: hidden
-          label: optitype_evaluation
+                function(value, row) { return row["arcasHLA"] } 
         optitype:
+          display-mode: hidden
+        optitype evaluation:
+          label: optitype
           plot:
             heatmap:
               scale: ordinal
@@ -147,16 +152,16 @@ views:
                 - no call
                 - allele not considered in the truth set
               range:
-                - blue
-                - red
-                - white
-                - orange
+                - "#4A7BB7"
+                - "#DD3D2D"
+                - "#FFFFFF"
+                - "#F67E4B"
               custom-content: |
-                function(value, row) { return row.optitype_evaluation } 
-        HLA-LA evaluation:
-          display-mode: hidden
-          label: HLA_LA_evaluation
+                function(value, row) { return row["optitype"] } 
         HLA-LA:
+          display-mode: hidden
+        HLA-LA evaluation: 
+          label: HLA-LA
           ellipsis: 27
           plot:
             heatmap:
@@ -167,16 +172,16 @@ views:
                 - no call
                 - allele not considered in the truth set
               range:
-                - blue
-                - red
-                - white
-                - orange
+                - "#4A7BB7"
+                - "#DD3D2D"
+                - "#FFFFFF"
+                - "#F67E4B"
               custom-content: |
-                function(value, row) { return row.HLA_LA_evaluation } 
-        orthanq evaluation:
-          display-mode: hidden
-          label: orthanq_evaluation
+                function(value, row) { return row["HLA-LA"] } 
         orthanq:
+          display-mode: hidden
+        orthanq evaluation:
+          label: orthanq
           ellipsis: 21
           plot:
             heatmap:
@@ -187,12 +192,12 @@ views:
                 - no call
                 - allele not considered in the truth set
               range:
-                - blue
-                - red
-                - white
-                - orange
+                - "#4A7BB7"
+                - "#DD3D2D"
+                - "#FFFFFF"
+                - "#F67E4B"
               custom-content: |
-                function(value, row) { return row.orthanq_evaluation } 
+                function(value, row) { return row["orthanq"] } 
   C_tp_fp:
     dataset: C_tp_fp
     desc: |
@@ -205,10 +210,10 @@ views:
         4. call, but the allele that was called is not considered in the truth set according to the criteria in the truth paper (i.e., not in the database at that time, VAF too low).
     render-table:
       columns:
-        arcasHLA evaluation:
-          display-mode: hidden
-          label: arcasHLA_evaluation
         arcasHLA:
+          display-mode: hidden
+        arcasHLA evaluation:
+          label: arcasHLA
           plot:
             heatmap:
               scale: ordinal
@@ -218,16 +223,16 @@ views:
                 - no call
                 - allele not considered in the truth set
               range:
-                - blue
-                - red
-                - white
-                - orange
+                - "#4A7BB7"
+                - "#DD3D2D"
+                - "#FFFFFF"
+                - "#F67E4B"
               custom-content: |
-                function(value, row) { return row.arcasHLA_evaluation } 
-        optitype evaluation:
-          display-mode: hidden
-          label: optitype_evaluation
+                function(value, row) { return row["arcasHLA"] } 
         optitype:
+          display-mode: hidden
+        optitype evaluation:
+          label: optitype
           plot:
             heatmap:
               scale: ordinal
@@ -237,16 +242,16 @@ views:
                 - no call
                 - allele not considered in the truth set
               range:
-                - blue
-                - red
-                - white
-                - orange
+                - "#4A7BB7"
+                - "#DD3D2D"
+                - "#FFFFFF"
+                - "#F67E4B"
               custom-content: |
-                function(value, row) { return row.optitype_evaluation } 
-        HLA-LA evaluation:
-          display-mode: hidden
-          label: HLA_LA_evaluation
+                function(value, row) { return row["optitype"] } 
         HLA-LA:
+          display-mode: hidden
+        HLA-LA evaluation:
+          label: HLA-LA
           ellipsis: 27
           plot:
             heatmap:
@@ -257,16 +262,16 @@ views:
                 - no call
                 - allele not considered in the truth set
               range:
-                - blue
-                - red
-                - white
-                - orange
+                - "#4A7BB7"
+                - "#DD3D2D"
+                - "#FFFFFF"
+                - "#F67E4B"
               custom-content: |
-                function(value, row) { return row.HLA_LA_evaluation } 
-        orthanq evaluation:
-          display-mode: hidden
-          label: orthanq_evaluation
+                function(value, row) { return row["HLA-LA"] } 
         orthanq:
+          display-mode: hidden
+        orthanq evaluation:
+          label: orthanq
           ellipsis: 21
           plot:
             heatmap:
@@ -277,12 +282,12 @@ views:
                 - no call
                 - allele not considered in the truth set
               range:
-                - blue
-                - red
-                - white
-                - orange
+                - "#4A7BB7"
+                - "#DD3D2D"
+                - "#FFFFFF"
+                - "#F67E4B"
               custom-content: |
-                function(value, row) { return row.orthanq_evaluation } 
+                function(value, row) { return row["orthanq"] } 
   DQB1_tp_fp:
     dataset: DQB1_tp_fp
     desc: |
@@ -295,10 +300,10 @@ views:
         4. call, but the allele that was called is not considered in the truth set according to the criteria in the truth paper (i.e., not in the database at that time, VAF too low).
     render-table:
       columns:
-        arcasHLA evaluation:
-          display-mode: hidden
-          label: arcasHLA_evaluation
         arcasHLA:
+          display-mode: hidden
+        arcasHLA evaluation:
+          label: arcasHLA
           plot:
             heatmap:
               scale: ordinal
@@ -308,16 +313,16 @@ views:
                 - no call
                 - allele not considered in the truth set
               range:
-                - blue
-                - red
-                - white
-                - orange
+                - "#4A7BB7"
+                - "#DD3D2D"
+                - "#FFFFFF"
+                - "#F67E4B"
               custom-content: |
-                function(value, row) { return row.arcasHLA_evaluation } 
-        HLA-LA evaluation:
-          display-mode: hidden
-          label: HLA_LA_evaluation
+                function(value, row) { return row["arcasHLA"] } 
         HLA-LA:
+          display-mode: hidden
+        HLA-LA evaluation:
+          label: HLA-LA
           ellipsis: 33
           plot:
             heatmap:
@@ -328,16 +333,16 @@ views:
                 - no call
                 - allele not considered in the truth set
               range:
-                - blue
-                - red
-                - white
-                - orange
+                - "#4A7BB7"
+                - "#DD3D2D"
+                - "#FFFFFF"
+                - "#F67E4B"
               custom-content: |
-                function(value, row) { return row.HLA_LA_evaluation } 
-        orthanq evaluation:
-          display-mode: hidden
-          label: orthanq_evaluation
+                function(value, row) { return row["HLA-LA"] } 
         orthanq:
+          display-mode: hidden
+        orthanq evaluation:
+          label: orthanq
           ellipsis: 27
           plot:
             heatmap:
@@ -348,9 +353,9 @@ views:
                 - no call
                 - allele not considered in the truth set
               range:
-                - blue
-                - red
-                - white
-                - orange
+                - "#4A7BB7"
+                - "#DD3D2D"
+                - "#FFFFFF"
+                - "#F67E4B"
               custom-content: |
-                function(value, row) { return row.orthanq_evaluation } 
+                function(value, row) { return row["orthanq"] } 
