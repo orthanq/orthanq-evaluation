@@ -381,10 +381,10 @@ rule vg2svg_orthanq:
     conda:
         "../envs/vega.yaml"
     shell:
-        "vl2svg {input.three_field} {output.three_field} 2> {log} && "
-        "vl2svg {input.two_field} {output.two_field} 2>> {log} && "
-        "vl2svg {input.lp_solution} {output.lp_solution} 2>> {log} && "
-        "vl2svg {input.final_solution} {output.final_solution} 2>> {log}"
+        "vl-convert vl2html --input {input.three_field} --output {output.three_field} 2> {log} && "
+        "vl-convert vl2html --input {input.two_field} --output {output.two_field} 2>> {log} && "
+        "vl-convert vl2html --input {input.lp_solution} --output {output.lp_solution} 2>> {log} && "
+        "vl-convert vl2html --input {input.final_solution} --output {output.final_solution} 2>> {log}"
 
 rule vg2svg_evaluation:
     input:
@@ -417,13 +417,13 @@ rule vg2svg_evaluation:
         "../envs/vega.yaml"
     shell:
         "vl2svg {input.runtimes_plot} {output.runtimes_svg} 2> {log} && "
-        "vl2svg {input.runtimes_plot} {output.runtimes_html} 2>> {log} && "
-        "vl2svg {input.evaluation_low} {output.evaluation_low_svg} 2>> {log} && "
-        "vl2svg {input.evaluation_low} {output.evaluation_low_html} 2>> {log} && "
-        "vl2svg {input.evaluation_high} {output.evaluation_high_svg} 2>> {log} && "
-        "vl2svg {input.evaluation_high} {output.evaluation_high_html} 2>> {log} && "
-        "vl2svg {input.tp_fp_plot} {output.tp_fp_plot_svg} 2>> {log} && "
-        "vl2svg {input.tp_fp_plot} {output.tp_fp_plot_html} 2>> {log} "
+        "vl-convert vl2html --input {input.runtimes_plot} --output {output.runtimes_html} 2>> {log} && "
+        "vl2svg {input.evaluation_low} --output {output.evaluation_low_svg} 2>> {log} && "
+        "vl-convert vl2html --input {input.evaluation_low} --output {output.evaluation_low_html} 2>> {log} && "
+        "vl2svg {input.evaluation_high} --output {output.evaluation_high_svg} 2>> {log} && "
+        "vl-convert vl2html --input {input.evaluation_high} --output {output.evaluation_high_html} 2>> {log} && "
+        "vl2svg {input.tp_fp_plot} --output {output.tp_fp_plot_svg} 2>> {log} && "
+        "vl-convert vl2html --input {input.tp_fp_plot} --output {output.tp_fp_plot_html} 2>> {log} "
 
 rule datavzrd_config_runtimes:
     input:
@@ -625,6 +625,41 @@ rule datavzrd_comparison_high:
         ),
     log:
         "logs/datavzrd/accuracy_comparison_high.log",
+    wrapper:
+        "v2.13.0/utils/datavzrd"
+
+rule datavzrd_config_evaluation_tables:
+    input:
+        template="resources/datavzrd/evaluation_tables.yaml",
+        A_tp_fp="results/validation/A_tp_fp.tsv",
+        B_tp_fp="results/validation/B_tp_fp.tsv",
+        C_tp_fp="results/validation/C_tp_fp.tsv",
+        DQB1_tp_fp="results/validation/DQB1_tp_fp.tsv"
+    output:
+        "results/datavzrd/evaluation_tables.yaml"
+    log:
+        "logs/datavzrd-config/evaluation_tables.log"
+    template_engine:
+        "yte"
+
+rule datavzrd_evaluation_tables:
+    input:
+        config="results/datavzrd/evaluation_tables.yaml",
+        A_tp_fp="results/validation/A_tp_fp.tsv",
+        B_tp_fp="results/validation/B_tp_fp.tsv",
+        C_tp_fp="results/validation/C_tp_fp.tsv",
+        DQB1_tp_fp="results/validation/DQB1_tp_fp.tsv"
+    output:
+        report(
+            directory("results/datavzrd-report/evaluation_tables"),
+            htmlindex="index.html",
+            category="Evaluation (all tools)", labels={
+            "name": "evaluation table",
+            "type": "table"
+        }
+        ),
+    log:
+        "logs/datavzrd/evaluation_tables.log",
     wrapper:
         "v2.13.0/utils/datavzrd"
 

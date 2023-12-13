@@ -1,0 +1,356 @@
+name: Evaluation table
+datasets:
+  A_tp_fp:
+    path: ?input.A_tp_fp
+    offer-excel: true
+  B_tp_fp:
+    path: ?input.B_tp_fp
+    offer-excel: true
+  C_tp_fp:
+    path: ?input.C_tp_fp
+    offer-excel: true
+  DQB1_tp_fp:
+    path: ?input.DQB1_tp_fp
+    offer-excel: true
+views:     
+  A_tp_fp:
+    dataset: A_tp_fp
+    desc: |
+      ## Evaluation table for locus A
+      This table contains ground truth and the predictions made by all tools: orthanq, optitype, arcasHLA and HLA-LA.
+      The following shows the different classes of evaluation, in respective columns in the table.
+        1. TP (blue)
+        2. FP (red)
+        3. no call by the tool (white)
+        4. call, but the allele that was called is not considered in the truth set according to the criteria in the truth paper (i.e., not in the database at that time, VAF too low).
+    render-table:
+      columns:
+        arcasHLA evaluation:
+          display-mode: hidden
+          label: arcasHLA_evaluation
+        arcasHLA:
+          plot:
+            heatmap:
+              scale: ordinal
+              domain:
+                - TP
+                - FP
+                - no call
+                - allele not considered in the truth set
+              range:
+                - blue
+                - red
+                - white
+                - orange
+              custom-content: |
+                function(value, row) { return row.arcasHLA_evaluation } 
+        optitype evaluation:
+          display-mode: hidden
+          label: optitype_evaluation
+        optitype:
+          plot:
+            heatmap:
+              scale: ordinal
+              domain:
+                - TP
+                - FP
+                - no call
+                - allele not considered in the truth set
+              range:
+                - blue
+                - red
+                - white
+                - orange
+              custom-content: |
+                function(value, row) { return row.optitype_evaluation } 
+        HLA-LA evaluation:
+          display-mode: hidden
+          label: HLA_LA_evaluation
+        HLA-LA:
+          ellipsis: 27
+          plot:
+            heatmap:
+              scale: ordinal
+              domain:
+                - TP
+                - FP
+                - no call
+                - allele not considered in the truth set
+              range:
+                - blue
+                - red
+                - white
+                - orange
+              custom-content: |
+                function(value, row) { return row.HLA_LA_evaluation } 
+        orthanq evaluation:
+          display-mode: hidden
+          label: orthanq_evaluation
+        orthanq:
+          ellipsis: 21
+          plot:
+            heatmap:
+              scale: ordinal
+              domain:
+                - TP
+                - FP
+                - no call
+                - allele not considered in the truth set
+              range:
+                - blue
+                - red
+                - white
+                - orange
+              custom-content: |
+                function(value, row) { return row.orthanq_evaluation } 
+  B_tp_fp:
+    dataset: B_tp_fp
+    desc: |
+      ## Evaluation table for locus B
+      This table contains ground truth and the predictions made by all tools: orthanq, optitype, arcasHLA and HLA-LA.
+      The following shows the different classes of evaluation, in respective columns in the table.
+        1. TP (blue)
+        2. FP (red)
+        3. no call by the tool (white)
+        4. call, but the allele that was called is not considered in the truth set according to the criteria in the truth paper (i.e., not in the database at that time, VAF too low).
+    render-table:
+      columns:
+        arcasHLA evaluation:
+          display-mode: hidden
+          label: arcasHLA_evaluation
+        arcasHLA:
+          plot:
+            heatmap:
+              scale: ordinal
+              domain:
+                - TP
+                - FP
+                - no call
+                - allele not considered in the truth set
+              range:
+                - blue
+                - red
+                - white
+                - orange
+              custom-content: |
+                function(value, row) { return row.arcasHLA_evaluation } 
+        optitype evaluation:
+          display-mode: hidden
+          label: optitype_evaluation
+        optitype:
+          plot:
+            heatmap:
+              scale: ordinal
+              domain:
+                - TP
+                - FP
+                - no call
+                - allele not considered in the truth set
+              range:
+                - blue
+                - red
+                - white
+                - orange
+              custom-content: |
+                function(value, row) { return row.optitype_evaluation } 
+        HLA-LA evaluation:
+          display-mode: hidden
+          label: HLA_LA_evaluation
+        HLA-LA:
+          ellipsis: 27
+          plot:
+            heatmap:
+              scale: ordinal
+              domain:
+                - TP
+                - FP
+                - no call
+                - allele not considered in the truth set
+              range:
+                - blue
+                - red
+                - white
+                - orange
+              custom-content: |
+                function(value, row) { return row.HLA_LA_evaluation } 
+        orthanq evaluation:
+          display-mode: hidden
+          label: orthanq_evaluation
+        orthanq:
+          ellipsis: 21
+          plot:
+            heatmap:
+              scale: ordinal
+              domain:
+                - TP
+                - FP
+                - no call
+                - allele not considered in the truth set
+              range:
+                - blue
+                - red
+                - white
+                - orange
+              custom-content: |
+                function(value, row) { return row.orthanq_evaluation } 
+  C_tp_fp:
+    dataset: C_tp_fp
+    desc: |
+      ## Evaluation table for locus C
+      This table contains ground truth and the predictions made by all tools: orthanq, optitype, arcasHLA and HLA-LA.
+      The following shows the different classes of evaluation, in respective columns in the table.
+        1. TP (blue)
+        2. FP (red)
+        3. no call by the tool (white)
+        4. call, but the allele that was called is not considered in the truth set according to the criteria in the truth paper (i.e., not in the database at that time, VAF too low).
+    render-table:
+      columns:
+        arcasHLA evaluation:
+          display-mode: hidden
+          label: arcasHLA_evaluation
+        arcasHLA:
+          plot:
+            heatmap:
+              scale: ordinal
+              domain:
+                - TP
+                - FP
+                - no call
+                - allele not considered in the truth set
+              range:
+                - blue
+                - red
+                - white
+                - orange
+              custom-content: |
+                function(value, row) { return row.arcasHLA_evaluation } 
+        optitype evaluation:
+          display-mode: hidden
+          label: optitype_evaluation
+        optitype:
+          plot:
+            heatmap:
+              scale: ordinal
+              domain:
+                - TP
+                - FP
+                - no call
+                - allele not considered in the truth set
+              range:
+                - blue
+                - red
+                - white
+                - orange
+              custom-content: |
+                function(value, row) { return row.optitype_evaluation } 
+        HLA-LA evaluation:
+          display-mode: hidden
+          label: HLA_LA_evaluation
+        HLA-LA:
+          ellipsis: 27
+          plot:
+            heatmap:
+              scale: ordinal
+              domain:
+                - TP
+                - FP
+                - no call
+                - allele not considered in the truth set
+              range:
+                - blue
+                - red
+                - white
+                - orange
+              custom-content: |
+                function(value, row) { return row.HLA_LA_evaluation } 
+        orthanq evaluation:
+          display-mode: hidden
+          label: orthanq_evaluation
+        orthanq:
+          ellipsis: 21
+          plot:
+            heatmap:
+              scale: ordinal
+              domain:
+                - TP
+                - FP
+                - no call
+                - allele not considered in the truth set
+              range:
+                - blue
+                - red
+                - white
+                - orange
+              custom-content: |
+                function(value, row) { return row.orthanq_evaluation } 
+  DQB1_tp_fp:
+    dataset: DQB1_tp_fp
+    desc: |
+      ## Evaluation table for locus DQB1
+      This table contains ground truth and the predictions made by all tools: orthanq, optitype, arcasHLA and HLA-LA.
+      The following shows the different classes of evaluation, in respective columns in the table.
+        1. TP (blue)
+        2. FP (red)
+        3. no call by the tool (white)
+        4. call, but the allele that was called is not considered in the truth set according to the criteria in the truth paper (i.e., not in the database at that time, VAF too low).
+    render-table:
+      columns:
+        arcasHLA evaluation:
+          display-mode: hidden
+          label: arcasHLA_evaluation
+        arcasHLA:
+          plot:
+            heatmap:
+              scale: ordinal
+              domain:
+                - TP
+                - FP
+                - no call
+                - allele not considered in the truth set
+              range:
+                - blue
+                - red
+                - white
+                - orange
+              custom-content: |
+                function(value, row) { return row.arcasHLA_evaluation } 
+        HLA-LA evaluation:
+          display-mode: hidden
+          label: HLA_LA_evaluation
+        HLA-LA:
+          ellipsis: 33
+          plot:
+            heatmap:
+              scale: ordinal
+              domain:
+                - TP
+                - FP
+                - no call
+                - allele not considered in the truth set
+              range:
+                - blue
+                - red
+                - white
+                - orange
+              custom-content: |
+                function(value, row) { return row.HLA_LA_evaluation } 
+        orthanq evaluation:
+          display-mode: hidden
+          label: orthanq_evaluation
+        orthanq:
+          ellipsis: 27
+          plot:
+            heatmap:
+              scale: ordinal
+              domain:
+                - TP
+                - FP
+                - no call
+                - allele not considered in the truth set
+              range:
+                - blue
+                - red
+                - white
+                - orange
+              custom-content: |
+                function(value, row) { return row.orthanq_evaluation } 
