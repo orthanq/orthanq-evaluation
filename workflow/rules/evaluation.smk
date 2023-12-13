@@ -265,7 +265,9 @@ rule validate_orthanq:
         hla=loci
         ),
         ground_truth_evaluated="resources/ground_truth/1K_CEU_evaluated.tsv",
-        ground_truth_low_coverage="resources/ground_truth/1K_CEU_low_coverage.tsv"
+        ground_truth_low_coverage="resources/ground_truth/1K_CEU_low_coverage.tsv",
+        allele_freqs="resources/allele_freqs/allele_frequencies.csv",
+        orthanq_final_table="results/orthanq/final_report.csv"
     output:
         validation_low="results/validation/orthanq_validation_low.tsv",
         validation_high="results/validation/orthanq_validation_high.tsv",
@@ -306,7 +308,8 @@ rule validate_tools:
         ground_truth="resources/ground_truth/1K_CEU_all.tsv",
         optitype="results/optitype/final_report.csv",
         samples_evaluated="resources/ground_truth/1K_CEU_evaluated.tsv",
-        samples_low_coverage="resources/ground_truth/1K_CEU_low_coverage.tsv"
+        samples_low_coverage="resources/ground_truth/1K_CEU_low_coverage.tsv",
+        allele_freqs="resources/allele_freqs/allele_frequencies.csv"
     output:
         validation_low="results/validation/validation_low.tsv",
         validation_high="results/validation/validation_high.tsv",

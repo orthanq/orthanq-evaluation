@@ -17,6 +17,7 @@ with open(snakemake.log[0], "w") as f:
     orthanq_B_tp_fp = pd.read_csv(snakemake.input.orthanq_B_tp_fp, sep = "\t")
     orthanq_C_tp_fp = pd.read_csv(snakemake.input.orthanq_C_tp_fp, sep = "\t")
     orthanq_DQB1_tp_fp = pd.read_csv(snakemake.input.orthanq_DQB1_tp_fp, sep = "\t")
+    allele_freqs = pd.read_csv(snakemake.input.allele_freqs)
 
     #other tools
     arcasHLA_input = pd.read_csv(snakemake.input.arcasHLA, sep = "\t")
@@ -46,23 +47,23 @@ with open(snakemake.log[0], "w") as f:
 
     def truth_for_sample(locus, values_in_truth, ground_truth, sample_name):
         for (chr_index,chr_number) in enumerate([1, 2]):
-            locus_name_in_truth_1 = "HLA-" + locus + " " + str(chr_number)
-            value_in_truth = ground_truth.loc[ground_truth['Run Accession'] == sample_name, locus_name_in_truth_1].array[0] ##array[0] to reach what's inside the Series
+            locus_name_in_truth = "HLA-" + locus + " " + str(chr_number)
+            value_in_truth = ground_truth.loc[ground_truth['Run Accession'] == sample_name, locus_name_in_truth].array[0] ##array[0] to reach what's inside the Series
+            
             ##split in case of alles that have e.g. 23:01/02/04 in the truth
             tmp_alleles = []
             if "/" in value_in_truth:
                 first_split = value_in_truth.split("/")
                 first_field = first_split[0].split(":")[0]
-                tmp_alleles.append(first_split[0])
+                tmp_alleles.append(locus + "*" + first_split[0])
                 for splitted in first_split[1:]:
-                    tmp_alleles.append(first_field + ":" +splitted)
-                values_in_truth["{0}".format(chr_index)] = tmp_alleles
-                
+                    tmp_alleles.append(locus + "*" + first_field + ":" +splitted)
+                values_in_truth["{0}".format(chr_index)] = tmp_alleles             
             elif value_in_truth.endswith("*"):
                 value_in_truth=value_in_truth.rstrip("*")
-                values_in_truth["{0}".format(chr_index)] = [value_in_truth]
+                values_in_truth["{0}".format(chr_index)] = [locus + "*" + value_in_truth]
             else:
-                values_in_truth["{0}".format(chr_index)] = [value_in_truth]
+                values_in_truth["{0}".format(chr_index)] = [locus + "*" + value_in_truth]
         return values_in_truth
 
     def arcashla_validation(arcasHLA_results, ground_truth, arcasHLA_validation_table, arcasHLA_tp_fp_A, arcasHLA_tp_fp_B, arcasHLA_tp_fp_C, arcasHLA_tp_fp_DQB1):
@@ -77,34 +78,40 @@ with open(snakemake.log[0], "w") as f:
                 sample_name = arcasHLA_results.loc[index,'sample']
                 values_in_truth = {}
                 values_in_truth = truth_for_sample(locus, values_in_truth, ground_truth, sample_name)
+                
+                values_in_truth_list = []
+                for chr_number in [1, 2]:
+                    locus_name_in_truth = "HLA-" + locus + " " + str(chr_number)
+                    value_in_truth = ground_truth.loc[ground_truth['Run Accession'] == sample_name, locus_name_in_truth].array[0]
+                    values_in_truth_list.append(locus + "*" + value_in_truth)
+                print(values_in_truth_list)
                 if pd.isnull(value_in_arcasHLA):
                     #fill in the tp fp table
                     if locus == "A":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth.values()), '', 'no call']],
+                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
                             columns=['sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'])
                         arcasHLA_tp_fp_A = pd.concat([arcasHLA_tp_fp_A, new_row_tp], ignore_index=True)
                     if locus == "B":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth.values()), '', 'no call']],
+                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
                             columns=['sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'])
                         arcasHLA_tp_fp_B = pd.concat([arcasHLA_tp_fp_B, new_row_tp], ignore_index=True)
                     if locus == "C":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth.values()), '', 'no call']],
+                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
                             columns=['sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'])
                         arcasHLA_tp_fp_C = pd.concat([arcasHLA_tp_fp_C, new_row_tp], ignore_index=True)
                     if locus == "DQB1":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth.values()), '', 'no call']],
+                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
                             columns=['sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'])
                         arcasHLA_tp_fp_DQB1 = pd.concat([arcasHLA_tp_fp_DQB1, new_row_tp], ignore_index=True)
                     continue
                 else:
                     sample_name = arcasHLA_results.loc[index,'sample']
-                    values_in_truth = {}
                     alleles = []
                     for (chr_index,chr_number) in enumerate([1, 2]):
                         #value in arcasHLA 
                         first_allele = value_in_arcasHLA.split("/")[chr_index]
-                        first_allele_no_locus = first_allele.split("*")[1]
-                        allele_in_arcasHLA = first_allele_no_locus.split(":")[0] + ":" +first_allele_no_locus.split(":")[1]
+                        # first_allele_no_locus = first_allele.split("*")[1]
+                        allele_in_arcasHLA = first_allele.split(":")[0] + ":" +first_allele.split(":")[1]
                         alleles.append(allele_in_arcasHLA)
 
                     values_in_truth_clone = values_in_truth
@@ -114,19 +121,19 @@ with open(snakemake.log[0], "w") as f:
 
                     #fill in the tp fp table
                     if locus == 'A':
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth.values()), '/'.join(alleles), '']],
+                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_arcasHLA, '']],
                             columns=['sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'])
                         arcasHLA_tp_fp_A = pd.concat([arcasHLA_tp_fp_A, new_row_tp], ignore_index=True)
                     if locus == 'B':
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth.values()), '/'.join(alleles), '']],
+                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_arcasHLA, '']],
                             columns=['sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'])
                         arcasHLA_tp_fp_B = pd.concat([arcasHLA_tp_fp_B, new_row_tp], ignore_index=True)
                     if locus == 'C':
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth.values()), '/'.join(alleles), '']],
+                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_arcasHLA, '']],
                             columns=['sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'])
                         arcasHLA_tp_fp_C = pd.concat([arcasHLA_tp_fp_C, new_row_tp], ignore_index=True)
                     if locus == 'DQB1':
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth.values()), '/'.join(alleles), '']],
+                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_arcasHLA, '']],
                             columns=['sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'])
                         arcasHLA_tp_fp_DQB1 = pd.concat([arcasHLA_tp_fp_DQB1, new_row_tp], ignore_index=True)
 
@@ -148,11 +155,11 @@ with open(snakemake.log[0], "w") as f:
                         if locus == "A":
                             arcasHLA_tp_fp_A.loc[arcasHLA_tp_fp_A['sample'] == sample_name, 'arcasHLA evaluation'] = 'TP'
                         if locus == "B":
-                            arcasHLA_tp_fp_B.loc[arcasHLA_tp_fp_A['sample'] == sample_name, 'arcasHLA evaluation'] = 'TP'
+                            arcasHLA_tp_fp_B.loc[arcasHLA_tp_fp_B['sample'] == sample_name, 'arcasHLA evaluation'] = 'TP'
                         if locus == "C":
-                            arcasHLA_tp_fp_C.loc[arcasHLA_tp_fp_A['sample'] == sample_name, 'arcasHLA evaluation'] = 'TP'
+                            arcasHLA_tp_fp_C.loc[arcasHLA_tp_fp_C['sample'] == sample_name, 'arcasHLA evaluation'] = 'TP'
                         if locus == "DQB1":
-                            arcasHLA_tp_fp_DQB1.loc[arcasHLA_tp_fp_A['sample'] == sample_name, 'arcasHLA evaluation'] = 'TP'
+                            arcasHLA_tp_fp_DQB1.loc[arcasHLA_tp_fp_DQB1['sample'] == sample_name, 'arcasHLA evaluation'] = 'TP'
                     print("collected: " + str(collected))
             call_rate = samples_called/len(arcasHLA_results.index)
             # to be fair to all tools, the denominator should be the number of samples that the tool results in a prediction.
@@ -165,6 +172,21 @@ with open(snakemake.log[0], "w") as f:
             new_row = pd.DataFrame([[locus, len(arcasHLA_results.index), call_rate, accuracy]],
                         columns=['Locus', 'N', 'arcasHLA_Call_Rate', 'arcasHLA_Accuracy'])
             arcasHLA_validation_table = pd.concat([arcasHLA_validation_table, new_row], ignore_index=True)
+                
+        #if the evaluation field is empty, make all empty to FP
+        for index,row in arcasHLA_tp_fp_A.iterrows():
+            if row["arcasHLA evaluation"] == "":
+                arcasHLA_tp_fp_A.loc[index, "arcasHLA evaluation"] = "FP"
+        for index,row in arcasHLA_tp_fp_B.iterrows():
+            if row["arcasHLA evaluation"] == "":
+                arcasHLA_tp_fp_B.loc[index, "arcasHLA evaluation"] = "FP"
+        for index,row in arcasHLA_tp_fp_C.iterrows():
+            if row["arcasHLA evaluation"] == "":
+                arcasHLA_tp_fp_C.loc[index, "arcasHLA evaluation"] = "FP"
+        for index,row in arcasHLA_tp_fp_DQB1.iterrows():
+            if row["arcasHLA evaluation"] == "":
+                arcasHLA_tp_fp_DQB1.loc[index, "arcasHLA evaluation"] = "FP"
+
         return arcasHLA_validation_table, arcasHLA_tp_fp_A, arcasHLA_tp_fp_B, arcasHLA_tp_fp_C, arcasHLA_tp_fp_DQB1
 
     def hla_la_validation(hla_la_results, ground_truth, hla_la_validation_table, hla_la_tp_fp_A, hla_la_tp_fp_B, hla_la_tp_fp_C, hla_la_tp_fp_DQB1):
@@ -179,28 +201,34 @@ with open(snakemake.log[0], "w") as f:
                 sample_name = hla_la_results.loc[index,'sample']
                 values_in_truth = {}
                 values_in_truth = truth_for_sample(locus, values_in_truth, ground_truth, sample_name)
+                
+                values_in_truth_list = []
+                for chr_number in [1, 2]:
+                    locus_name_in_truth = "HLA-" + locus + " " + str(chr_number)
+                    value_in_truth = ground_truth.loc[ground_truth['Run Accession'] == sample_name, locus_name_in_truth].array[0]
+                    values_in_truth_list.append(locus + "*" + value_in_truth)
+
                 if pd.isnull(value_in_hla_la):
                     #fill in the tp fp table
                     if locus == "A":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth.values()), '', 'no call']],
+                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
                             columns=['sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'])
                         hla_la_tp_fp_A = pd.concat([hla_la_tp_fp_A, new_row_tp], ignore_index=True)
                     if locus == "B":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth.values()), '', 'no call']],
+                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
                             columns=['sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'])
                         hla_la_tp_fp_B = pd.concat([hla_la_tp_fp_B, new_row_tp], ignore_index=True)
                     if locus == "C":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth.values()), '', 'no call']],
+                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
                             columns=['sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'])
                         hla_la_tp_fp_C = pd.concat([hla_la_tp_fp_C, new_row_tp], ignore_index=True)
                     if locus == "DQB1":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth.values()), '', 'no call']],
+                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
                             columns=['sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'])
                         hla_la_tp_fp_DQB1 = pd.concat([hla_la_tp_fp_DQB1, new_row_tp], ignore_index=True)
                     continue
                 else:
                     sample_name = hla_la_results.loc[index,'sample']
-                    values_in_truth = {}
                     alleles = {}
                     for (chr_index,chr_number) in enumerate([1, 2]):
                         #values in hla-la are as in the following: A*02:01:02;A*03:01:04/A*02:01:02;A*03:01:04
@@ -208,31 +236,40 @@ with open(snakemake.log[0], "w") as f:
                         first_allele = value_in_hla_la.split("/")[chr_index]
                         splitted_alleles = first_allele.split(";")
                         for splitted in splitted_alleles:
-                            allele_no_locus = splitted.split("*")[1]
-                            allele_in_hla_la = allele_no_locus.split(":")[0] + ":" +allele_no_locus.split(":")[1]
+                            # allele_no_locus = splitted.split("*")[1]
+                            allele_in_hla_la = splitted.split(":")[0] + ":" +splitted.split(":")[1]
                             all_alleles.append(allele_in_hla_la)
                         alleles["{0}".format(chr_index)] = all_alleles
 
                     values_in_truth_clone = values_in_truth
                     print("sample name: " ,sample_name)
-                    print("hla-la prediction: " + ''.join(alleles))
-                    print("truth_values: " + str(values_in_truth))
+                    print("hla-la prediction: " + ''.join(sum(alleles.values(), [])))
+
+                    #collecting alleles_w_separators is necessary as some truth values have multiple values
+                    alleles_w_separators = []
+                    for key_chr,value_alleles in alleles.items():
+                        alleles_with_sep = []
+                        for value in value_alleles:
+                            alleles_with_sep.append(value)
+                        alleles_with_sep = ';'.join(alleles_with_sep)
+                        alleles_w_separators.append(alleles_with_sep)
+                    print(alleles_w_separators)
 
                     #fill in the tp fp table
                     if locus == "A":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth.values()), '/'.join(alleles), '']],
+                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_hla_la, '']],
                             columns=['sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'])
                         hla_la_tp_fp_A = pd.concat([hla_la_tp_fp_A, new_row_tp], ignore_index=True)
                     if locus == "B":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth.values()), '/'.join(alleles), '']],
+                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_hla_la, '']],
                             columns=['sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'])
                         hla_la_tp_fp_B = pd.concat([hla_la_tp_fp_B, new_row_tp], ignore_index=True)
                     if locus == "C":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth.values()), '/'.join(alleles), '']],
+                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_hla_la, '']],
                             columns=['sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'])
                         hla_la_tp_fp_C = pd.concat([hla_la_tp_fp_C, new_row_tp], ignore_index=True)
                     if locus == "DQB1":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth.values()), '/'.join(alleles), '']],
+                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_hla_la, '']],
                             columns=['sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'])
                         hla_la_tp_fp_DQB1 = pd.concat([hla_la_tp_fp_DQB1, new_row_tp], ignore_index=True)
 
@@ -271,6 +308,20 @@ with open(snakemake.log[0], "w") as f:
             new_row = pd.DataFrame([[locus, len(hla_la_results.index), call_rate, accuracy]],
                         columns=['Locus', 'N', 'HLA_LA_Call_Rate', 'HLA_LA_Accuracy'])
             hla_la_validation_table = pd.concat([hla_la_validation_table, new_row], ignore_index=True)
+                        
+        #if the evaluation field is empty, make all empty to FP
+        for index,row in hla_la_tp_fp_A.iterrows():
+            if row["HLA-LA evaluation"] == "":
+                hla_la_tp_fp_A.loc[index, "HLA-LA evaluation"] = "FP"
+        for index,row in hla_la_tp_fp_B.iterrows():
+            if row["HLA-LA evaluation"] == "":
+                hla_la_tp_fp_B.loc[index, "HLA-LA evaluation"] = "FP"
+        for index,row in hla_la_tp_fp_C.iterrows():
+            if row["HLA-LA evaluation"] == "":
+                hla_la_tp_fp_C.loc[index, "HLA-LA evaluation"] = "FP"
+        for index,row in hla_la_tp_fp_DQB1.iterrows():
+            if row["HLA-LA evaluation"] == "":
+                hla_la_tp_fp_DQB1.loc[index, "HLA-LA evaluation"] = "FP"
         return hla_la_validation_table, hla_la_tp_fp_A, hla_la_tp_fp_B, hla_la_tp_fp_C, hla_la_tp_fp_DQB1
     
     def optitype_validation(optitype_results, ground_truth, optitype_validation_table, optitype_tp_fp_A, optitype_tp_fp_B, optitype_tp_fp_C, optitype_tp_fp_DQB1):
@@ -286,22 +337,29 @@ with open(snakemake.log[0], "w") as f:
                 sample_name = optitype_results.loc[index,'sample']
                 values_in_truth = {}
                 values_in_truth = truth_for_sample(locus, values_in_truth, ground_truth, sample_name)
+                
+                values_in_truth_list = []
+                for chr_number in [1, 2]:
+                    locus_name_in_truth = "HLA-" + locus + " " + str(chr_number)
+                    value_in_truth = ground_truth.loc[ground_truth['Run Accession'] == sample_name, locus_name_in_truth].array[0]
+                    values_in_truth_list.append(locus + "*" + value_in_truth)
+                    
                 if pd.isnull(value_in_optitype):
                     #fill in the tp fp table
                     if locus == "A":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth.values()), '', 'no call']],
+                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
                             columns=['sample', 'ground', 'optitype', 'optitype evaluation'])
                         optitype_tp_fp_A = pd.concat([optitype_tp_fp_A, new_row_tp], ignore_index=True)
                     if locus == "B":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth.values()), '', 'no call']],
+                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
                             columns=['sample', 'ground', 'optitype', 'optitype evaluation'])
                         optitype_tp_fp_B = pd.concat([optitype_tp_fp_B, new_row_tp], ignore_index=True)
                     if locus == "C":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth.values()), '', 'no call']],
+                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
                             columns=['sample', 'ground', 'optitype', 'optitype evaluation'])
                         optitype_tp_fp_C = pd.concat([optitype_tp_fp_C, new_row_tp], ignore_index=True)
                     if locus == "DQB1":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth.values()), '', 'no call']],
+                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
                             columns=['sample', 'ground', 'optitype', 'optitype evaluation'])
                         optitype_tp_fp_DQB1 = pd.concat([optitype_tp_fp_DQB1, new_row_tp], ignore_index=True)
                     continue
@@ -310,8 +368,8 @@ with open(snakemake.log[0], "w") as f:
                     for (chr_index,chr_number) in enumerate([1, 2]):
                         #value in optitype 
                         first_allele = value_in_optitype.split("/")[chr_index]
-                        allele_in_arcasHLA = first_allele.split("*")[1]
-                        alleles.append(allele_in_arcasHLA)
+                        # allele_in_arcasHLA = first_allele.split("*")[1]
+                        alleles.append(first_allele)
 
                     values_in_truth_clone = values_in_truth
                     print("sample name: " ,sample_name)
@@ -320,19 +378,19 @@ with open(snakemake.log[0], "w") as f:
 
                     #fill in the tp fp table
                     if locus == "A":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth.values()), '/'.join(alleles), '']],
+                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_optitype, '']],
                         columns=['sample', 'ground', 'optitype', 'optitype evaluation'])
                         optitype_tp_fp_A = pd.concat([optitype_tp_fp_A, new_row_tp], ignore_index=True)
                     if locus == "B":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth.values()), '/'.join(alleles), '']],
+                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_optitype, '']],
                         columns=['sample', 'ground', 'optitype', 'optitype evaluation'])
                         optitype_tp_fp_B = pd.concat([optitype_tp_fp_B, new_row_tp], ignore_index=True)
                     if locus == "C":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth.values()), '/'.join(alleles), '']],
+                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_optitype, '']],
                         columns=['sample', 'ground', 'optitype', 'optitype evaluation'])
                         optitype_tp_fp_C = pd.concat([optitype_tp_fp_C, new_row_tp], ignore_index=True)
                     if locus == "DQB1":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth.values()), '/'.join(alleles), '']],
+                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_optitype, '']],
                         columns=['sample', 'ground', 'optitype', 'optitype evaluation'])
                         optitype_tp_fp_DQB1 = pd.concat([optitype_tp_fp_DQB1, new_row_tp], ignore_index=True)
 
@@ -367,7 +425,83 @@ with open(snakemake.log[0], "w") as f:
             new_row = pd.DataFrame([[locus, len(optitype_results.index), call_rate, accuracy]],
                         columns=['Locus', 'N', 'Optitype_Call_Rate', 'Optitype_Accuracy'])
             optitype_validation_table = pd.concat([optitype_validation_table, new_row], ignore_index=True)
+                                   
+        #if the evaluation field is empty, make all empty to FP
+        for index,row in optitype_tp_fp_A.iterrows():
+            if row["optitype evaluation"] == "":
+                optitype_tp_fp_A.loc[index, "optitype evaluation"] = "FP"
+        for index,row in optitype_tp_fp_B.iterrows():
+            if row["optitype evaluation"] == "":
+                optitype_tp_fp_B.loc[index, "optitype evaluation"] = "FP"
+        for index,row in optitype_tp_fp_C.iterrows():
+            if row["optitype evaluation"] == "":
+                optitype_tp_fp_C.loc[index, "optitype evaluation"] = "FP"
+        for index,row in optitype_tp_fp_DQB1.iterrows():
+            if row["optitype evaluation"] == "":
+                optitype_tp_fp_DQB1.loc[index, "optitype evaluation"] = "FP"
         return optitype_validation_table, optitype_tp_fp_A, optitype_tp_fp_B, optitype_tp_fp_C, optitype_tp_fp_DQB1
+
+    #check if the predicted alleles are in the allele freq table and below or above the freq filter
+    def check_alleles_in_database(predictions_table, allele_freq_table):
+        tool_name = predictions_table.columns[2]
+        predictions = predictions_table[tool_name].to_list()
+        for i in range(len(predictions)):
+            if predictions[i] != '':
+                if tool_name == "HLA-LA":
+                    splitted = predictions[i].split("/")
+                    for full_field_allele in splitted:
+                        #check for two field resolution of hla-la prediction, three field doesn't make sense
+                        for single_allele in full_field_allele.split[";"]:
+                            splitted = single_allele.split(":")
+                            first_allele_three_field = ""
+                            first_allele_two_field = ""
+                            if len(splitted) == 4:
+                                first_allele_three_field = splitted[0] + ":" + splitted[1] + ":" + splitted[2] 
+                            if len(splitted) == 3:
+                                first_allele_three_field = splitted[0] + ":" + splitted[1]
+                        
+                        #all alleles should be below 0.05 to be labeled as below.
+                        count_of_alleles = 0
+                        for allele, freq in zip(allele_freq_table["var"], allele_freq_table["frequency"]):
+                            if freq > 0.05:
+                                if single_allele == allele:
+                                    count_of_alleles += 1
+                                    break
+                                if first_allele_three_field != "" and first_allele_three_field == allele:
+                                    count_of_alleles += 1
+                                    break
+                                if first_allele_two_field != "" and first_allele_two_field == allele:
+                                    count_of_alleles += 1
+                                    break
+                        # the check for the first two fields of a three field or four field containing record, only if first two fields don't match is not necessary.
+                        # because the info in the db belongs to a subset of the two field allele, so that wouldn't be a valid comparison.
+                        else: # if the break is not entered above, then else is executed in this for/else construct.
+                            if count_of_alleles == len(full_field_allele.split[";"]): # all alleles should be below the freq
+                                predictions_table.loc[i, "HLA-LA evaluation"] = "allele not considered in the truth set"
+                else: # the case for arcas (3 field) and optitype (two field)
+                    splitted = predictions[i].split("/")
+                    for allele_in_tool in splitted: 
+                        #all alleles should be below 0.05 to be labeled as below.
+                        two_field = ""
+                        count_of_alleles = 0
+                        if len(allele_in_tool.split(":")) == 3:
+                            splitted_three_field = allele_in_tool.split(":")
+                            two_field = splitted_three_field[0] + ":" + splitted_three_field[1]
+                        for allele, freq in zip(allele_freq_table["var"], allele_freq_table["frequency"]):
+                            if freq > 0.05:
+                                if allele_in_tool == allele:
+                                    count_of_alleles += 1
+                                    break
+                                if two_field != "" and two_field == allele:
+                                    count_of_alleles += 1
+                                    break
+                        # the check for the first two fields of a three field or four field containing record, only if first two fields don't match is not necessary.
+                        # because the info in the db belongs to a subset of the two field allele, so that wouldn't be a valid comparison.
+                        else: # if the break is not entered above, then else is executed in this for/else construct.
+                            predictions_table.loc[i,  tool_name + " evaluation"] = "allele not considered in the truth set"
+        print("predictions_table")
+        print(predictions_table)
+        return predictions_table
 
     #low coverage samples
 
@@ -376,14 +510,30 @@ with open(snakemake.log[0], "w") as f:
     hla_la_validation_table_low = pd.DataFrame(columns=('Locus', 'N', 'HLA_LA_Call_Rate', 'HLA_LA_Accuracy'))
     optitype_validation_table_low = pd.DataFrame(columns=('Locus', 'N', 'Optitype_Call_Rate', 'Optitype_Accuracy'))
 
-    #merge tables to get the final table
-    arcasHLA_validation_table_low = arcashla_validation(arcasHLA_input_low, ground_truth, arcasHLA_validation_table_low)
-    first_merge = pd.merge(orthanq_input_low, arcasHLA_validation_table_low, how='left', on=['Locus', 'N'])
-    hla_la_validation_table_low = hla_la_validation(hla_la_input_low, ground_truth, hla_la_validation_table_low)
-    second_merge = pd.merge(first_merge, hla_la_validation_table_low, how='left', on=['Locus', 'N'])
-    optitype_validation_table_low = optitype_validation(optitype_input_low, ground_truth, optitype_validation_table_low)
-    low_final_table = pd.merge(second_merge, optitype_validation_table_low, how='left', on=['Locus', 'N'])
+    #initialize locus-wise tp fp tables locus wise
+    arcasHLA_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'))
+    arcasHLA_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'))
+    arcasHLA_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'))
+    arcasHLA_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'))
 
+    optitype_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'optitype', 'optitype evaluation'))
+    optitype_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'optitype', 'optitype evaluation'))
+    optitype_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'optitype', 'optitype evaluation'))
+    optitype_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'optitype', 'optitype evaluation'))
+
+    hla_la_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'))
+    hla_la_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'))
+    hla_la_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'))
+    hla_la_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'))
+
+    #merge tables to get the final table, the zeroth index gives the validation table for all tools
+    arcasHLA_validation_table_low = arcashla_validation(arcasHLA_input_low, ground_truth, arcasHLA_validation_table_low,  arcasHLA_tp_fp_A, arcasHLA_tp_fp_B, arcasHLA_tp_fp_C, arcasHLA_tp_fp_DQB1)
+    first_merge = pd.merge(orthanq_input_low, arcasHLA_validation_table_low[0], how='left', on=['Locus', 'N'])
+    hla_la_validation_table_low = hla_la_validation(hla_la_input_low, ground_truth, hla_la_validation_table_low, hla_la_tp_fp_A, hla_la_tp_fp_B, hla_la_tp_fp_C, hla_la_tp_fp_DQB1)
+    second_merge = pd.merge(first_merge, hla_la_validation_table_low[0], how='left', on=['Locus', 'N'])
+    optitype_validation_table_low = optitype_validation(optitype_input_low, ground_truth, optitype_validation_table_low, optitype_tp_fp_A, optitype_tp_fp_B, optitype_tp_fp_C, optitype_tp_fp_DQB1)
+    low_final_table = pd.merge(second_merge, optitype_validation_table_low[0], how='left', on=['Locus', 'N'])
+    print(low_final_table)
     #high coverage samples
 
     ##initialize performance tables for tools 
@@ -391,14 +541,29 @@ with open(snakemake.log[0], "w") as f:
     hla_la_validation_table_high = pd.DataFrame(columns=('Locus', 'N', 'HLA_LA_Call_Rate', 'HLA_LA_Accuracy'))
     optitype_validation_table_high = pd.DataFrame(columns=('Locus', 'N', 'Optitype_Call_Rate', 'Optitype_Accuracy'))
 
-    #merge tables to get the final table
-    arcasHLA_validation_table_high = arcashla_validation(arcasHLA_input_high, ground_truth, arcasHLA_validation_table_high)
-    first_merge = pd.merge(orthanq_input_high, arcasHLA_validation_table_high, how='left', on=['Locus', 'N'])
-    hla_la_validation_table_high = hla_la_validation(hla_la_input_high, ground_truth, hla_la_validation_table_high)
-    second_merge = pd.merge(first_merge, hla_la_validation_table_high, how='left', on=['Locus', 'N'])
-    optitype_validation_table_high = optitype_validation(optitype_input_high, ground_truth, optitype_validation_table_high)
-    high_final_table = pd.merge(second_merge, optitype_validation_table_high, how='left', on=['Locus', 'N'])
+    #initialize locus-wise tp fp tables locus wise
+    arcasHLA_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'))
+    arcasHLA_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'))
+    arcasHLA_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'))
+    arcasHLA_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'))
 
+    optitype_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'optitype', 'optitype evaluation'))
+    optitype_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'optitype', 'optitype evaluation'))
+    optitype_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'optitype', 'optitype evaluation'))
+    optitype_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'optitype', 'optitype evaluation'))
+
+    hla_la_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'))
+    hla_la_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'))
+    hla_la_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'))
+    hla_la_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'))
+    
+    #merge tables to get the final table
+    arcasHLA_validation_table_high = arcashla_validation(arcasHLA_input_high, ground_truth, arcasHLA_validation_table_high, arcasHLA_tp_fp_A, arcasHLA_tp_fp_B, arcasHLA_tp_fp_C, arcasHLA_tp_fp_DQB1)
+    first_merge = pd.merge(orthanq_input_high, arcasHLA_validation_table_high[0], how='left', on=['Locus', 'N'])
+    hla_la_validation_table_high = hla_la_validation(hla_la_input_high, ground_truth, hla_la_validation_table_high, hla_la_tp_fp_A, hla_la_tp_fp_B, hla_la_tp_fp_C, hla_la_tp_fp_DQB1)
+    second_merge = pd.merge(first_merge, hla_la_validation_table_high[0], how='left', on=['Locus', 'N'])
+    optitype_validation_table_high = optitype_validation(optitype_input_high, ground_truth, optitype_validation_table_high, optitype_tp_fp_A, optitype_tp_fp_B, optitype_tp_fp_C, optitype_tp_fp_DQB1)
+    high_final_table = pd.merge(second_merge, optitype_validation_table_high[0], how='left', on=['Locus', 'N'])
     #all samples
 
     ##initialize performance tables for tools 
@@ -436,7 +601,7 @@ with open(snakemake.log[0], "w") as f:
     A_tp_fp = pd.merge(arcasHLA_validation_output[1], optitype_validation_output[1], on=['sample','ground'])
     A_tp_fp = pd.merge(A_tp_fp, hla_la_validation_output[1], on=['sample','ground'])
     A_tp_fp = pd.merge(A_tp_fp, orthanq_A_tp_fp, on=['sample','ground'])
-
+    
     #B
     B_tp_fp = pd.merge(arcasHLA_validation_output[2], optitype_validation_output[2], on=['sample','ground'])
     B_tp_fp = pd.merge(B_tp_fp, hla_la_validation_output[2], on=['sample','ground'])
@@ -447,10 +612,16 @@ with open(snakemake.log[0], "w") as f:
     C_tp_fp = pd.merge(C_tp_fp, hla_la_validation_output[3], on=['sample','ground'])
     C_tp_fp = pd.merge(C_tp_fp, orthanq_C_tp_fp, on=['sample','ground'])
 
-    #DQB1
-    DQB1_tp_fp = pd.merge(arcasHLA_validation_output[4], optitype_validation_output[4], on=['sample','ground'])
-    DQB1_tp_fp = pd.merge(DQB1_tp_fp, hla_la_validation_output[4], on=['sample','ground'])
+    #DQB1 
+    DQB1_tp_fp = pd.merge(arcasHLA_validation_output[4], hla_la_validation_output[4], on=['sample','ground'])
     DQB1_tp_fp = pd.merge(DQB1_tp_fp, orthanq_DQB1_tp_fp, on=['sample','ground'])
+
+    #finally, for tp fp tables for each locus, check if they contain alleles that are below the criteria according to the Abi-Rached 2018 paper.
+    #if that's the case label them as "allele not considered in the truth set".
+    A_tp_fp_freq_checked = check_alleles_in_database(A_tp_fp, allele_freqs) 
+    B_tp_fp_freq_checked = check_alleles_in_database(B_tp_fp, allele_freqs) 
+    C_tp_fp_freq_checked = check_alleles_in_database(C_tp_fp, allele_freqs) 
+    DQB1_tp_fp_freq_checked = check_alleles_in_database(DQB1_tp_fp, allele_freqs) 
 
     #write all tables to csv 
 
@@ -469,18 +640,18 @@ with open(snakemake.log[0], "w") as f:
     )
 
     #tp fp tables
-    A_tp_fp.to_csv(
+    A_tp_fp_freq_checked.to_csv(
         snakemake.output.A_tp_fp, sep="\t", index=False, header=True
     )
 
-    B_tp_fp.to_csv(
+    B_tp_fp_freq_checked.to_csv(
         snakemake.output.B_tp_fp, sep="\t", index=False, header=True
     )
 
-    C_tp_fp.to_csv(
+    C_tp_fp_freq_checked.to_csv(
         snakemake.output.C_tp_fp, sep="\t", index=False, header=True
     )
     
-    DQB1_tp_fp.to_csv(
+    DQB1_tp_fp_freq_checked.to_csv(
         snakemake.output.DQB1_tp_fp, sep="\t", index=False, header=True
     )
