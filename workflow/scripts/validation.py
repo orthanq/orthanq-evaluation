@@ -451,7 +451,8 @@ with open(snakemake.log[0], "w") as f:
                     splitted = predictions[i].split("/")
                     for full_field_allele in splitted:
                         #check for two field resolution of hla-la prediction, three field doesn't make sense
-                        for single_allele in full_field_allele.split[";"]:
+                        count_of_alleles = 0
+                        for single_allele in full_field_allele.split(";"):
                             splitted = single_allele.split(":")
                             first_allele_three_field = ""
                             first_allele_two_field = ""
@@ -459,25 +460,23 @@ with open(snakemake.log[0], "w") as f:
                                 first_allele_three_field = splitted[0] + ":" + splitted[1] + ":" + splitted[2] 
                             if len(splitted) == 3:
                                 first_allele_three_field = splitted[0] + ":" + splitted[1]
-                        
-                        #all alleles should be below 0.05 to be labeled as below.
-                        count_of_alleles = 0
-                        for allele, freq in zip(allele_freq_table["var"], allele_freq_table["frequency"]):
-                            if freq > 0.05:
-                                if single_allele == allele:
-                                    count_of_alleles += 1
-                                    break
-                                if first_allele_three_field != "" and first_allele_three_field == allele:
-                                    count_of_alleles += 1
-                                    break
-                                if first_allele_two_field != "" and first_allele_two_field == allele:
-                                    count_of_alleles += 1
-                                    break
-                        # the check for the first two fields of a three field or four field containing record, only if first two fields don't match is not necessary.
-                        # because the info in the db belongs to a subset of the two field allele, so that wouldn't be a valid comparison.
-                        else: # if the break is not entered above, then else is executed in this for/else construct.
-                            if count_of_alleles == len(full_field_allele.split[";"]): # all alleles should be below the freq
-                                predictions_table.loc[i, "HLA-LA evaluation"] = "allele not considered in the truth set"
+                            #all alleles should be below 0.05 to be labeled as below.
+                            for allele, freq in zip(allele_freq_table["var"], allele_freq_table["frequency"]):
+                                if freq > 0.05:
+                                    if single_allele == allele:
+                                        count_of_alleles += 1
+                                        break
+                                    elif first_allele_three_field != "" and first_allele_three_field == allele:
+                                        count_of_alleles += 1
+                                        break
+                                    elif first_allele_two_field != "" and first_allele_two_field == allele:
+                                        count_of_alleles += 1
+                                        break
+                            # the check for the first two fields of a three field or four field containing record, only if first two fields don't match is not necessary.
+                            # because the info in the db belongs to a subset of the two field allele, so that wouldn't be a valid comparison.
+                            # else: # if the break is not entered above, then else is executed in this for/else construct.
+                        if count_of_alleles == 0: # all alleles should be below the freq
+                            predictions_table.loc[i, "HLA-LA evaluation"] = "allele not considered in the truth set"
                 else: # the case for arcas (3 field) and optitype (two field)
                     splitted = predictions[i].split("/")
                     for allele_in_tool in splitted: 
@@ -492,7 +491,7 @@ with open(snakemake.log[0], "w") as f:
                                 if allele_in_tool == allele:
                                     count_of_alleles += 1
                                     break
-                                if two_field != "" and two_field == allele:
+                                elif two_field != "" and two_field == allele:
                                     count_of_alleles += 1
                                     break
                         # the check for the first two fields of a three field or four field containing record, only if first two fields don't match is not necessary.
@@ -595,39 +594,53 @@ with open(snakemake.log[0], "w") as f:
     optitype_validation_output = optitype_validation(optitype_input, ground_truth, optitype_validation_table_all, optitype_tp_fp_A, optitype_tp_fp_B, optitype_tp_fp_C, optitype_tp_fp_DQB1)
     all_final_table = pd.merge(second_merge, optitype_validation_output[0], how='left', on=['Locus', 'N'])
 
+    #then, for tp fp tables for each locus, check if they contain alleles that are below the criteria according to the Abi-Rached 2018 paper.
+    #if that's the case label them as "allele not considered in the truth set".
+    #arcas
+    arcasHLA_freq_checked_A = check_alleles_in_database(arcasHLA_validation_output[1], allele_freqs) 
+    arcasHLA_freq_checked_B = check_alleles_in_database(arcasHLA_validation_output[2], allele_freqs) 
+    arcasHLA_freq_checked_C = check_alleles_in_database(arcasHLA_validation_output[3], allele_freqs) 
+    arcasHLA_freq_checked_DQB1 = check_alleles_in_database(arcasHLA_validation_output[4], allele_freqs) 
+
+    #optitype
+    optitype_freq_checked_A = check_alleles_in_database(optitype_validation_output[1], allele_freqs) 
+    optitype_freq_checked_B = check_alleles_in_database(optitype_validation_output[2], allele_freqs) 
+    optitype_freq_checked_C = check_alleles_in_database(optitype_validation_output[3], allele_freqs) 
+
+    #HLA-LA
+    hla_la_freq_checked_A = check_alleles_in_database(hla_la_validation_output[1], allele_freqs) 
+    hla_la_freq_checked_B = check_alleles_in_database(hla_la_validation_output[2], allele_freqs) 
+    hla_la_freq_checked_C = check_alleles_in_database(hla_la_validation_output[3], allele_freqs) 
+    hla_la_freq_checked_DQB1 = check_alleles_in_database(hla_la_validation_output[4], allele_freqs) 
+
     #merge locus wise tp fp tables 1:A, 2:B, 3:C, 4:DQB1
 
     #A
-    A_tp_fp = pd.merge(arcasHLA_validation_output[1], optitype_validation_output[1], on=['sample','ground'])
-    A_tp_fp = pd.merge(A_tp_fp, hla_la_validation_output[1], on=['sample','ground'])
+    A_tp_fp = pd.merge(arcasHLA_freq_checked_A, optitype_freq_checked_A, on=['sample','ground'])
+    A_tp_fp = pd.merge(A_tp_fp, hla_la_freq_checked_A, on=['sample','ground'])
     A_tp_fp = pd.merge(A_tp_fp, orthanq_A_tp_fp, on=['sample','ground'])
-    
+
     #B
-    B_tp_fp = pd.merge(arcasHLA_validation_output[2], optitype_validation_output[2], on=['sample','ground'])
-    B_tp_fp = pd.merge(B_tp_fp, hla_la_validation_output[2], on=['sample','ground'])
+    B_tp_fp = pd.merge(arcasHLA_freq_checked_B, optitype_freq_checked_B, on=['sample','ground'])
+    B_tp_fp = pd.merge(B_tp_fp, hla_la_freq_checked_B, on=['sample','ground'])
     B_tp_fp = pd.merge(B_tp_fp, orthanq_B_tp_fp, on=['sample','ground'])
 
     #C
-    C_tp_fp = pd.merge(arcasHLA_validation_output[3], optitype_validation_output[3], on=['sample','ground'])
-    C_tp_fp = pd.merge(C_tp_fp, hla_la_validation_output[3], on=['sample','ground'])
+    C_tp_fp = pd.merge(arcasHLA_freq_checked_C, optitype_freq_checked_C, on=['sample','ground'])
+    C_tp_fp = pd.merge(C_tp_fp, hla_la_freq_checked_C, on=['sample','ground'])
     C_tp_fp = pd.merge(C_tp_fp, orthanq_C_tp_fp, on=['sample','ground'])
 
     #DQB1 
-    DQB1_tp_fp = pd.merge(arcasHLA_validation_output[4], hla_la_validation_output[4], on=['sample','ground'])
+    DQB1_tp_fp = pd.merge(arcasHLA_freq_checked_DQB1, hla_la_freq_checked_DQB1, on=['sample','ground'])
     DQB1_tp_fp = pd.merge(DQB1_tp_fp, orthanq_DQB1_tp_fp, on=['sample','ground'])
 
-    #then, for tp fp tables for each locus, check if they contain alleles that are below the criteria according to the Abi-Rached 2018 paper.
-    #if that's the case label them as "allele not considered in the truth set".
-    A_tp_fp_freq_checked = check_alleles_in_database(A_tp_fp, allele_freqs) 
-    B_tp_fp_freq_checked = check_alleles_in_database(B_tp_fp, allele_freqs) 
-    C_tp_fp_freq_checked = check_alleles_in_database(C_tp_fp, allele_freqs) 
-    DQB1_tp_fp_freq_checked = check_alleles_in_database(DQB1_tp_fp, allele_freqs) 
-
     #finally,
-    A_tp_fp_freq_checked["coverage"] = ""
-    B_tp_fp_freq_checked["coverage"] = ""
-    C_tp_fp_freq_checked["coverage"] = ""
-    DQB1_tp_fp_freq_checked["coverage"] = ""
+    A_tp_fp["coverage"] = ""
+    B_tp_fp["coverage"] = ""
+    C_tp_fp["coverage"] = ""
+    DQB1_tp_fp["coverage"] = ""
+    print("A_tp_fp")
+    print(A_tp_fp)
 
     def label_coverage(table, low_sample_sheet):
         for i, row in table[["sample"]].iterrows():
@@ -637,16 +650,14 @@ with open(snakemake.log[0], "w") as f:
                 table.loc[i, "coverage"] = "high"
         return table
 
-    A_tp_fp_final = label_coverage(A_tp_fp_freq_checked, samples_low_coverage)
-    B_tp_fp_final = label_coverage(B_tp_fp_freq_checked, samples_low_coverage)
-    C_tp_fp_final = label_coverage(C_tp_fp_freq_checked, samples_low_coverage)
-    DQB1_tp_fp_final = label_coverage(DQB1_tp_fp_freq_checked, samples_low_coverage)
-
+    A_tp_fp_final = label_coverage(A_tp_fp, samples_low_coverage)
+    B_tp_fp_final = label_coverage(B_tp_fp, samples_low_coverage)
+    C_tp_fp_final = label_coverage(C_tp_fp, samples_low_coverage)
+    DQB1_tp_fp_final = label_coverage(DQB1_tp_fp, samples_low_coverage)
 
     #write all tables to csv 
 
     #validation tables
-
     low_final_table.to_csv(
         snakemake.output.validation_low, sep="\t", index=False, header=True
     )
