@@ -616,12 +616,32 @@ with open(snakemake.log[0], "w") as f:
     DQB1_tp_fp = pd.merge(arcasHLA_validation_output[4], hla_la_validation_output[4], on=['sample','ground'])
     DQB1_tp_fp = pd.merge(DQB1_tp_fp, orthanq_DQB1_tp_fp, on=['sample','ground'])
 
-    #finally, for tp fp tables for each locus, check if they contain alleles that are below the criteria according to the Abi-Rached 2018 paper.
+    #then, for tp fp tables for each locus, check if they contain alleles that are below the criteria according to the Abi-Rached 2018 paper.
     #if that's the case label them as "allele not considered in the truth set".
     A_tp_fp_freq_checked = check_alleles_in_database(A_tp_fp, allele_freqs) 
     B_tp_fp_freq_checked = check_alleles_in_database(B_tp_fp, allele_freqs) 
     C_tp_fp_freq_checked = check_alleles_in_database(C_tp_fp, allele_freqs) 
     DQB1_tp_fp_freq_checked = check_alleles_in_database(DQB1_tp_fp, allele_freqs) 
+
+    #finally,
+    A_tp_fp_freq_checked["coverage"] = ""
+    B_tp_fp_freq_checked["coverage"] = ""
+    C_tp_fp_freq_checked["coverage"] = ""
+    DQB1_tp_fp_freq_checked["coverage"] = ""
+
+    def label_coverage(table, low_sample_sheet):
+        for i, row in table[["sample"]].iterrows():
+            if row["sample"] in low_sample_sheet["sample"].to_list():
+                table.loc[i, "coverage"] = "low"
+            else:
+                table.loc[i, "coverage"] = "high"
+        return table
+
+    A_tp_fp_final = label_coverage(A_tp_fp_freq_checked, samples_low_coverage)
+    B_tp_fp_final = label_coverage(B_tp_fp_freq_checked, samples_low_coverage)
+    C_tp_fp_final = label_coverage(C_tp_fp_freq_checked, samples_low_coverage)
+    DQB1_tp_fp_final = label_coverage(DQB1_tp_fp_freq_checked, samples_low_coverage)
+
 
     #write all tables to csv 
 
@@ -640,18 +660,18 @@ with open(snakemake.log[0], "w") as f:
     )
 
     #tp fp tables
-    A_tp_fp_freq_checked.to_csv(
+    A_tp_fp_final.to_csv(
         snakemake.output.A_tp_fp, sep="\t", index=False, header=True
     )
 
-    B_tp_fp_freq_checked.to_csv(
+    B_tp_fp_final.to_csv(
         snakemake.output.B_tp_fp, sep="\t", index=False, header=True
     )
 
-    C_tp_fp_freq_checked.to_csv(
+    C_tp_fp_final.to_csv(
         snakemake.output.C_tp_fp, sep="\t", index=False, header=True
     )
     
-    DQB1_tp_fp_freq_checked.to_csv(
+    DQB1_tp_fp_final.to_csv(
         snakemake.output.DQB1_tp_fp, sep="\t", index=False, header=True
     )
