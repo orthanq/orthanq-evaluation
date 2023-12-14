@@ -176,8 +176,8 @@ with open(snakemake.log[0], "w") as f:
             print("len(arcasHLA_results.index):"+str(len(arcasHLA_results.index)))
             
             # add the numbers in parenthesis for call rate and accuracy
-            accuracy = str(accuracy) + " (" + str(int(collected)) + "/" + str(samples_called) + ")"
-            call_rate = str(call_rate) + " (" + str(samples_called) + "/" + str(len(arcasHLA_results.index)) + ")"
+            accuracy = "{:.2f}".format(accuracy) + " (" + str(int(collected)) + "/" + str(samples_called) + ")"
+            call_rate = "{:.2f}".format(call_rate) + " (" + str(samples_called) + "/" + str(len(arcasHLA_results.index)) + ")"
 
             # concatenate the row the validation table 
             new_row = pd.DataFrame([[locus, len(arcasHLA_results.index), call_rate, accuracy]],
@@ -322,8 +322,8 @@ with open(snakemake.log[0], "w") as f:
             print("len(hla_la_results.index):"+str(len(hla_la_results.index)))      
 
             # add the numbers in parenthesis for call rate and accuracy
-            accuracy = str(accuracy) + " (" + str(int(collected)) + "/" + str(samples_called) + ")"
-            call_rate = str(call_rate) + " (" + str(samples_called) + "/" + str(len(hla_la_results.index)) + ")"
+            accuracy = "{:.2f}".format(accuracy) + " (" + str(int(collected)) + "/" + str(samples_called) + ")"
+            call_rate = "{:.2f}".format(call_rate) + " (" + str(samples_called) + "/" + str(len(hla_la_results.index)) + ")"
 
             # concatenate the row the validation table  
             new_row = pd.DataFrame([[locus, len(hla_la_results.index), call_rate, accuracy]],
@@ -449,8 +449,8 @@ with open(snakemake.log[0], "w") as f:
             print("len(optitype_results.index):"+str(len(optitype_results.index)))      
 
             # add the numbers in parenthesis for call rate and accuracy
-            accuracy = str(accuracy) + " (" + str(int(collected)) + "/" + str(samples_called) + ")"
-            call_rate = str(call_rate) + " (" + str(samples_called) + "/" + str(len(optitype_results.index)) + ")"
+            accuracy = "{:.2f}".format(accuracy)  + " (" + str(int(collected)) + "/" + str(samples_called) + ")"
+            call_rate = "{:.2f}".format(call_rate)  + " (" + str(samples_called) + "/" + str(len(optitype_results.index)) + ")"
 
             # concatenate the row the validation table
             new_row = pd.DataFrame([[locus, len(optitype_results.index), call_rate, accuracy]],

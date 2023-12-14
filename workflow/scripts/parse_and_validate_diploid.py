@@ -243,8 +243,8 @@ with open(snakemake.log[0], "w") as f:
             call_rate = samples_called/n_samples_collected
 
             # add the numbers in parenthesis for call rate and accuracy
-            accuracy = str(accuracy) + " (" + str(collected) + "/" + str(samples_called) + ")"
-            call_rate = str(call_rate) + " (" + str(samples_called) + "/" + str(n_samples_collected) + ")"
+            accuracy = "{:.2f}".format(accuracy) + " (" + str(collected) + "/" + str(samples_called) + ")"
+            call_rate = "{:.2f}".format(call_rate) + " (" + str(samples_called) + "/" + str(n_samples_collected) + ")"
 
             #concatenate the locus-wise statistics to the validation table
             new_row = pd.DataFrame([[locus, n_samples_collected, call_rate, accuracy]],
