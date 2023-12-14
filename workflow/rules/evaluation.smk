@@ -502,7 +502,7 @@ rule datavzrd_optitype:
             directory("results/datavzrd-report/optitype"),
             htmlindex="index.html",
             category="Accuracy", labels={
-            "type": "figure",
+            "type": "table",
             "name": "optitype predictions"
         }
         ),
@@ -531,7 +531,7 @@ rule datavzrd_arcashla:
             directory("results/datavzrd-report/arcashla"),
             htmlindex="index.html",
             category="Accuracy", labels={
-            "type": "figure",
+            "type": "table",
             "name": "arcasHLA predictions"
         }
         ),
@@ -561,7 +561,7 @@ rule datavzrd_hla_la:
             directory("results/datavzrd-report/hla_la"),
             htmlindex="index.html",
             category="Accuracy", labels={
-            "type": "figure",
+            "type": "table",
             "name": "HLA-LA predictions"
         }
         ),
