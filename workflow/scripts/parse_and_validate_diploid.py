@@ -153,16 +153,6 @@ with open(snakemake.log[0], "w") as f:
                                 if len(alleles) == 1:
                                     alleles.append(alleles[0])
 
-                                # if locus == locus_in_orthanq:
-                                #     if locus_in_orthanq == "A":
-                                #         orthanq_tp_fp_A.loc[orthanq_tp_fp_A['sample'] == sample_name, 'orthanq'] = '/'.join(alleles)
-                                #     if locus_in_orthanq == "B":
-                                #         orthanq_tp_fp_B.loc[orthanq_tp_fp_B['sample'] == sample_name, 'orthanq'] = '/'.join(alleles)
-                                #     if locus_in_orthanq == "C":
-                                #         orthanq_tp_fp_C.loc[orthanq_tp_fp_C['sample'] == sample_name, 'orthanq'] = '/'.join(alleles)
-                                #     if locus_in_orthanq == "DQB1":
-                                #         orthanq_tp_fp_DQB1.loc[orthanq_tp_fp_DQB1['sample'] == sample_name, 'orthanq'] = '/'.join(alleles)
-                               
                                 #collect the fractions of haplotypes matching with ground truth
                                 #loop over values in truth and stop when one matches an allele from the output of orthanq
                                 #prev_value is used to stop collecting the fraction from the identical allele match
@@ -200,6 +190,35 @@ with open(snakemake.log[0], "w") as f:
                                     if locus_in_orthanq == "DQB1":
                                         orthanq_tp_fp_DQB1.loc[orthanq_tp_fp_DQB1['sample'] == sample_name, 'orthanq evaluation'] = 'TP'
                                     break ##break as soon as the collected gets +1 
+                        else:
+                            #if sum of densities remain under the threshold, then make it a no call, locus==locus_in_orthanq check avoids multiple assignments
+                            for index,row in orthanq_tp_fp_A.iterrows():
+                                if locus==locus_in_orthanq and locus=="A" and row["orthanq evaluation"] == "":
+                                    orthanq_tp_fp_A.loc[index, "orthanq evaluation"] = "no call"
+                            for index,row in orthanq_tp_fp_B.iterrows():
+                                if locus==locus_in_orthanq and locus=="B" and row["orthanq evaluation"] == "":
+                                    orthanq_tp_fp_B.loc[index, "orthanq evaluation"] = "no call"
+                            for index,row in orthanq_tp_fp_C.iterrows():
+                                if locus==locus_in_orthanq and locus=="C" and row["orthanq evaluation"] == "":
+                                    orthanq_tp_fp_C.loc[index, "orthanq evaluation"] = "no call"
+                            for index,row in orthanq_tp_fp_DQB1.iterrows():
+                                if locus==locus_in_orthanq and locus=="DQB1" and row["orthanq evaluation"] == "":
+                                    orthanq_tp_fp_DQB1.loc[index, "orthanq evaluation"] = "no call"
+                    else:
+                        #if the df is empty for a result then, then make it a no call, locus==locus_in_orthanq check avoids multiple assignments
+                        for index,row in orthanq_tp_fp_A.iterrows():
+                            if locus==locus_in_orthanq and locus=="A" and row["orthanq evaluation"] == "":
+                                orthanq_tp_fp_A.loc[index, "orthanq evaluation"] = "no call"
+                        for index,row in orthanq_tp_fp_B.iterrows():
+                            if locus==locus_in_orthanq and locus=="B" and row["orthanq evaluation"] == "":
+                                orthanq_tp_fp_B.loc[index, "orthanq evaluation"] = "no call"
+                        for index,row in orthanq_tp_fp_C.iterrows():
+                            if locus==locus_in_orthanq and locus=="C" and row["orthanq evaluation"] == "":
+                                orthanq_tp_fp_C.loc[index, "orthanq evaluation"] = "no call"
+                        for index,row in orthanq_tp_fp_DQB1.iterrows():
+                            if locus==locus_in_orthanq and locus=="DQB1" and row["orthanq evaluation"] == "":
+                                orthanq_tp_fp_DQB1.loc[index, "orthanq evaluation"] = "no call"
+                        
             print("collected: ",collected)
 
             #calculate accuracy and call rate
