@@ -193,14 +193,15 @@ with open(snakemake.log[0], "w") as f:
                                         orthanq_tp_fp_DQB1.loc[orthanq_tp_fp_DQB1['sample'] == sample_name, 'orthanq evaluation'] = 'TP'
                                     break ##break as soon as the collected gets +1 
                                 else: # if the fractions don't exceed the threshold, then they are false positives.
-                                    if locus_in_orthanq == "A":
-                                        orthanq_tp_fp_A.loc[orthanq_tp_fp_A['sample'] == sample_name, 'orthanq evaluation'] = 'FP'
-                                    if locus_in_orthanq == "B":
-                                        orthanq_tp_fp_B.loc[orthanq_tp_fp_B['sample'] == sample_name, 'orthanq evaluation'] = 'FP'
-                                    if locus_in_orthanq == "C":
-                                        orthanq_tp_fp_C.loc[orthanq_tp_fp_C['sample'] == sample_name, 'orthanq evaluation'] = 'FP'
-                                    if locus_in_orthanq == "DQB1":
-                                        orthanq_tp_fp_DQB1.loc[orthanq_tp_fp_DQB1['sample'] == sample_name, 'orthanq evaluation'] = 'FP'
+                                    if locus==locus_in_orthanq:
+                                        if locus_in_orthanq == "A":
+                                            orthanq_tp_fp_A.loc[orthanq_tp_fp_A['sample'] == sample_name, 'orthanq evaluation'] = 'FP'
+                                        if locus_in_orthanq == "B":
+                                            orthanq_tp_fp_B.loc[orthanq_tp_fp_B['sample'] == sample_name, 'orthanq evaluation'] = 'FP'
+                                        if locus_in_orthanq == "C":
+                                            orthanq_tp_fp_C.loc[orthanq_tp_fp_C['sample'] == sample_name, 'orthanq evaluation'] = 'FP'
+                                        if locus_in_orthanq == "DQB1":
+                                            orthanq_tp_fp_DQB1.loc[orthanq_tp_fp_DQB1['sample'] == sample_name, 'orthanq evaluation'] = 'FP'
                         else:
                             #if sum of densities remain under the threshold, then make it a no call, locus==locus_in_orthanq check avoids multiple assignments
                             for index,row in orthanq_tp_fp_A.iterrows():
