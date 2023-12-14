@@ -1,5 +1,7 @@
 # Stratify validation for high coverage and low coverage samples. Generate separate tables for each tool.
 # this script also creates a table for combining all results locuswise and containing information about TP, FP, no call and there is a call but the allele is not supposed to be found in the ground truth.
+# For accuracy, we count, for each tool: TP / (TP+FP).
+# For call rate, we count, for each tool: (TP + FP) / (TP + FP + 'no call')
 
 import pandas as pd
 import os 
