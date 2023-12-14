@@ -144,12 +144,12 @@ with open(snakemake.log[0], "w") as f:
                     allele_present=0
                     for allele in alleles: ##???
                         values_in_truth = values_in_truth_clone
-                        for chr_index, (_,chr_values) in enumerate(values_in_truth.items()):
+                        for chr_index, chr_values in values_in_truth.items():
                             if allele in chr_values:
                                 allele_present+= 1 #both alleles should be correct
                                 #to stop homozygous alleles inaccurately match, we should remove the one that matches
                                 if len(values_in_truth) > 1:
-                                    values_in_truth_clone.pop(chr_index, None)
+                                    values_in_truth_clone.pop(chr_index)
                                 break
                     samples_called+=1
                     if allele_present==2: #both alleles should be correct
@@ -172,7 +172,12 @@ with open(snakemake.log[0], "w") as f:
             else:
                  accuracy = 0
             print("len(arcasHLA_results.index):"+str(len(arcasHLA_results.index)))
-            # new_row = {'Locus': locus, 'N': len(arcasHLA_input.index), 'arcasHLA - Call Rate': 1.00, 'arcasHLA - Accuracy': accuracy}
+            
+            # add the numbers in parenthesis for call rate and accuracy
+            accuracy = str(accuracy) + " (" + str(int(collected)) + "/" + str(samples_called) + ")"
+            call_rate = str(call_rate) + " (" + str(samples_called) + "/" + str(len(arcasHLA_results.index)) + ")"
+
+            # concatenate the row the validation table 
             new_row = pd.DataFrame([[locus, len(arcasHLA_results.index), call_rate, accuracy]],
                         columns=['Locus', 'N', 'arcasHLA_Call_Rate', 'arcasHLA_Accuracy'])
             arcasHLA_validation_table = pd.concat([arcasHLA_validation_table, new_row], ignore_index=True)
@@ -285,12 +290,12 @@ with open(snakemake.log[0], "w") as f:
                     for _, hla_la_alleles in alleles.items():
                         for allele in hla_la_alleles:
                             values_in_truth = values_in_truth_clone
-                            for chr_index, (_,chr_values) in enumerate(values_in_truth.items()):
+                            for chr_index, chr_values in values_in_truth.items():
                                 if allele in chr_values:
                                     allele_present+= 1
                                     #to stop homozygous alleles inaccurately match, we should remove the one that matches
                                     if len(values_in_truth) > 1:
-                                        values_in_truth_clone.pop(chr_index, None)
+                                        values_in_truth_clone.pop(chr_index)
                                     break
                             else:
                                 continue
@@ -312,7 +317,13 @@ with open(snakemake.log[0], "w") as f:
             call_rate = samples_called/len(hla_la_results.index)
             # to be fair to all tools, the denominator should be the number of samples that the tool results in a prediction.
             accuracy = 100*collected/samples_called
-            print("len(hla_la_results.index):"+str(len(hla_la_results.index)))        
+            print("len(hla_la_results.index):"+str(len(hla_la_results.index)))      
+
+            # add the numbers in parenthesis for call rate and accuracy
+            accuracy = str(accuracy) + " (" + str(int(collected)) + "/" + str(samples_called) + ")"
+            call_rate = str(call_rate) + " (" + str(samples_called) + "/" + str(len(hla_la_results.index)) + ")"
+
+            # concatenate the row the validation table  
             new_row = pd.DataFrame([[locus, len(hla_la_results.index), call_rate, accuracy]],
                         columns=['Locus', 'N', 'HLA_LA_Call_Rate', 'HLA_LA_Accuracy'])
             hla_la_validation_table = pd.concat([hla_la_validation_table, new_row], ignore_index=True)
@@ -409,12 +420,12 @@ with open(snakemake.log[0], "w") as f:
                     allele_present = 0
                     for allele in alleles: ##???
                         values_in_truth = values_in_truth_clone
-                        for chr_index, (_,chr_values) in enumerate(values_in_truth.items()):
+                        for chr_index,chr_values in values_in_truth.items():
                             if allele in chr_values:
                                 allele_present+= 1
                                 #to stop homozygous alleles inaccurately match, we should remove the one that matches
                                 if len(values_in_truth) > 1:
-                                    values_in_truth_clone.pop(chr_index, None)
+                                    values_in_truth_clone.pop(chr_index)
                                 break
                     if allele_present==2:
                         collected+=1
@@ -433,7 +444,13 @@ with open(snakemake.log[0], "w") as f:
             call_rate = samples_called/len(optitype_results.index)
             # to be fair to all tools, the denominator should be the number of samples that the tool results in a prediction.
             accuracy = 100*collected/samples_called
-            print("len(optitype_results.index):"+str(len(optitype_results.index)))        
+            print("len(optitype_results.index):"+str(len(optitype_results.index)))      
+
+            # add the numbers in parenthesis for call rate and accuracy
+            accuracy = str(accuracy) + " (" + str(int(collected)) + "/" + str(samples_called) + ")"
+            call_rate = str(call_rate) + " (" + str(samples_called) + "/" + str(len(optitype_results.index)) + ")"
+
+            # concatenate the row the validation table
             new_row = pd.DataFrame([[locus, len(optitype_results.index), call_rate, accuracy]],
                         columns=['Locus', 'N', 'Optitype_Call_Rate', 'Optitype_Accuracy'])
             optitype_validation_table = pd.concat([optitype_validation_table, new_row], ignore_index=True)

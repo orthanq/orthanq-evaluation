@@ -3,6 +3,8 @@
 # Finally, create a table for accuracy values
 # In addition, this script also writes a table for TP and FP predictions of Orthanq later to be used for plotting purposes.
 # Side note: validation from final report of orthanq inside validation.py cannot be performed because we also need fraction info for TP-FP table, we do both that and validation at once here.
+# For accuracy, we count, for each tool: TP / (TP+FP).
+# For call rate, we count, for each tool: (TP + FP) / (TP + FP + 'no call')
 
 import pandas as pd
 import os
@@ -222,6 +224,7 @@ with open(snakemake.log[0], "w") as f:
             print("collected: ",collected)
 
             #calculate accuracy and call rate
+
             n_samples_collected = len(list(set(samples_collected)))
             print("n_samples_collected: ",n_samples_collected)
             # to be fair to all tools, the denominator should be the number of samples that the tool results in a prediction.
@@ -229,9 +232,14 @@ with open(snakemake.log[0], "w") as f:
             print("samples_called: ",samples_called)
             call_rate = samples_called/n_samples_collected
 
+            # add the numbers in parenthesis for call rate and accuracy
+            accuracy = str(accuracy) + " (" + str(collected) + "/" + str(samples_called) + ")"
+            call_rate = str(call_rate) + " (" + str(samples_called) + "/" + str(n_samples_collected) + ")"
+
             #concatenate the locus-wise statistics to the validation table
             new_row = pd.DataFrame([[locus, n_samples_collected, call_rate, accuracy]],
                             columns=['Locus', 'N', 'Orthanq_Call_Rate', 'Orthanq_Accuracy'])
+
             validation_table = pd.concat([validation_table, new_row], ignore_index=True)
         
         #if the evaluation field is empty, make all empty to FP
