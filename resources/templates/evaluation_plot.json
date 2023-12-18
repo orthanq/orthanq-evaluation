@@ -1,28 +1,37 @@
 {
-    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-    "datasets": {
-      "tool_accuracies": []
-    },
-    "data": {"name": "tool_accuracies"},
-    "layer": [{"mark": "bar"},
-    {"mark": {
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "datasets": {
+    "tool_accuracies": []
+  },
+  "data": {"name": "tool_accuracies"},
+  "transform": [{"calculate": "split(datum.value, ' ')" ,"as": "percent"},
+  {"calculate": "split(datum.value, ' ')[1]" ,"as": "fraction"}],
+  "layer": [
+    {"mark": "bar"},
+    {
+      "mark": {
         "type": "text",
-        "align": "left",
+        "align": "center",
         "baseline": "middle",
-        "dx": -9,
-        "dy": -4,
+        "dx": 0,
+        "dy": -14,
         "fontSize": 7,
         "tooltip": true
       },
       "encoding": {
-        "text": {"field": "value", "type": "quantitative",  "format": ".2f"}
+        "text": {"field": "percent"}
       }
-      }],
-    "encoding": {
-      "x": {"field": "category", "axis": {"title": "Locus"}},
-      "y": {"field": "value", "type": "quantitative", "axis": {"title": "Accuracy"}},
-      "xOffset": {"field": "group"},
-      "color": {"field": "group"}
     }
-  }
-  
+  ],
+  "encoding": {
+    "x": {"field": "category", "axis": {"title": "Locus"}},
+    "y": {
+      "field": "percent[0]",
+      "type": "quantitative",
+      "axis": {"title": "Accuracy"}
+    },
+    "xOffset": {"field": "group"},
+    "color": {"field": "group"}
+  },
+  "config": {}
+}

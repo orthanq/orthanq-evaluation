@@ -103,8 +103,6 @@ with open(snakemake.log[0], "w") as f:
                         new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_w_separators), '']],
                             columns=['sample', 'ground', 'orthanq evaluation'])
                         orthanq_tp_fp_DQB1 = pd.concat([orthanq_tp_fp_DQB1, new_row_tp], ignore_index=True)
-                    print("orthanq_tp_fp_B")
-                    print(orthanq_tp_fp_B)
 
                     if not best_results.empty: #orthanq has no predictions for some samples
 
@@ -126,7 +124,8 @@ with open(snakemake.log[0], "w") as f:
                         sum_of_densities = 0
                         sum_of_densities = best_results["density"].sum()
                         print("sum_of_densities: ", sum_of_densities)
-                        if sum_of_densities > threshold:
+                        print(best_results)
+                        if sum_of_densities > threshold and best_results.shape[0] <= 10: #this number is configurable:
                             #count the number of samples that are called
                             if locus == locus_in_orthanq:
                                 samples_called += 1
@@ -243,7 +242,7 @@ with open(snakemake.log[0], "w") as f:
             call_rate = samples_called/n_samples_collected
 
             # add the numbers in parenthesis for call rate and accuracy
-            accuracy = "{:.2f}".format(accuracy) + " (" + str(collected) + "/" + str(samples_called) + ")"
+            accuracy = "{:.2f}".format(accuracy) + " (" + str(int(collected)) + "/" + str(samples_called) + ")"
             call_rate = "{:.2f}".format(call_rate) + " (" + str(samples_called) + "/" + str(n_samples_collected) + ")"
 
             #concatenate the locus-wise statistics to the validation table

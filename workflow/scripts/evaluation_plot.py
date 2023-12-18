@@ -21,41 +21,26 @@ with open(snakemake.log[0], "w") as f:
 
         #loop through the validation table and fill in the json template
         for row in validation_table.itertuples():
-            #arcasHLA
-            arcasHLA_accuracy_with_fraction = row.arcasHLA_Accuracy.split("(")[0] #parse the accuracy value
-            arcasHLA_accuracy = arcasHLA_accuracy_with_fraction.rstrip() #remove the trailing whitespace
-
-            #HLA-LA
-            hla_la_accuracy_with_fraction = row.HLA_LA_Accuracy.split("(")[0] #parse the accuracy value
-            hla_la_accuracy = hla_la_accuracy_with_fraction.rstrip() #remove the trailing whitespace
-
-            #optitype
-            optitype_accuracy_with_fraction = row.Optitype_Accuracy.split("(")[0] #parse the accuracy value
-            optitype_accuracy = optitype_accuracy_with_fraction.rstrip() #remove the trailing whitespace
-
-            #orthanq
-            orthanq_accuracy_with_fraction = row.Orthanq_Accuracy.split("(")[0] #parse the accuracy value
-            orthanq_accuracy = orthanq_accuracy_with_fraction.rstrip() #remove the trailing whitespace
 
             arcashla = {
                 "category": row.Locus,
                 "group": "arcasHLA",
-                "value": arcasHLA_accuracy
+                "value": row.arcasHLA_Accuracy
             }
             hla_la = {
                 "category": row.Locus,
                 "group": "HLA-LA",
-                "value": hla_la_accuracy
+                "value": row.HLA_LA_Accuracy
             }
             optitype = {
                 "category": row.Locus,
                 "group": "Optitype",
-                "value": optitype_accuracy
+                "value": row.Optitype_Accuracy
             }
             orthanq = {
                 "category": row.Locus,
                 "group": "Orthanq",
-                "value": orthanq_accuracy
+                "value": row.Orthanq_Accuracy
             }
             tool_accuracies.append(arcashla)
             tool_accuracies.append(hla_la)
