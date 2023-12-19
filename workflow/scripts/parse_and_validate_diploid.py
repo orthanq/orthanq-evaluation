@@ -125,7 +125,7 @@ with open(snakemake.log[0], "w") as f:
                         sum_of_densities = best_results["density"].sum()
                         print("sum_of_densities: ", sum_of_densities)
                         print(best_results)
-                        if sum_of_densities > threshold and best_results.shape[0] <= 10: #this number is configurable:
+                        if sum_of_densities > threshold and best_results.shape[0] <= 5: #this number is configurable:
                             #count the number of samples that are called
                             if locus == locus_in_orthanq:
                                 samples_called += 1
@@ -237,12 +237,16 @@ with open(snakemake.log[0], "w") as f:
             n_samples_collected = len(list(set(samples_collected)))
             print("n_samples_collected: ",n_samples_collected)
             # to be fair to all tools, the denominator should be the number of samples that the tool results in a prediction.
-            accuracy = 100*collected/samples_called
+            if samples_called == 0:
+                accuracy = "NA"
+            else:
+                accuracy = 100*collected/samples_called
             print("samples_called: ",samples_called)
             call_rate = samples_called/n_samples_collected
 
             # add the numbers in parenthesis for call rate and accuracy
-            accuracy = "{:.2f}".format(accuracy) + " (" + str(int(collected)) + "/" + str(samples_called) + ")"
+            if accuracy != "NA":
+                accuracy = "{:.2f}".format(accuracy) + " (" + str(int(collected)) + "/" + str(samples_called) + ")"
             call_rate = "{:.2f}".format(call_rate) + " (" + str(samples_called) + "/" + str(n_samples_collected) + ")"
 
             #concatenate the locus-wise statistics to the validation table
