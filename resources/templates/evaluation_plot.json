@@ -15,7 +15,7 @@
         "baseline": "middle",
         "dx": 0,
         "dy": -14,
-        "fontSize": 7,
+        "fontSize": 6,
         "tooltip": true
       },
       "encoding": {
