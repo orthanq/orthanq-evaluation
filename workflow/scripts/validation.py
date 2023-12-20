@@ -74,11 +74,14 @@ with open(snakemake.log[0], "w") as f:
         loci = ['A', 'B', 'C', 'DQB1']
         for locus in loci:
             values = arcasHLA_results[locus]
+            samples_collected = [] 
             collected = 0
             samples_called = 0 #some samples in arcashla have some loci that is uncalled, so we need to count the number of samples that are called here.
             for (index, value_in_arcasHLA) in enumerate(values):
                 sample_name = arcasHLA_results.loc[index,'sample']
-                if sample_name != "D1_S1_L001":
+                if sample_name != "SRR2962669": # exclude giab sample
+                    samples_collected.append(sample_name) #keep track of samples that are evaluated
+
                     values_in_truth = {}
                     values_in_truth = truth_for_sample(locus, values_in_truth, ground_truth, sample_name)
                     
@@ -168,20 +171,28 @@ with open(snakemake.log[0], "w") as f:
                             if locus == "DQB1":
                                 arcasHLA_tp_fp_DQB1.loc[arcasHLA_tp_fp_DQB1['sample'] == sample_name, 'arcasHLA evaluation'] = 'TP'
                         print("collected: " + str(collected))
-            call_rate = samples_called/len(arcasHLA_results.index)
+
+            print("len(arcasHLA_results.index):"+str(len(arcasHLA_results.index))) 
+
+            #exclude giab sample
+            n_total_samples = len(list(set(samples_collected)))
+            print("n_total_samples: " + str(n_total_samples))
+
+            #calculate call rate
+            call_rate = samples_called/n_total_samples
+
             # to be fair to all tools, the denominator should be the number of samples that the tool results in a prediction.
             if samples_called != 0:
                 accuracy = 100*collected/samples_called
             else:
                  accuracy = 0
-            print("len(arcasHLA_results.index):"+str(len(arcasHLA_results.index)))
             
             # add the numbers in parenthesis for call rate and accuracy
             accuracy = "{:.2f}".format(accuracy) + " (" + str(int(collected)) + "/" + str(samples_called) + ")"
-            call_rate = "{:.2f}".format(call_rate) + " (" + str(samples_called) + "/" + str(len(arcasHLA_results.index)) + ")"
+            call_rate = "{:.2f}".format(call_rate) + " (" + str(samples_called) + "/" + str(n_total_samples) + ")"
 
             # concatenate the row the validation table 
-            new_row = pd.DataFrame([[locus, len(arcasHLA_results.index), call_rate, accuracy]],
+            new_row = pd.DataFrame([[locus, n_total_samples, call_rate, accuracy]],
                         columns=['Locus', 'N', 'arcasHLA_Call_Rate', 'arcasHLA_Accuracy'])
             arcasHLA_validation_table = pd.concat([arcasHLA_validation_table, new_row], ignore_index=True)
                 
@@ -207,11 +218,14 @@ with open(snakemake.log[0], "w") as f:
         loci = ['A', 'B', 'C', 'DQB1']
         for locus in loci:
             values = hla_la_results[locus]
+            samples_collected = [] 
             collected = 0
             samples_called = 0 #some samples in hla-la have some loci that is uncalled, so we need to count the number of samples that are called here.
             for (index, value_in_hla_la) in enumerate(values):
                 sample_name = hla_la_results.loc[index,'sample']
-                if sample_name != "D1_S1_L001":
+                if sample_name != "SRR2962669": # exclude giab sample
+                    samples_collected.append(sample_name) #keep track of samples that are evaluated
+
                     values_in_truth = {}
                     values_in_truth = truth_for_sample(locus, values_in_truth, ground_truth, sample_name)
                     
@@ -318,17 +332,24 @@ with open(snakemake.log[0], "w") as f:
                                 hla_la_tp_fp_DQB1.loc[hla_la_tp_fp_DQB1['sample'] == sample_name, 'HLA-LA evaluation'] = 'TP'
                         print("collected: " + str(collected))
                         samples_called+=1
-            call_rate = samples_called/len(hla_la_results.index)
+            print("len(hla_la_results.index):"+str(len(hla_la_results.index)))    
+
+            #exclude giab sample
+            n_total_samples = len(list(set(samples_collected)))
+            print("n_total_samples: " + str(n_total_samples))
+
+            #calculate call rate
+            call_rate = samples_called/n_total_samples
+
             # to be fair to all tools, the denominator should be the number of samples that the tool results in a prediction.
             accuracy = 100*collected/samples_called
-            print("len(hla_la_results.index):"+str(len(hla_la_results.index)))      
 
             # add the numbers in parenthesis for call rate and accuracy
             accuracy = "{:.2f}".format(accuracy) + " (" + str(int(collected)) + "/" + str(samples_called) + ")"
-            call_rate = "{:.2f}".format(call_rate) + " (" + str(samples_called) + "/" + str(len(hla_la_results.index)) + ")"
+            call_rate = "{:.2f}".format(call_rate) + " (" + str(samples_called) + "/" + str(n_total_samples) + ")"
 
             # concatenate the row the validation table  
-            new_row = pd.DataFrame([[locus, len(hla_la_results.index), call_rate, accuracy]],
+            new_row = pd.DataFrame([[locus, n_total_samples, call_rate, accuracy]],
                         columns=['Locus', 'N', 'HLA_LA_Call_Rate', 'HLA_LA_Accuracy'])
             hla_la_validation_table = pd.concat([hla_la_validation_table, new_row], ignore_index=True)
                         
@@ -354,11 +375,13 @@ with open(snakemake.log[0], "w") as f:
         print("optitype")
         for locus in loci:
             values = optitype_results[locus]
+            samples_collected = [] 
             collected = 0
             samples_called = 0 #some samples in optitype have some loci that is uncalled, so we need to count the number of samples that are called here.
             for (index, value_in_optitype) in enumerate(values):
                 sample_name = optitype_results.loc[index,'sample']
-                if sample_name != "D1_S1_L001":
+                if sample_name != "SRR2962669": # exclude giab sample
+                    samples_collected.append(sample_name) #keep track of samples that are evaluated
                     values_in_truth = {}
                     values_in_truth = truth_for_sample(locus, values_in_truth, ground_truth, sample_name)
                     
@@ -446,17 +469,24 @@ with open(snakemake.log[0], "w") as f:
                                 optitype_tp_fp_DQB1.loc[optitype_tp_fp_DQB1['sample'] == sample_name, 'optitype evaluation'] = 'TP'
                         print("collected: " + str(collected))
                         samples_called+=1
-            call_rate = samples_called/len(optitype_results.index)
+            print("len(optitype_results.index):"+str(len(optitype_results.index)))      
+
+            #exclude giab sample
+            n_total_samples = len(list(set(samples_collected)))
+            print("n_total_samples: " + str(n_total_samples))
+            
+            #calculate call rate            
+            call_rate = samples_called/n_total_samples
+
             # to be fair to all tools, the denominator should be the number of samples that the tool results in a prediction.
             accuracy = 100*collected/samples_called
-            print("len(optitype_results.index):"+str(len(optitype_results.index)))      
 
             # add the numbers in parenthesis for call rate and accuracy
             accuracy = "{:.2f}".format(accuracy)  + " (" + str(int(collected)) + "/" + str(samples_called) + ")"
-            call_rate = "{:.2f}".format(call_rate)  + " (" + str(samples_called) + "/" + str(len(optitype_results.index)) + ")"
+            call_rate = "{:.2f}".format(call_rate)  + " (" + str(samples_called) + "/" + str(n_total_samples) + ")"
 
             # concatenate the row the validation table
-            new_row = pd.DataFrame([[locus, len(optitype_results.index), call_rate, accuracy]],
+            new_row = pd.DataFrame([[locus, n_total_samples, call_rate, accuracy]],
                         columns=['Locus', 'N', 'Optitype_Call_Rate', 'Optitype_Accuracy'])
             optitype_validation_table = pd.concat([optitype_validation_table, new_row], ignore_index=True)
                                    
@@ -561,7 +591,11 @@ with open(snakemake.log[0], "w") as f:
 
     #merge tables to get the final table, the zeroth index gives the validation table for all tools
     arcasHLA_validation_table_low = arcashla_validation(arcasHLA_input_low, ground_truth, arcasHLA_validation_table_low,  arcasHLA_tp_fp_A, arcasHLA_tp_fp_B, arcasHLA_tp_fp_C, arcasHLA_tp_fp_DQB1)
+    print(orthanq_input_low)
+    print(arcasHLA_validation_table_low)
     first_merge = pd.merge(orthanq_input_low, arcasHLA_validation_table_low[0], how='left', on=['Locus', 'N'])
+    print("first_merge")
+    print(first_merge)
     hla_la_validation_table_low = hla_la_validation(hla_la_input_low, ground_truth, hla_la_validation_table_low, hla_la_tp_fp_A, hla_la_tp_fp_B, hla_la_tp_fp_C, hla_la_tp_fp_DQB1)
     second_merge = pd.merge(first_merge, hla_la_validation_table_low[0], how='left', on=['Locus', 'N'])
     optitype_validation_table_low = optitype_validation(optitype_input_low, ground_truth, optitype_validation_table_low, optitype_tp_fp_A, optitype_tp_fp_B, optitype_tp_fp_C, optitype_tp_fp_DQB1)

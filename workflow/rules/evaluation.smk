@@ -474,7 +474,7 @@ rule datavzrd_orthanq:
             directory("results/datavzrd-report/orthanq"),
             htmlindex="index.html",
             category="Accuracy", labels={
-            "type": "figure",
+            "type": "table",
             "name": "orthanq predictions"
         }
         ),
