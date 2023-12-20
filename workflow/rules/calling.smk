@@ -42,7 +42,8 @@ rule orthanq_call:
         candidate_variants = "results/orthanq-candidates-intersected/{hla}.vcf",
         xml = config["allele_db_xml"]
     output:
-        "results/orthanq/{sample}_{hla}/{sample}_{hla}.csv"
+        "results/orthanq/{sample}_{hla}/{sample}_{hla}.csv",
+        "results/orthanq/{sample}_{hla}/3_field_solutions.json"
     conda:
         "../envs/orthanq.yaml"
     log:
