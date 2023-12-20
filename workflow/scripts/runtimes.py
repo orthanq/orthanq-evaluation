@@ -141,6 +141,12 @@ with open(snakemake.log[0], "w") as f:
 
     #only include samples in the sample list
     sample_sheet = sample_sheet.rename(columns={"sample_name": "sample"})
+
+    #rename giab sample in sample sheet for a succ. merge
+    sample_sheet.loc[sample_sheet["sample"] == "D1_S1_L001", "sample"] = "D1"
+    print(sample_sheet)
+
+    #merge with samples in sample sheet
     tool_runtimes = pd.merge(tool_runtimes, sample_sheet[["sample"]], on = "sample")
     print(tool_runtimes)
     
