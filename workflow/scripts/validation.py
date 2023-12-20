@@ -78,95 +78,96 @@ with open(snakemake.log[0], "w") as f:
             samples_called = 0 #some samples in arcashla have some loci that is uncalled, so we need to count the number of samples that are called here.
             for (index, value_in_arcasHLA) in enumerate(values):
                 sample_name = arcasHLA_results.loc[index,'sample']
-                values_in_truth = {}
-                values_in_truth = truth_for_sample(locus, values_in_truth, ground_truth, sample_name)
-                
-                values_in_truth_list = []
-                # for chr_number in [1, 2]:
-                #     locus_name_in_truth = "HLA-" + locus + " " + str(chr_number)
-                #     value_in_truth = ground_truth.loc[ground_truth['Run Accession'] == sample_name, locus_name_in_truth].array[0]
-                #     value_in_truth=value_in_truth.rstrip("*") #remove the alleles ending with "*"
-                #     values_in_truth_list.append(locus + "*" + value_in_truth)
-                for key,values in values_in_truth.items():
-                    values_in_truth_list.append(";".join(values))
-                print(values_in_truth_list)
+                if sample_name != "D1_S1_L001":
+                    values_in_truth = {}
+                    values_in_truth = truth_for_sample(locus, values_in_truth, ground_truth, sample_name)
+                    
+                    values_in_truth_list = []
+                    # for chr_number in [1, 2]:
+                    #     locus_name_in_truth = "HLA-" + locus + " " + str(chr_number)
+                    #     value_in_truth = ground_truth.loc[ground_truth['Run Accession'] == sample_name, locus_name_in_truth].array[0]
+                    #     value_in_truth=value_in_truth.rstrip("*") #remove the alleles ending with "*"
+                    #     values_in_truth_list.append(locus + "*" + value_in_truth)
+                    for key,values in values_in_truth.items():
+                        values_in_truth_list.append(";".join(values))
+                    print(values_in_truth_list)
 
-                if pd.isnull(value_in_arcasHLA):
-                    #fill in the tp fp table
-                    if locus == "A":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
-                            columns=['sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'])
-                        arcasHLA_tp_fp_A = pd.concat([arcasHLA_tp_fp_A, new_row_tp], ignore_index=True)
-                    if locus == "B":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
-                            columns=['sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'])
-                        arcasHLA_tp_fp_B = pd.concat([arcasHLA_tp_fp_B, new_row_tp], ignore_index=True)
-                    if locus == "C":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
-                            columns=['sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'])
-                        arcasHLA_tp_fp_C = pd.concat([arcasHLA_tp_fp_C, new_row_tp], ignore_index=True)
-                    if locus == "DQB1":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
-                            columns=['sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'])
-                        arcasHLA_tp_fp_DQB1 = pd.concat([arcasHLA_tp_fp_DQB1, new_row_tp], ignore_index=True)
-                    continue
-                else:
-                    sample_name = arcasHLA_results.loc[index,'sample']
-                    alleles = []
-                    for (chr_index,chr_number) in enumerate([1, 2]):
-                        #value in arcasHLA 
-                        first_allele = value_in_arcasHLA.split("/")[chr_index]
-                        # first_allele_no_locus = first_allele.split("*")[1]
-                        allele_in_arcasHLA = first_allele.split(":")[0] + ":" +first_allele.split(":")[1]
-                        alleles.append(allele_in_arcasHLA)
-
-                    values_in_truth_clone = values_in_truth
-                    print("sample name: " ,sample_name)
-                    print("arcasHLA prediction: " + ''.join(alleles))
-                    print("truth_values: " + str(values_in_truth))
-
-                    #fill in the tp fp table
-                    if locus == 'A':
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_arcasHLA, '']],
-                            columns=['sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'])
-                        arcasHLA_tp_fp_A = pd.concat([arcasHLA_tp_fp_A, new_row_tp], ignore_index=True)
-                    if locus == 'B':
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_arcasHLA, '']],
-                            columns=['sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'])
-                        arcasHLA_tp_fp_B = pd.concat([arcasHLA_tp_fp_B, new_row_tp], ignore_index=True)
-                    if locus == 'C':
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_arcasHLA, '']],
-                            columns=['sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'])
-                        arcasHLA_tp_fp_C = pd.concat([arcasHLA_tp_fp_C, new_row_tp], ignore_index=True)
-                    if locus == 'DQB1':
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_arcasHLA, '']],
-                            columns=['sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'])
-                        arcasHLA_tp_fp_DQB1 = pd.concat([arcasHLA_tp_fp_DQB1, new_row_tp], ignore_index=True)
-
-                    allele_present=0
-                    for allele in alleles: ##???
-                        values_in_truth = values_in_truth_clone
-                        for chr_index, chr_values in values_in_truth.items():
-                            if allele in chr_values:
-                                allele_present+= 1 #both alleles should be correct
-                                #to stop homozygous alleles inaccurately match, we should remove the one that matches
-                                if len(values_in_truth) > 1:
-                                    values_in_truth_clone.pop(chr_index)
-                                break
-                    samples_called+=1
-                    if allele_present==2: #both alleles should be correct
-                        collected+=1
-
-                        #fill in the table for tp fp info
+                    if pd.isnull(value_in_arcasHLA):
+                        #fill in the tp fp table
                         if locus == "A":
-                            arcasHLA_tp_fp_A.loc[arcasHLA_tp_fp_A['sample'] == sample_name, 'arcasHLA evaluation'] = 'TP'
+                            new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
+                                columns=['sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'])
+                            arcasHLA_tp_fp_A = pd.concat([arcasHLA_tp_fp_A, new_row_tp], ignore_index=True)
                         if locus == "B":
-                            arcasHLA_tp_fp_B.loc[arcasHLA_tp_fp_B['sample'] == sample_name, 'arcasHLA evaluation'] = 'TP'
+                            new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
+                                columns=['sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'])
+                            arcasHLA_tp_fp_B = pd.concat([arcasHLA_tp_fp_B, new_row_tp], ignore_index=True)
                         if locus == "C":
-                            arcasHLA_tp_fp_C.loc[arcasHLA_tp_fp_C['sample'] == sample_name, 'arcasHLA evaluation'] = 'TP'
+                            new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
+                                columns=['sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'])
+                            arcasHLA_tp_fp_C = pd.concat([arcasHLA_tp_fp_C, new_row_tp], ignore_index=True)
                         if locus == "DQB1":
-                            arcasHLA_tp_fp_DQB1.loc[arcasHLA_tp_fp_DQB1['sample'] == sample_name, 'arcasHLA evaluation'] = 'TP'
-                    print("collected: " + str(collected))
+                            new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
+                                columns=['sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'])
+                            arcasHLA_tp_fp_DQB1 = pd.concat([arcasHLA_tp_fp_DQB1, new_row_tp], ignore_index=True)
+                        continue
+                    else:
+                        sample_name = arcasHLA_results.loc[index,'sample']
+                        alleles = []
+                        for (chr_index,chr_number) in enumerate([1, 2]):
+                            #value in arcasHLA 
+                            first_allele = value_in_arcasHLA.split("/")[chr_index]
+                            # first_allele_no_locus = first_allele.split("*")[1]
+                            allele_in_arcasHLA = first_allele.split(":")[0] + ":" +first_allele.split(":")[1]
+                            alleles.append(allele_in_arcasHLA)
+
+                        values_in_truth_clone = values_in_truth
+                        print("sample name: " ,sample_name)
+                        print("arcasHLA prediction: " + ''.join(alleles))
+                        print("truth_values: " + str(values_in_truth))
+
+                        #fill in the tp fp table
+                        if locus == 'A':
+                            new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_arcasHLA, '']],
+                                columns=['sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'])
+                            arcasHLA_tp_fp_A = pd.concat([arcasHLA_tp_fp_A, new_row_tp], ignore_index=True)
+                        if locus == 'B':
+                            new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_arcasHLA, '']],
+                                columns=['sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'])
+                            arcasHLA_tp_fp_B = pd.concat([arcasHLA_tp_fp_B, new_row_tp], ignore_index=True)
+                        if locus == 'C':
+                            new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_arcasHLA, '']],
+                                columns=['sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'])
+                            arcasHLA_tp_fp_C = pd.concat([arcasHLA_tp_fp_C, new_row_tp], ignore_index=True)
+                        if locus == 'DQB1':
+                            new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_arcasHLA, '']],
+                                columns=['sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'])
+                            arcasHLA_tp_fp_DQB1 = pd.concat([arcasHLA_tp_fp_DQB1, new_row_tp], ignore_index=True)
+
+                        allele_present=0
+                        for allele in alleles: ##???
+                            values_in_truth = values_in_truth_clone
+                            for chr_index, chr_values in values_in_truth.items():
+                                if allele in chr_values:
+                                    allele_present+= 1 #both alleles should be correct
+                                    #to stop homozygous alleles inaccurately match, we should remove the one that matches
+                                    if len(values_in_truth) > 1:
+                                        values_in_truth_clone.pop(chr_index)
+                                    break
+                        samples_called+=1
+                        if allele_present==2: #both alleles should be correct
+                            collected+=1
+
+                            #fill in the table for tp fp info
+                            if locus == "A":
+                                arcasHLA_tp_fp_A.loc[arcasHLA_tp_fp_A['sample'] == sample_name, 'arcasHLA evaluation'] = 'TP'
+                            if locus == "B":
+                                arcasHLA_tp_fp_B.loc[arcasHLA_tp_fp_B['sample'] == sample_name, 'arcasHLA evaluation'] = 'TP'
+                            if locus == "C":
+                                arcasHLA_tp_fp_C.loc[arcasHLA_tp_fp_C['sample'] == sample_name, 'arcasHLA evaluation'] = 'TP'
+                            if locus == "DQB1":
+                                arcasHLA_tp_fp_DQB1.loc[arcasHLA_tp_fp_DQB1['sample'] == sample_name, 'arcasHLA evaluation'] = 'TP'
+                        print("collected: " + str(collected))
             call_rate = samples_called/len(arcasHLA_results.index)
             # to be fair to all tools, the denominator should be the number of samples that the tool results in a prediction.
             if samples_called != 0:
@@ -210,112 +211,113 @@ with open(snakemake.log[0], "w") as f:
             samples_called = 0 #some samples in hla-la have some loci that is uncalled, so we need to count the number of samples that are called here.
             for (index, value_in_hla_la) in enumerate(values):
                 sample_name = hla_la_results.loc[index,'sample']
-                values_in_truth = {}
-                values_in_truth = truth_for_sample(locus, values_in_truth, ground_truth, sample_name)
-                
-                values_in_truth_list = []
-                # for chr_number in [1, 2]:
-                #     locus_name_in_truth = "HLA-" + locus + " " + str(chr_number)
-                #     value_in_truth = ground_truth.loc[ground_truth['Run Accession'] == sample_name, locus_name_in_truth].array[0]
-                #     value_in_truth=value_in_truth.rstrip("*") #remove the alleles ending with "*"                    
-                #     values_in_truth_list.append(locus + "*" + value_in_truth)
-                for key,values in values_in_truth.items():
-                    values_in_truth_list.append(";".join(values))
-                print(values_in_truth_list)
+                if sample_name != "D1_S1_L001":
+                    values_in_truth = {}
+                    values_in_truth = truth_for_sample(locus, values_in_truth, ground_truth, sample_name)
+                    
+                    values_in_truth_list = []
+                    # for chr_number in [1, 2]:
+                    #     locus_name_in_truth = "HLA-" + locus + " " + str(chr_number)
+                    #     value_in_truth = ground_truth.loc[ground_truth['Run Accession'] == sample_name, locus_name_in_truth].array[0]
+                    #     value_in_truth=value_in_truth.rstrip("*") #remove the alleles ending with "*"                    
+                    #     values_in_truth_list.append(locus + "*" + value_in_truth)
+                    for key,values in values_in_truth.items():
+                        values_in_truth_list.append(";".join(values))
+                    print(values_in_truth_list)
 
-                if pd.isnull(value_in_hla_la):
-                    #fill in the tp fp table
-                    if locus == "A":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
-                            columns=['sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'])
-                        hla_la_tp_fp_A = pd.concat([hla_la_tp_fp_A, new_row_tp], ignore_index=True)
-                    if locus == "B":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
-                            columns=['sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'])
-                        hla_la_tp_fp_B = pd.concat([hla_la_tp_fp_B, new_row_tp], ignore_index=True)
-                    if locus == "C":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
-                            columns=['sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'])
-                        hla_la_tp_fp_C = pd.concat([hla_la_tp_fp_C, new_row_tp], ignore_index=True)
-                    if locus == "DQB1":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
-                            columns=['sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'])
-                        hla_la_tp_fp_DQB1 = pd.concat([hla_la_tp_fp_DQB1, new_row_tp], ignore_index=True)
-                    continue
-                else:
-                    sample_name = hla_la_results.loc[index,'sample']
-                    alleles = {}
-                    for (chr_index,chr_number) in enumerate([1, 2]):
-                        #values in hla-la are as in the following: A*02:01:02;A*03:01:04/A*02:01:02;A*03:01:04
-                        all_alleles=[]
-                        first_allele = value_in_hla_la.split("/")[chr_index]
-                        splitted_alleles = first_allele.split(";")
-                        for splitted in splitted_alleles:
-                            # allele_no_locus = splitted.split("*")[1]
-                            allele_in_hla_la = splitted.split(":")[0] + ":" +splitted.split(":")[1]
-                            all_alleles.append(allele_in_hla_la)
-                        alleles["{0}".format(chr_index)] = all_alleles
-
-                    values_in_truth_clone = values_in_truth
-                    print("sample name: " ,sample_name)
-                    print("hla-la prediction: " + ''.join(sum(alleles.values(), [])))
-
-                    #collecting alleles_w_separators is necessary as some truth values have multiple values
-                    alleles_w_separators = []
-                    for key_chr,value_alleles in alleles.items():
-                        alleles_with_sep = []
-                        for value in value_alleles:
-                            alleles_with_sep.append(value)
-                        alleles_with_sep = ';'.join(alleles_with_sep)
-                        alleles_w_separators.append(alleles_with_sep)
-                    print(alleles_w_separators)
-
-                    #fill in the tp fp table
-                    if locus == "A":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_hla_la, '']],
-                            columns=['sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'])
-                        hla_la_tp_fp_A = pd.concat([hla_la_tp_fp_A, new_row_tp], ignore_index=True)
-                    if locus == "B":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_hla_la, '']],
-                            columns=['sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'])
-                        hla_la_tp_fp_B = pd.concat([hla_la_tp_fp_B, new_row_tp], ignore_index=True)
-                    if locus == "C":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_hla_la, '']],
-                            columns=['sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'])
-                        hla_la_tp_fp_C = pd.concat([hla_la_tp_fp_C, new_row_tp], ignore_index=True)
-                    if locus == "DQB1":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_hla_la, '']],
-                            columns=['sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'])
-                        hla_la_tp_fp_DQB1 = pd.concat([hla_la_tp_fp_DQB1, new_row_tp], ignore_index=True)
-
-                    allele_present=0 #both alleles should be correct
-                    for _, hla_la_alleles in alleles.items():
-                        for allele in hla_la_alleles:
-                            values_in_truth = values_in_truth_clone
-                            for chr_index, chr_values in values_in_truth.items():
-                                if allele in chr_values:
-                                    allele_present+= 1
-                                    #to stop homozygous alleles inaccurately match, we should remove the one that matches
-                                    if len(values_in_truth) > 1:
-                                        values_in_truth_clone.pop(chr_index)
-                                    break
-                            else:
-                                continue
-                            break
-                    if allele_present==2: #both alleles should be correct
-                        collected+=1
-
-                        #fill in the table for tp fp info
+                    if pd.isnull(value_in_hla_la):
+                        #fill in the tp fp table
                         if locus == "A":
-                            hla_la_tp_fp_A.loc[hla_la_tp_fp_A['sample'] == sample_name, 'HLA-LA evaluation'] = 'TP'
+                            new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
+                                columns=['sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'])
+                            hla_la_tp_fp_A = pd.concat([hla_la_tp_fp_A, new_row_tp], ignore_index=True)
                         if locus == "B":
-                            hla_la_tp_fp_B.loc[hla_la_tp_fp_B['sample'] == sample_name, 'HLA-LA evaluation'] = 'TP'
+                            new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
+                                columns=['sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'])
+                            hla_la_tp_fp_B = pd.concat([hla_la_tp_fp_B, new_row_tp], ignore_index=True)
                         if locus == "C":
-                            hla_la_tp_fp_C.loc[hla_la_tp_fp_C['sample'] == sample_name, 'HLA-LA evaluation'] = 'TP'
+                            new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
+                                columns=['sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'])
+                            hla_la_tp_fp_C = pd.concat([hla_la_tp_fp_C, new_row_tp], ignore_index=True)
                         if locus == "DQB1":
-                            hla_la_tp_fp_DQB1.loc[hla_la_tp_fp_DQB1['sample'] == sample_name, 'HLA-LA evaluation'] = 'TP'
-                    print("collected: " + str(collected))
-                    samples_called+=1
+                            new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
+                                columns=['sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'])
+                            hla_la_tp_fp_DQB1 = pd.concat([hla_la_tp_fp_DQB1, new_row_tp], ignore_index=True)
+                        continue
+                    else:
+                        sample_name = hla_la_results.loc[index,'sample']
+                        alleles = {}
+                        for (chr_index,chr_number) in enumerate([1, 2]):
+                            #values in hla-la are as in the following: A*02:01:02;A*03:01:04/A*02:01:02;A*03:01:04
+                            all_alleles=[]
+                            first_allele = value_in_hla_la.split("/")[chr_index]
+                            splitted_alleles = first_allele.split(";")
+                            for splitted in splitted_alleles:
+                                # allele_no_locus = splitted.split("*")[1]
+                                allele_in_hla_la = splitted.split(":")[0] + ":" +splitted.split(":")[1]
+                                all_alleles.append(allele_in_hla_la)
+                            alleles["{0}".format(chr_index)] = all_alleles
+
+                        values_in_truth_clone = values_in_truth
+                        print("sample name: " ,sample_name)
+                        print("hla-la prediction: " + ''.join(sum(alleles.values(), [])))
+
+                        #collecting alleles_w_separators is necessary as some truth values have multiple values
+                        alleles_w_separators = []
+                        for key_chr,value_alleles in alleles.items():
+                            alleles_with_sep = []
+                            for value in value_alleles:
+                                alleles_with_sep.append(value)
+                            alleles_with_sep = ';'.join(alleles_with_sep)
+                            alleles_w_separators.append(alleles_with_sep)
+                        print(alleles_w_separators)
+
+                        #fill in the tp fp table
+                        if locus == "A":
+                            new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_hla_la, '']],
+                                columns=['sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'])
+                            hla_la_tp_fp_A = pd.concat([hla_la_tp_fp_A, new_row_tp], ignore_index=True)
+                        if locus == "B":
+                            new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_hla_la, '']],
+                                columns=['sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'])
+                            hla_la_tp_fp_B = pd.concat([hla_la_tp_fp_B, new_row_tp], ignore_index=True)
+                        if locus == "C":
+                            new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_hla_la, '']],
+                                columns=['sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'])
+                            hla_la_tp_fp_C = pd.concat([hla_la_tp_fp_C, new_row_tp], ignore_index=True)
+                        if locus == "DQB1":
+                            new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_hla_la, '']],
+                                columns=['sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'])
+                            hla_la_tp_fp_DQB1 = pd.concat([hla_la_tp_fp_DQB1, new_row_tp], ignore_index=True)
+
+                        allele_present=0 #both alleles should be correct
+                        for _, hla_la_alleles in alleles.items():
+                            for allele in hla_la_alleles:
+                                values_in_truth = values_in_truth_clone
+                                for chr_index, chr_values in values_in_truth.items():
+                                    if allele in chr_values:
+                                        allele_present+= 1
+                                        #to stop homozygous alleles inaccurately match, we should remove the one that matches
+                                        if len(values_in_truth) > 1:
+                                            values_in_truth_clone.pop(chr_index)
+                                        break
+                                else:
+                                    continue
+                                break
+                        if allele_present==2: #both alleles should be correct
+                            collected+=1
+
+                            #fill in the table for tp fp info
+                            if locus == "A":
+                                hla_la_tp_fp_A.loc[hla_la_tp_fp_A['sample'] == sample_name, 'HLA-LA evaluation'] = 'TP'
+                            if locus == "B":
+                                hla_la_tp_fp_B.loc[hla_la_tp_fp_B['sample'] == sample_name, 'HLA-LA evaluation'] = 'TP'
+                            if locus == "C":
+                                hla_la_tp_fp_C.loc[hla_la_tp_fp_C['sample'] == sample_name, 'HLA-LA evaluation'] = 'TP'
+                            if locus == "DQB1":
+                                hla_la_tp_fp_DQB1.loc[hla_la_tp_fp_DQB1['sample'] == sample_name, 'HLA-LA evaluation'] = 'TP'
+                        print("collected: " + str(collected))
+                        samples_called+=1
             call_rate = samples_called/len(hla_la_results.index)
             # to be fair to all tools, the denominator should be the number of samples that the tool results in a prediction.
             accuracy = 100*collected/samples_called
@@ -356,93 +358,94 @@ with open(snakemake.log[0], "w") as f:
             samples_called = 0 #some samples in optitype have some loci that is uncalled, so we need to count the number of samples that are called here.
             for (index, value_in_optitype) in enumerate(values):
                 sample_name = optitype_results.loc[index,'sample']
-                values_in_truth = {}
-                values_in_truth = truth_for_sample(locus, values_in_truth, ground_truth, sample_name)
-                
-                values_in_truth_list = []
-                # for chr_number in [1, 2]:
-                #     locus_name_in_truth = "HLA-" + locus + " " + str(chr_number)
-                #     value_in_truth = ground_truth.loc[ground_truth['Run Accession'] == sample_name, locus_name_in_truth].array[0]
-                #     value_in_truth=value_in_truth.rstrip("*") #remove the alleles ending with "*"
-                #     values_in_truth_list.append(locus + "*" + value_in_truth)
-                for key,values in values_in_truth.items():
-                    values_in_truth_list.append(";".join(values))
-                print(values_in_truth_list)
+                if sample_name != "D1_S1_L001":
+                    values_in_truth = {}
+                    values_in_truth = truth_for_sample(locus, values_in_truth, ground_truth, sample_name)
+                    
+                    values_in_truth_list = []
+                    # for chr_number in [1, 2]:
+                    #     locus_name_in_truth = "HLA-" + locus + " " + str(chr_number)
+                    #     value_in_truth = ground_truth.loc[ground_truth['Run Accession'] == sample_name, locus_name_in_truth].array[0]
+                    #     value_in_truth=value_in_truth.rstrip("*") #remove the alleles ending with "*"
+                    #     values_in_truth_list.append(locus + "*" + value_in_truth)
+                    for key,values in values_in_truth.items():
+                        values_in_truth_list.append(";".join(values))
+                    print(values_in_truth_list)
 
-                if pd.isnull(value_in_optitype):
-                    #fill in the tp fp table
-                    if locus == "A":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
-                            columns=['sample', 'ground', 'optitype', 'optitype evaluation'])
-                        optitype_tp_fp_A = pd.concat([optitype_tp_fp_A, new_row_tp], ignore_index=True)
-                    if locus == "B":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
-                            columns=['sample', 'ground', 'optitype', 'optitype evaluation'])
-                        optitype_tp_fp_B = pd.concat([optitype_tp_fp_B, new_row_tp], ignore_index=True)
-                    if locus == "C":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
-                            columns=['sample', 'ground', 'optitype', 'optitype evaluation'])
-                        optitype_tp_fp_C = pd.concat([optitype_tp_fp_C, new_row_tp], ignore_index=True)
-                    if locus == "DQB1":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
-                            columns=['sample', 'ground', 'optitype', 'optitype evaluation'])
-                        optitype_tp_fp_DQB1 = pd.concat([optitype_tp_fp_DQB1, new_row_tp], ignore_index=True)
-                    continue
-                else:
-                    alleles = []
-                    for (chr_index,chr_number) in enumerate([1, 2]):
-                        #value in optitype 
-                        first_allele = value_in_optitype.split("/")[chr_index]
-                        # allele_in_arcasHLA = first_allele.split("*")[1]
-                        alleles.append(first_allele)
-
-                    values_in_truth_clone = values_in_truth
-                    print("sample name: " ,sample_name)
-                    print("optitype prediction: " + ''.join(alleles))
-                    print("truth_values: " + str(values_in_truth))
-
-                    #fill in the tp fp table
-                    if locus == "A":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_optitype, '']],
-                        columns=['sample', 'ground', 'optitype', 'optitype evaluation'])
-                        optitype_tp_fp_A = pd.concat([optitype_tp_fp_A, new_row_tp], ignore_index=True)
-                    if locus == "B":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_optitype, '']],
-                        columns=['sample', 'ground', 'optitype', 'optitype evaluation'])
-                        optitype_tp_fp_B = pd.concat([optitype_tp_fp_B, new_row_tp], ignore_index=True)
-                    if locus == "C":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_optitype, '']],
-                        columns=['sample', 'ground', 'optitype', 'optitype evaluation'])
-                        optitype_tp_fp_C = pd.concat([optitype_tp_fp_C, new_row_tp], ignore_index=True)
-                    if locus == "DQB1":
-                        new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_optitype, '']],
-                        columns=['sample', 'ground', 'optitype', 'optitype evaluation'])
-                        optitype_tp_fp_DQB1 = pd.concat([optitype_tp_fp_DQB1, new_row_tp], ignore_index=True)
-
-                    allele_present = 0
-                    for allele in alleles: ##???
-                        values_in_truth = values_in_truth_clone
-                        for chr_index,chr_values in values_in_truth.items():
-                            if allele in chr_values:
-                                allele_present+= 1
-                                #to stop homozygous alleles inaccurately match, we should remove the one that matches
-                                if len(values_in_truth) > 1:
-                                    values_in_truth_clone.pop(chr_index)
-                                break
-                    if allele_present==2:
-                        collected+=1
-
-                        #fill in the table for tp fp info
+                    if pd.isnull(value_in_optitype):
+                        #fill in the tp fp table
                         if locus == "A":
-                            optitype_tp_fp_A.loc[optitype_tp_fp_A['sample'] == sample_name, 'optitype evaluation'] = 'TP'
+                            new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
+                                columns=['sample', 'ground', 'optitype', 'optitype evaluation'])
+                            optitype_tp_fp_A = pd.concat([optitype_tp_fp_A, new_row_tp], ignore_index=True)
                         if locus == "B":
-                            optitype_tp_fp_B.loc[optitype_tp_fp_B['sample'] == sample_name, 'optitype evaluation'] = 'TP'
+                            new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
+                                columns=['sample', 'ground', 'optitype', 'optitype evaluation'])
+                            optitype_tp_fp_B = pd.concat([optitype_tp_fp_B, new_row_tp], ignore_index=True)
                         if locus == "C":
-                            optitype_tp_fp_C.loc[optitype_tp_fp_C['sample'] == sample_name, 'optitype evaluation'] = 'TP'
+                            new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
+                                columns=['sample', 'ground', 'optitype', 'optitype evaluation'])
+                            optitype_tp_fp_C = pd.concat([optitype_tp_fp_C, new_row_tp], ignore_index=True)
                         if locus == "DQB1":
-                            optitype_tp_fp_DQB1.loc[optitype_tp_fp_DQB1['sample'] == sample_name, 'optitype evaluation'] = 'TP'
-                    print("collected: " + str(collected))
-                    samples_called+=1
+                            new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), '', 'no call']],
+                                columns=['sample', 'ground', 'optitype', 'optitype evaluation'])
+                            optitype_tp_fp_DQB1 = pd.concat([optitype_tp_fp_DQB1, new_row_tp], ignore_index=True)
+                        continue
+                    else:
+                        alleles = []
+                        for (chr_index,chr_number) in enumerate([1, 2]):
+                            #value in optitype 
+                            first_allele = value_in_optitype.split("/")[chr_index]
+                            # allele_in_arcasHLA = first_allele.split("*")[1]
+                            alleles.append(first_allele)
+
+                        values_in_truth_clone = values_in_truth
+                        print("sample name: " ,sample_name)
+                        print("optitype prediction: " + ''.join(alleles))
+                        print("truth_values: " + str(values_in_truth))
+
+                        #fill in the tp fp table
+                        if locus == "A":
+                            new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_optitype, '']],
+                            columns=['sample', 'ground', 'optitype', 'optitype evaluation'])
+                            optitype_tp_fp_A = pd.concat([optitype_tp_fp_A, new_row_tp], ignore_index=True)
+                        if locus == "B":
+                            new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_optitype, '']],
+                            columns=['sample', 'ground', 'optitype', 'optitype evaluation'])
+                            optitype_tp_fp_B = pd.concat([optitype_tp_fp_B, new_row_tp], ignore_index=True)
+                        if locus == "C":
+                            new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_optitype, '']],
+                            columns=['sample', 'ground', 'optitype', 'optitype evaluation'])
+                            optitype_tp_fp_C = pd.concat([optitype_tp_fp_C, new_row_tp], ignore_index=True)
+                        if locus == "DQB1":
+                            new_row_tp = pd.DataFrame([[sample_name, '/'.join(values_in_truth_list), value_in_optitype, '']],
+                            columns=['sample', 'ground', 'optitype', 'optitype evaluation'])
+                            optitype_tp_fp_DQB1 = pd.concat([optitype_tp_fp_DQB1, new_row_tp], ignore_index=True)
+
+                        allele_present = 0
+                        for allele in alleles: ##???
+                            values_in_truth = values_in_truth_clone
+                            for chr_index,chr_values in values_in_truth.items():
+                                if allele in chr_values:
+                                    allele_present+= 1
+                                    #to stop homozygous alleles inaccurately match, we should remove the one that matches
+                                    if len(values_in_truth) > 1:
+                                        values_in_truth_clone.pop(chr_index)
+                                    break
+                        if allele_present==2:
+                            collected+=1
+
+                            #fill in the table for tp fp info
+                            if locus == "A":
+                                optitype_tp_fp_A.loc[optitype_tp_fp_A['sample'] == sample_name, 'optitype evaluation'] = 'TP'
+                            if locus == "B":
+                                optitype_tp_fp_B.loc[optitype_tp_fp_B['sample'] == sample_name, 'optitype evaluation'] = 'TP'
+                            if locus == "C":
+                                optitype_tp_fp_C.loc[optitype_tp_fp_C['sample'] == sample_name, 'optitype evaluation'] = 'TP'
+                            if locus == "DQB1":
+                                optitype_tp_fp_DQB1.loc[optitype_tp_fp_DQB1['sample'] == sample_name, 'optitype evaluation'] = 'TP'
+                        print("collected: " + str(collected))
+                        samples_called+=1
             call_rate = samples_called/len(optitype_results.index)
             # to be fair to all tools, the denominator should be the number of samples that the tool results in a prediction.
             accuracy = 100*collected/samples_called

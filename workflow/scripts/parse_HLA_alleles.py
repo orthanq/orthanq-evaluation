@@ -15,9 +15,16 @@ orthanq_final_table = pd.DataFrame(columns=('sample', 'A', 'B', 'C', 'DQA1','DQB
 with open(snakemake.log[0], "w") as f:
     sys.stderr = sys.stdout = f
     for index in range(len(orthanq_input)):
-        splitted = os.path.basename(orthanq_input[index]).split("_")
-        sample_name = splitted[0]
-        locus_name = splitted[1].split(".")[0]
+        if "D1_S1_L001" in orthanq_input[index]:
+            splitted = os.path.basename(orthanq_input[index]).split("_")
+            sample_name = splitted[0] + splitted[1] + splitted[2] 
+            locus_name = splitted[3].split(".")[0]
+            #rename sample name for giab to the accesssion id
+            sample_name = "SRR2962669"
+        else:
+            splitted = os.path.basename(orthanq_input[index]).split("_")
+            sample_name = splitted[0]
+            locus_name = splitted[1].split(".")[0]
         if not sample_name in orthanq_final_table['sample'].tolist():
             # new_row = {'sample': sample_name, 'A': [], 'B': [], 'C': [], 'DQA1': [], 'DQB1': []}
             new_row = pd.DataFrame([[sample_name, '', '', '', '', '']],
@@ -67,9 +74,16 @@ with open(snakemake.log[0], "w") as f:
     #initialize the dataframe
     arcasHLA_final_table = pd.DataFrame(columns=('sample', 'A', 'B', 'C', 'DQA1','DQB1'))
     for index in range(len(arcasHLA_input)):
-        splitted = os.path.basename(os.path.dirname(arcasHLA_input[index])).split("_")
-        sample_name = splitted[0]
-        locus_name = splitted[1].split(".")[0]
+        if "D1_S1_L001" in arcasHLA_input[index]:
+            splitted = os.path.basename(os.path.dirname(arcasHLA_input[index])).split("_")
+            sample_name = splitted[0] + splitted[1] + splitted[2] 
+            locus_name = splitted[3].split(".")[0]
+            #rename sample name for giab to the accesssion id
+            sample_name = "SRR2962669"
+        else:
+            splitted = os.path.basename(os.path.dirname(arcasHLA_input[index])).split("_")
+            sample_name = splitted[0]
+            locus_name = splitted[1].split(".")[0]
         if not sample_name in arcasHLA_final_table['sample'].tolist():
             new_row = pd.DataFrame([[sample_name, '', '', '', '', '']],
                     columns=['sample', 'A', 'B', 'C', 'DQA1', 'DQB1'])
@@ -102,7 +116,13 @@ with open(snakemake.log[0], "w") as f:
     #initialize the dataframe
     hla_la_final_table = pd.DataFrame(columns=('sample', 'A', 'B', 'C', 'DQA1','DQB1'))
     for index in range(len(hla_la_input)):
-        sample_name = os.path.basename(os.path.dirname(os.path.dirname(hla_la_input[index]))).split("_")[0]
+        if "D1_S1_L001" in hla_la_input[index]:
+            splitted = os.path.basename(os.path.dirname(os.path.dirname(hla_la_input[index])))
+            sample_name = splitted[0] + splitted[1] + splitted[2]
+            #rename sample name for giab to the accesssion id
+            sample_name = "SRR2962669"
+        else:
+            sample_name = os.path.basename(os.path.dirname(os.path.dirname(hla_la_input[index]))).split("_")[0]
         # reading
         data = pd.read_csv(hla_la_input[index], sep = "\t")
         A = []
@@ -164,7 +184,13 @@ with open(snakemake.log[0], "w") as f:
     #initialize the dataframe
     optitype_final_table = pd.DataFrame(columns=('sample', 'A', 'B', 'C'))
     for index in range(len(optitype_input)):
-        sample_name = os.path.basename(optitype_input[index]).split("_")[0]
+        if "D1_S1_L001" in optitype_input[index]:
+            splitted = os.path.basename(optitype_input[index])
+            sample_name = splitted[0] + splitted[1] + splitted[2]
+            #rename sample name for giab to the accesssion id
+            sample_name = "SRR2962669"
+        else:
+            sample_name = os.path.basename(optitype_input[index]).split("_")[0]
         #read
         data = pd.read_csv(optitype_input[index], sep = "\t")
 

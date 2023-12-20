@@ -59,7 +59,7 @@ with open(snakemake.log[0], "w") as f:
                 splitted = os.path.basename(orthanq_input[index]).split("_")
                 sample_name = splitted[0]
 
-                if sample_name in sample_list:
+                if sample_name in sample_list and sample_name != "D1":
                     values_in_truth = {}
                     values_in_truth = truth_for_sample(locus, values_in_truth, ground_truth, sample_name)
 
