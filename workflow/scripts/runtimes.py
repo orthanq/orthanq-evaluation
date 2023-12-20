@@ -12,6 +12,7 @@ with open(snakemake.log[0], "w") as f:
     tool_runtimes = pd.DataFrame(data=d)
     # path = os.getcwd()
     path = snakemake.input.benchmarks
+    sample_sheet = pd.read_csv(snakemake.input.sample_sheet, sep="\t")
     print("path is: ")
     print(path)
     #the following function inserts values given in df to tool_runtimes.
@@ -136,8 +137,13 @@ with open(snakemake.log[0], "w") as f:
 
     #remove rows with "vg"
     tool_runtimes = tool_runtimes[tool_runtimes["tool"] != "vg"]
-    # tool_runtimes.to_csv("concatenated.csv", index=False)
+    print(tool_runtimes)
 
+    #only include samples in the sample list
+    sample_sheet = sample_sheet.rename(columns={"sample_name": "sample"})
+    tool_runtimes = pd.merge(tool_runtimes, sample_sheet[["sample"]], on = "sample")
+    print(tool_runtimes)
+    
     #write the final table to csv
     tool_runtimes.to_csv(snakemake.output.runtimes_table, index=False)
     # tool_runtimes.to_csv("runtimes.csv", index=False)

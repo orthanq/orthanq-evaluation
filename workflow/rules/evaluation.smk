@@ -338,7 +338,8 @@ rule evaluation_plot:
 
 rule gather_benchmark:
     input: 
-        benchmarks = "benchmarks" #to avoid too many inputs
+        benchmarks = "benchmarks", #to avoid too many inputs
+        sample_sheet = config["samples"]
     output:
         runtimes_table = "results/runtimes/runtimes.csv",
         runtimes_plot = "results/runtimes/runtimes.json",
