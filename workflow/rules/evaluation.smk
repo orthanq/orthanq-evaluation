@@ -203,7 +203,7 @@ rule merge_sample_sheets:
     input:
         samples_evaluated="resources/ground_truth/1K_CEU_evaluated.tsv",
         samples_incomplete_truth="resources/ground_truth/1K_CEU_incomplete_HLA.tsv",
-        samples_low_coverage="resources/ground_truth/1K_CEU_low_coverage.tsv",
+        # samples_low_coverage="resources/ground_truth/1K_CEU_low_coverage.tsv",
     output:
         merged="resources/ground_truth/merged_sample_sheet.csv"
     conda:
@@ -213,20 +213,52 @@ rule merge_sample_sheets:
     script:
         "../scripts/merge_sample_sheets.py"
 
-rule find_read_length_and_count:
+# rule find_read_length_and_count:
+#     input:
+#         sample_sheet="resources/ground_truth/merged_sample_sheet.csv",
+#         fastq_dir=config["all_fastq_dir"],
+#         fastq_dir_2=config["all_fastq_dir_additional"]
+#     output:
+#         sample_sheet="resources/ground_truth/merged_sample_sheet_w_read_info.csv"
+#     conda:
+#         "../envs/altair.yaml"
+#     threads: 20
+#     log:
+#         "logs/insert_read_info/insert_read_info.log",
+#     script:
+#         "../scripts/insert_read_info.py"
+
+rule get_read_count_and_length:
+    input:
+        "results/bwa_alignment/{sample}_mapped.bam",
+    output:
+        "results/read_count_and_length/{sample}.csv"
+    conda:
+        "../envs/samtools.yaml"
+    threads: 40
+    resources: mem_mb=100000
+    log:
+        "logs/samtools_read_count/{sample}.log",
+    shell:
+        "set +o pipefail; "
+        " samtools view -@ {threads} -c -F 2368 {input} > {output} &&" 
+        " samtools view -@ {threads} {input} | awk '{{print length($10)}}' | head -1000 | sort -g -r &>> {output} 2> {log}"
+
+
+rule insert_read_information:
     input:
         sample_sheet="resources/ground_truth/merged_sample_sheet.csv",
-        fastq_dir=config["all_fastq_dir"],
-        fastq_dir_2=config["all_fastq_dir_additional"]
+        sample_calculation=expand("results/read_count_and_length/{sample}.csv", sample=samples.sample_name)
     output:
-        sample_sheet="resources/ground_truth/merged_sample_sheet_w_read_info.csv"
+        updated_sample_sheet="resources/ground_truth/merged_sample_sheet_w_read_info_2.csv"
     conda:
         "../envs/altair.yaml"
-    threads: 20
+    threads: 40
     log:
-        "logs/insert_read_info/insert_read_info.log",
+        "logs/insert_read_information_bam/insert_read_information_bam.log",
     script:
-        "../scripts/insert_read_info.py"
+        "../scripts/insert_read_info_from_bam.py"
+
 
 rule parse_HLAs:
     input:
@@ -265,12 +297,12 @@ rule validate_orthanq:
         hla=loci
         ),
         ground_truth_evaluated="resources/ground_truth/1K_CEU_evaluated.tsv",
-        ground_truth_low_coverage="resources/ground_truth/1K_CEU_low_coverage.tsv",
+        # ground_truth_low_coverage="resources/ground_truth/1K_CEU_low_coverage.tsv",
         allele_freqs="resources/allele_freqs/allele_frequencies.csv",
         orthanq_final_table="results/orthanq/final_report.csv"
     output:
-        validation_low="results/validation/orthanq_validation_low.tsv",
-        validation_high="results/validation/orthanq_validation_high.tsv",
+        # validation_low="results/validation/orthanq_validation_low.tsv",
+        # validation_high="results/validation/orthanq_validation_high.tsv",
         validation_all="results/validation/orthanq_validation_all.tsv",
         tp_fp_table="results/validation/tp_fp_table_all.tsv",
         orthanq_A_tp_fp="results/orthanq/A_tp_fp.tsv",
@@ -305,14 +337,14 @@ rule validate_tools:
         orthanq_DQB1_tp_fp="results/orthanq/DQB1_tp_fp.tsv",
         hla_la="results/HLA-LA/final_report.csv",
         arcasHLA="results/arcasHLA/final_report.csv",
-        ground_truth="resources/ground_truth/1K_CEU_all.tsv",
+        # ground_truth="resources/ground_truth/1K_CEU_evaluated.tsv",
         optitype="results/optitype/final_report.csv",
         samples_evaluated="resources/ground_truth/1K_CEU_evaluated.tsv",
-        samples_low_coverage="resources/ground_truth/1K_CEU_low_coverage.tsv",
+        # samples_low_coverage="resources/ground_truth/1K_CEU_low_coverage.tsv",
         allele_freqs="resources/allele_freqs/allele_frequencies.csv"
     output:
-        validation_low="results/validation/validation_low.tsv",
-        validation_high="results/validation/validation_high.tsv",
+        # validation_low="results/validation/validation_low.tsv",
+        # validation_high="results/validation/validation_high.tsv",
         validation_all="results/validation/validation_all.tsv",
         A_tp_fp="results/validation/A_tp_fp.tsv",
         B_tp_fp="results/validation/B_tp_fp.tsv",
@@ -326,11 +358,9 @@ rule validate_tools:
 rule evaluation_plot:
     input:
         template="resources/templates/evaluation_plot.json",
-        validation_low="results/validation/validation_low.tsv",
-        validation_high="results/validation/validation_high.tsv",
+        validation_all="results/validation/validation_all.tsv",
     output:
-        plot_low="results/evaluation/evaluation_plot_low.json",
-        plot_high="results/evaluation/evaluation_plot_high.json"
+        plot_all="results/evaluation/evaluation_plot_all.json"
     log:
         "logs/evaluation/evaluation_plot.log"
     script:
@@ -390,22 +420,16 @@ rule vg2svg_orthanq:
 rule vg2svg_evaluation:
     input:
         runtimes_plot = "results/runtimes/runtimes.json",
-        evaluation_low = "results/evaluation/evaluation_plot_low.json",
-        evaluation_high = "results/evaluation/evaluation_plot_high.json",
+        evaluation_all = "results/evaluation/evaluation_plot_all.json",
         tp_fp_plot = "results/validation/tp_fp_table_all.json"
     output:
         runtimes_svg="results/vega/runtimes.svg",
-        evaluation_low_svg="results/vega/evaluation_low.svg",
-        evaluation_high_svg="results/vega/evaluation_high.svg",
+        evaluation_all_svg="results/vega/evaluation_all.svg",
         tp_fp_plot_svg = "results/vega/tp_fp_table_all.svg",
         runtimes_html=report("results/vega/runtimes.html", category="Runtime performance", labels={
             "type": "figure"
         }),
-        evaluation_low_html=report("results/vega/evaluation_low.html", category="Accuracy", labels={
-            "name": "accuracy comparison (low coverage)",
-            "type": "figure"
-        }),
-        evaluation_high_html=report("results/vega/evaluation_high.html", category="Accuracy", labels={
+        evaluation_all_html=report("results/vega/evaluation_all.html", category="Accuracy", labels={
             "name": "accuracy comparison",
             "type": "figure"
         }),
@@ -419,10 +443,8 @@ rule vg2svg_evaluation:
     shell:
         "vl2svg {input.runtimes_plot} {output.runtimes_svg} 2> {log} && "
         "vl-convert vl2html --input {input.runtimes_plot} --output {output.runtimes_html} 2>> {log} && "
-        "vl2svg {input.evaluation_low} {output.evaluation_low_svg} 2>> {log} && "
-        "vl-convert vl2html --input {input.evaluation_low} --output {output.evaluation_low_html} 2>> {log} && "
-        "vl2svg {input.evaluation_high} {output.evaluation_high_svg} 2>> {log} && "
-        "vl-convert vl2html --input {input.evaluation_high} --output {output.evaluation_high_html} 2>> {log} && "
+        "vl2svg {input.evaluation_all} {output.evaluation_all_svg} 2>> {log} && "
+        "vl-convert vl2html --input {input.evaluation_all} --output {output.evaluation_all_html} 2>> {log} && "
         "vl2svg {input.tp_fp_plot} {output.tp_fp_plot_svg} 2>> {log} && "
         "vl-convert vl2html --input {input.tp_fp_plot} --output {output.tp_fp_plot_html} 2>> {log} "
 
@@ -571,53 +593,53 @@ rule datavzrd_hla_la:
     wrapper:
         "v2.13.0/utils/datavzrd"
 
-rule datavzrd_config_comparison_low:
+# rule datavzrd_config_comparison_low:
+#     input:
+#         template="resources/datavzrd/accuracy_comparison_low.yaml",
+#         validation="results/validation/validation_low.tsv",
+#     output:
+#         "results/datavzrd/accuracy_comparison_low.yaml"
+#     log:
+#         "logs/datavzrd-config/accuracy_comparison_low.log"
+#     template_engine:
+#         "yte"
+
+# rule datavzrd_comparison_low:
+#     input:
+#         config="results/datavzrd/accuracy_comparison_low.yaml",
+#         validation="results/validation/validation_low.tsv",
+#     output:
+#         report(
+#             directory("results/datavzrd-report/accuracy_comparison_low"),
+#             htmlindex="index.html",
+#             category="Accuracy", labels={
+#             "name": "accuracy comparison (low coverage)",
+#             "type": "table"
+#         }
+#         ),
+#     log:
+#         "logs/datavzrd/accuracy_comparison_low.log",
+#     wrapper:
+#         "v2.13.0/utils/datavzrd"
+
+rule datavzrd_config_comparison:
     input:
-        template="resources/datavzrd/accuracy_comparison_low.yaml",
-        validation="results/validation/validation_low.tsv",
+        template="resources/datavzrd/accuracy_comparison.yaml",
+        validation="results/validation/validation_all.tsv",
     output:
-        "results/datavzrd/accuracy_comparison_low.yaml"
+        "results/datavzrd/accuracy_comparison_all.yaml"
     log:
-        "logs/datavzrd-config/accuracy_comparison_low.log"
+        "logs/datavzrd-config/accuracy_comparison_all.log"
     template_engine:
         "yte"
 
-rule datavzrd_comparison_low:
+rule datavzrd_comparison:
     input:
-        config="results/datavzrd/accuracy_comparison_low.yaml",
-        validation="results/validation/validation_low.tsv",
+        config="results/datavzrd/accuracy_comparison.yaml",
+        validation="results/validation/validation.tsv",
     output:
         report(
-            directory("results/datavzrd-report/accuracy_comparison_low"),
-            htmlindex="index.html",
-            category="Accuracy", labels={
-            "name": "accuracy comparison (low coverage)",
-            "type": "table"
-        }
-        ),
-    log:
-        "logs/datavzrd/accuracy_comparison_low.log",
-    wrapper:
-        "v2.13.0/utils/datavzrd"
-
-rule datavzrd_config_comparison_high:
-    input:
-        template="resources/datavzrd/accuracy_comparison_high.yaml",
-        validation="results/validation/validation_high.tsv",
-    output:
-        "results/datavzrd/accuracy_comparison_high.yaml"
-    log:
-        "logs/datavzrd-config/accuracy_comparison_high.log"
-    template_engine:
-        "yte"
-
-rule datavzrd_comparison_high:
-    input:
-        config="results/datavzrd/accuracy_comparison_high.yaml",
-        validation="results/validation/validation_high.tsv",
-    output:
-        report(
-            directory("results/datavzrd-report/accuracy_comparison_high"),
+            directory("results/datavzrd-report/accuracy_comparison"),
             htmlindex="index.html",
             category="Accuracy", labels={
             "name": "accuracy comparison",
@@ -625,7 +647,7 @@ rule datavzrd_comparison_high:
         }
         ),
     log:
-        "logs/datavzrd/accuracy_comparison_high.log",
+        "logs/datavzrd/accuracy_comparison_all.log",
     wrapper:
         "v2.13.0/utils/datavzrd"
 

@@ -11,9 +11,9 @@ with open(snakemake.log[0], "w") as f:
 
     #read tables
     #orthanq
-    ground_truth = pd.read_csv(snakemake.input.ground_truth, sep = "\t")
-    orthanq_input_low = pd.read_csv(snakemake.input.orthanq_low, sep = "\t")
-    orthanq_input_high = pd.read_csv(snakemake.input.orthanq_high, sep = "\t")
+    # ground_truth = pd.read_csv(snakemake.input.ground_truth, sep = "\t")
+    # orthanq_input_low = pd.read_csv(snakemake.input.orthanq_low, sep = "\t")
+    # orthanq_input_high = pd.read_csv(snakemake.input.orthanq_high, sep = "\t")
     orthanq_input_all = pd.read_csv(snakemake.input.orthanq_all, sep = "\t")
     orthanq_A_tp_fp = pd.read_csv(snakemake.input.orthanq_A_tp_fp, sep = "\t")
     orthanq_B_tp_fp = pd.read_csv(snakemake.input.orthanq_B_tp_fp, sep = "\t")
@@ -28,24 +28,24 @@ with open(snakemake.log[0], "w") as f:
 
     # read sample sheets for evaluated and low coverage samples
     samples_evaluated = pd.read_csv(snakemake.input.samples_evaluated, sep = "\t")
-    samples_low_coverage = pd.read_csv(snakemake.input.samples_low_coverage, sep = "\t")
+    # samples_low_coverage = pd.read_csv(snakemake.input.samples_low_coverage, sep = "\t")
     
     #rename sample column
-    samples_evaluated = samples_evaluated.rename(columns={"Run Accession": "sample"})
-    samples_low_coverage = samples_low_coverage.rename(columns={"Run Accession": "sample"})
+    # samples_evaluated = samples_evaluated.rename(columns={"Run Accession": "sample"})
+    # samples_low_coverage = samples_low_coverage.rename(columns={"Run Accession": "sample"})
 
     # split tables for high and low coverage samples
     #low
     # orthanq_input_low = pd.merge(orthanq_input_low, samples_low_coverage[["sample"]], on = "sample", how = "left")
-    arcasHLA_input_low = pd.merge(arcasHLA_input, samples_low_coverage[["sample"]], on = "sample")
-    hla_la_input_low = pd.merge(hla_la_input, samples_low_coverage[["sample"]], on = "sample")
-    optitype_input_low = pd.merge(optitype_input, samples_low_coverage[["sample"]], on = "sample")
+    # arcasHLA_input_low = pd.merge(arcasHLA_input, samples_low_coverage[["sample"]], on = "sample")
+    # hla_la_input_low = pd.merge(hla_la_input, samples_low_coverage[["sample"]], on = "sample")
+    # optitype_input_low = pd.merge(optitype_input, samples_low_coverage[["sample"]], on = "sample")
     
     #high
     # orthanq_input_high = pd.merge(orthanq_input_high, samples_evaluated[["sample"]], on = "sample", how = "left")
-    arcasHLA_input_high = pd.merge(arcasHLA_input, samples_evaluated[["sample"]], on = "sample")
-    hla_la_input_high = pd.merge(hla_la_input, samples_evaluated[["sample"]], on = "sample")
-    optitype_input_high = pd.merge(optitype_input, samples_evaluated[["sample"]], on = "sample")    
+    # arcasHLA_input_high = pd.merge(arcasHLA_input, samples_evaluated[["sample"]], on = "sample")
+    # hla_la_input_high = pd.merge(hla_la_input, samples_evaluated[["sample"]], on = "sample")
+    # optitype_input_high = pd.merge(optitype_input, samples_evaluated[["sample"]], on = "sample")    
 
     def truth_for_sample(locus, values_in_truth, ground_truth, sample_name):
         for (chr_index,chr_number) in enumerate([1, 2]):
@@ -566,71 +566,68 @@ with open(snakemake.log[0], "w") as f:
         print(predictions_table)
         return predictions_table
 
-    #low coverage samples
+    # #low coverage samples
 
-    ##initialize performance tables for tools 
-    arcasHLA_validation_table_low = pd.DataFrame(columns=('Locus', 'N', 'arcasHLA_Call_Rate', 'arcasHLA_Accuracy'))
-    hla_la_validation_table_low = pd.DataFrame(columns=('Locus', 'N', 'HLA_LA_Call_Rate', 'HLA_LA_Accuracy'))
-    optitype_validation_table_low = pd.DataFrame(columns=('Locus', 'N', 'Optitype_Call_Rate', 'Optitype_Accuracy'))
+    # ##initialize performance tables for tools 
+    # arcasHLA_validation_table_low = pd.DataFrame(columns=('Locus', 'N', 'arcasHLA_Call_Rate', 'arcasHLA_Accuracy'))
+    # hla_la_validation_table_low = pd.DataFrame(columns=('Locus', 'N', 'HLA_LA_Call_Rate', 'HLA_LA_Accuracy'))
+    # optitype_validation_table_low = pd.DataFrame(columns=('Locus', 'N', 'Optitype_Call_Rate', 'Optitype_Accuracy'))
 
-    #initialize locus-wise tp fp tables locus wise
-    arcasHLA_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'))
-    arcasHLA_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'))
-    arcasHLA_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'))
-    arcasHLA_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'))
+    # #initialize locus-wise tp fp tables locus wise
+    # arcasHLA_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'))
+    # arcasHLA_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'))
+    # arcasHLA_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'))
+    # arcasHLA_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'))
 
-    optitype_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'optitype', 'optitype evaluation'))
-    optitype_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'optitype', 'optitype evaluation'))
-    optitype_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'optitype', 'optitype evaluation'))
-    optitype_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'optitype', 'optitype evaluation'))
+    # optitype_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'optitype', 'optitype evaluation'))
+    # optitype_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'optitype', 'optitype evaluation'))
+    # optitype_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'optitype', 'optitype evaluation'))
+    # optitype_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'optitype', 'optitype evaluation'))
 
-    hla_la_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'))
-    hla_la_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'))
-    hla_la_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'))
-    hla_la_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'))
+    # hla_la_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'))
+    # hla_la_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'))
+    # hla_la_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'))
+    # hla_la_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'))
 
-    #merge tables to get the final table, the zeroth index gives the validation table for all tools
-    arcasHLA_validation_table_low = arcashla_validation(arcasHLA_input_low, ground_truth, arcasHLA_validation_table_low,  arcasHLA_tp_fp_A, arcasHLA_tp_fp_B, arcasHLA_tp_fp_C, arcasHLA_tp_fp_DQB1)
-    print(orthanq_input_low)
-    print(arcasHLA_validation_table_low)
-    first_merge = pd.merge(orthanq_input_low, arcasHLA_validation_table_low[0], how='left', on=['Locus', 'N'])
-    print("first_merge")
-    print(first_merge)
-    hla_la_validation_table_low = hla_la_validation(hla_la_input_low, ground_truth, hla_la_validation_table_low, hla_la_tp_fp_A, hla_la_tp_fp_B, hla_la_tp_fp_C, hla_la_tp_fp_DQB1)
-    second_merge = pd.merge(first_merge, hla_la_validation_table_low[0], how='left', on=['Locus', 'N'])
-    optitype_validation_table_low = optitype_validation(optitype_input_low, ground_truth, optitype_validation_table_low, optitype_tp_fp_A, optitype_tp_fp_B, optitype_tp_fp_C, optitype_tp_fp_DQB1)
-    low_final_table = pd.merge(second_merge, optitype_validation_table_low[0], how='left', on=['Locus', 'N'])
-    print(low_final_table)
-    #high coverage samples
+    # #merge tables to get the final table, the zeroth index gives the validation table for all tools
+    # arcasHLA_validation_table_low = arcashla_validation(arcasHLA_input_low, ground_truth, arcasHLA_validation_table_low,  arcasHLA_tp_fp_A, arcasHLA_tp_fp_B, arcasHLA_tp_fp_C, arcasHLA_tp_fp_DQB1)
+    # first_merge = pd.merge(orthanq_input_low, arcasHLA_validation_table_low[0], how='left', on=['Locus', 'N'])
+    # hla_la_validation_table_low = hla_la_validation(hla_la_input_low, ground_truth, hla_la_validation_table_low, hla_la_tp_fp_A, hla_la_tp_fp_B, hla_la_tp_fp_C, hla_la_tp_fp_DQB1)
+    # second_merge = pd.merge(first_merge, hla_la_validation_table_low[0], how='left', on=['Locus', 'N'])
+    # optitype_validation_table_low = optitype_validation(optitype_input_low, ground_truth, optitype_validation_table_low, optitype_tp_fp_A, optitype_tp_fp_B, optitype_tp_fp_C, optitype_tp_fp_DQB1)
+    # low_final_table = pd.merge(second_merge, optitype_validation_table_low[0], how='left', on=['Locus', 'N'])
 
-    ##initialize performance tables for tools 
-    arcasHLA_validation_table_high = pd.DataFrame(columns=('Locus', 'N', 'arcasHLA_Call_Rate', 'arcasHLA_Accuracy'))
-    hla_la_validation_table_high = pd.DataFrame(columns=('Locus', 'N', 'HLA_LA_Call_Rate', 'HLA_LA_Accuracy'))
-    optitype_validation_table_high = pd.DataFrame(columns=('Locus', 'N', 'Optitype_Call_Rate', 'Optitype_Accuracy'))
+    # #high coverage samples
 
-    #initialize locus-wise tp fp tables locus wise
-    arcasHLA_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'))
-    arcasHLA_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'))
-    arcasHLA_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'))
-    arcasHLA_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'))
+    # ##initialize performance tables for tools 
+    # arcasHLA_validation_table_high = pd.DataFrame(columns=('Locus', 'N', 'arcasHLA_Call_Rate', 'arcasHLA_Accuracy'))
+    # hla_la_validation_table_high = pd.DataFrame(columns=('Locus', 'N', 'HLA_LA_Call_Rate', 'HLA_LA_Accuracy'))
+    # optitype_validation_table_high = pd.DataFrame(columns=('Locus', 'N', 'Optitype_Call_Rate', 'Optitype_Accuracy'))
 
-    optitype_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'optitype', 'optitype evaluation'))
-    optitype_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'optitype', 'optitype evaluation'))
-    optitype_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'optitype', 'optitype evaluation'))
-    optitype_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'optitype', 'optitype evaluation'))
+    # #initialize locus-wise tp fp tables locus wise
+    # arcasHLA_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'))
+    # arcasHLA_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'))
+    # arcasHLA_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'))
+    # arcasHLA_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'arcasHLA', 'arcasHLA evaluation'))
 
-    hla_la_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'))
-    hla_la_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'))
-    hla_la_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'))
-    hla_la_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'))
+    # optitype_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'optitype', 'optitype evaluation'))
+    # optitype_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'optitype', 'optitype evaluation'))
+    # optitype_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'optitype', 'optitype evaluation'))
+    # optitype_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'optitype', 'optitype evaluation'))
+
+    # hla_la_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'))
+    # hla_la_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'))
+    # hla_la_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'))
+    # hla_la_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'))
     
-    #merge tables to get the final table
-    arcasHLA_validation_table_high = arcashla_validation(arcasHLA_input_high, ground_truth, arcasHLA_validation_table_high, arcasHLA_tp_fp_A, arcasHLA_tp_fp_B, arcasHLA_tp_fp_C, arcasHLA_tp_fp_DQB1)
-    first_merge = pd.merge(orthanq_input_high, arcasHLA_validation_table_high[0], how='left', on=['Locus', 'N'])
-    hla_la_validation_table_high = hla_la_validation(hla_la_input_high, ground_truth, hla_la_validation_table_high, hla_la_tp_fp_A, hla_la_tp_fp_B, hla_la_tp_fp_C, hla_la_tp_fp_DQB1)
-    second_merge = pd.merge(first_merge, hla_la_validation_table_high[0], how='left', on=['Locus', 'N'])
-    optitype_validation_table_high = optitype_validation(optitype_input_high, ground_truth, optitype_validation_table_high, optitype_tp_fp_A, optitype_tp_fp_B, optitype_tp_fp_C, optitype_tp_fp_DQB1)
-    high_final_table = pd.merge(second_merge, optitype_validation_table_high[0], how='left', on=['Locus', 'N'])
+    # #merge tables to get the final table
+    # arcasHLA_validation_table_high = arcashla_validation(arcasHLA_input_high, ground_truth, arcasHLA_validation_table_high, arcasHLA_tp_fp_A, arcasHLA_tp_fp_B, arcasHLA_tp_fp_C, arcasHLA_tp_fp_DQB1)
+    # first_merge = pd.merge(orthanq_input_high, arcasHLA_validation_table_high[0], how='left', on=['Locus', 'N'])
+    # hla_la_validation_table_high = hla_la_validation(hla_la_input_high, ground_truth, hla_la_validation_table_high, hla_la_tp_fp_A, hla_la_tp_fp_B, hla_la_tp_fp_C, hla_la_tp_fp_DQB1)
+    # second_merge = pd.merge(first_merge, hla_la_validation_table_high[0], how='left', on=['Locus', 'N'])
+    # optitype_validation_table_high = optitype_validation(optitype_input_high, ground_truth, optitype_validation_table_high, optitype_tp_fp_A, optitype_tp_fp_B, optitype_tp_fp_C, optitype_tp_fp_DQB1)
+    # high_final_table = pd.merge(second_merge, optitype_validation_table_high[0], how='left', on=['Locus', 'N'])
+    
     #all samples
 
     ##initialize performance tables for tools 
@@ -655,11 +652,11 @@ with open(snakemake.log[0], "w") as f:
     hla_la_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'HLA-LA', 'HLA-LA evaluation'))
 
     #merge validation tables to get the final table
-    arcasHLA_validation_output = arcashla_validation(arcasHLA_input, ground_truth, arcasHLA_validation_table_all, arcasHLA_tp_fp_A, arcasHLA_tp_fp_B, arcasHLA_tp_fp_C, arcasHLA_tp_fp_DQB1)
+    arcasHLA_validation_output = arcashla_validation(arcasHLA_input, samples_evaluated, arcasHLA_validation_table_all, arcasHLA_tp_fp_A, arcasHLA_tp_fp_B, arcasHLA_tp_fp_C, arcasHLA_tp_fp_DQB1)
     first_merge = pd.merge(orthanq_input_all, arcasHLA_validation_output[0], how='left', on=['Locus', 'N'])
-    hla_la_validation_output = hla_la_validation(hla_la_input, ground_truth, hla_la_validation_table_all, hla_la_tp_fp_A, hla_la_tp_fp_B, hla_la_tp_fp_C, hla_la_tp_fp_DQB1)
+    hla_la_validation_output = hla_la_validation(hla_la_input, samples_evaluated, hla_la_validation_table_all, hla_la_tp_fp_A, hla_la_tp_fp_B, hla_la_tp_fp_C, hla_la_tp_fp_DQB1)
     second_merge = pd.merge(first_merge, hla_la_validation_output[0], how='left', on=['Locus', 'N'])
-    optitype_validation_output = optitype_validation(optitype_input, ground_truth, optitype_validation_table_all, optitype_tp_fp_A, optitype_tp_fp_B, optitype_tp_fp_C, optitype_tp_fp_DQB1)
+    optitype_validation_output = optitype_validation(optitype_input, samples_evaluated, optitype_validation_table_all, optitype_tp_fp_A, optitype_tp_fp_B, optitype_tp_fp_C, optitype_tp_fp_DQB1)
     all_final_table = pd.merge(second_merge, optitype_validation_output[0], how='left', on=['Locus', 'N'])
 
     #then, for tp fp tables for each locus, check if they contain alleles that are below the criteria according to the Abi-Rached 2018 paper.
@@ -702,53 +699,53 @@ with open(snakemake.log[0], "w") as f:
     DQB1_tp_fp = pd.merge(arcasHLA_freq_checked_DQB1, hla_la_freq_checked_DQB1, on=['sample', 'ground'])
     DQB1_tp_fp = pd.merge(DQB1_tp_fp, orthanq_DQB1_tp_fp, on=['sample', 'ground'])
 
-    #finally,
-    A_tp_fp["coverage"] = ""
-    B_tp_fp["coverage"] = ""
-    C_tp_fp["coverage"] = ""
-    DQB1_tp_fp["coverage"] = ""
+    # #finally,
+    # A_tp_fp["coverage"] = ""
+    # B_tp_fp["coverage"] = ""
+    # C_tp_fp["coverage"] = ""
+    # DQB1_tp_fp["coverage"] = ""
 
-    def label_coverage(table, low_sample_sheet):
-        for i, row in table[["sample"]].iterrows():
-            if row["sample"] in low_sample_sheet["sample"].to_list():
-                table.loc[i, "coverage"] = "low"
-            else:
-                table.loc[i, "coverage"] = "high"
-        return table
+    # def label_coverage(table, low_sample_sheet):
+    #     for i, row in table[["sample"]].iterrows():
+    #         if row["sample"] in low_sample_sheet["sample"].to_list():
+    #             table.loc[i, "coverage"] = "low"
+    #         else:
+    #             table.loc[i, "coverage"] = "high"
+    #     return table
 
-    A_tp_fp_final = label_coverage(A_tp_fp, samples_low_coverage)
-    B_tp_fp_final = label_coverage(B_tp_fp, samples_low_coverage)
-    C_tp_fp_final = label_coverage(C_tp_fp, samples_low_coverage)
-    DQB1_tp_fp_final = label_coverage(DQB1_tp_fp, samples_low_coverage)
+    # A_tp_fp_final = label_coverage(A_tp_fp, samples_low_coverage)
+    # B_tp_fp_final = label_coverage(B_tp_fp, samples_low_coverage)
+    # C_tp_fp_final = label_coverage(C_tp_fp, samples_low_coverage)
+    # DQB1_tp_fp_final = label_coverage(DQB1_tp_fp, samples_low_coverage)
 
     #write all tables to csv 
 
     #validation tables
-    low_final_table.to_csv(
-        snakemake.output.validation_low, sep="\t", index=False, header=True
-    )
+    # low_final_table.to_csv(
+    #     snakemake.output.validation_low, sep="\t", index=False, header=True
+    # )
 
-    high_final_table.to_csv(
-        snakemake.output.validation_high, sep="\t", index=False, header=True
-    )
+    # high_final_table.to_csv(
+    #     snakemake.output.validation_high, sep="\t", index=False, header=True
+    # )
 
     all_final_table.to_csv(
         snakemake.output.validation_all, sep="\t", index=False, header=True
     )
 
     #tp fp tables
-    A_tp_fp_final.to_csv(
+    A_tp_fp.to_csv(
         snakemake.output.A_tp_fp, sep="\t", index=False, header=True
     )
 
-    B_tp_fp_final.to_csv(
+    B_tp_fp.to_csv(
         snakemake.output.B_tp_fp, sep="\t", index=False, header=True
     )
 
-    C_tp_fp_final.to_csv(
+    C_tp_fp.to_csv(
         snakemake.output.C_tp_fp, sep="\t", index=False, header=True
     )
     
-    DQB1_tp_fp_final.to_csv(
+    DQB1_tp_fp.to_csv(
         snakemake.output.DQB1_tp_fp, sep="\t", index=False, header=True
     )

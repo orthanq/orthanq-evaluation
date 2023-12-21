@@ -68,8 +68,13 @@ with open(snakemake.log[0], "w") as f:
 
         #find sample name and make sure there is only one read length
         splitted = os.path.basename(fq).split("_")
-        sample_name = splitted[0]
-        read_pair = splitted[1].split(".")[0]
+        if "D1_S1_L001" in os.path.basename(fq):
+            sample_name = "SRR2962669"
+            read_pair = splitted[-1].split(".")[0]
+            read_pair = read_pair[1]
+        else:
+            sample_name = splitted[0]
+            read_pair = splitted[1].split(".")[0]
         print(sample_name)
         print(read_pair)
         read_length_pair_name = "Read Length " + read_pair

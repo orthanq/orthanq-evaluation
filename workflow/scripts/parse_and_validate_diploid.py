@@ -20,8 +20,8 @@ with open(snakemake.log[0], "w") as f:
 
     # read sample sheets with truth values for evaluated and low coverage samples
     ground_truth_evaluated = pd.read_csv(snakemake.input.ground_truth_evaluated, sep = "\t")
-    ground_truth_low_coverage = pd.read_csv(snakemake.input.ground_truth_low_coverage, sep = "\t")
-    ground_truth_all = pd.concat([ground_truth_evaluated, ground_truth_low_coverage], ignore_index=True)
+    # ground_truth_low_coverage = pd.read_csv(snakemake.input.ground_truth_low_coverage, sep = "\t")
+    # ground_truth_all = pd.concat([ground_truth_evaluated, ground_truth_low_coverage], ignore_index=True)
 
     def truth_for_sample(locus, values_in_truth, ground_truth, sample_name):
         for (chr_index,chr_number) in enumerate([1, 2]):
@@ -300,40 +300,40 @@ with open(snakemake.log[0], "w") as f:
                 else: # if the break is not entered above, then else is executed in this for/else construct.
                     predictions_table.loc[i, "orthanq evaluation"] = "allele not considered in the truth set" #it's enough if one the alleles don't break the if above
         return predictions_table
-    ##low
-    #initialize the table to output TP and FP samples
-    orthanq_validation_table_low= pd.DataFrame(columns=('Locus', 'N', 'Orthanq_Call_Rate', 'Orthanq_Accuracy'))
-    orthanq_tp_fp_table_low = pd.DataFrame(columns=('Sample', 'Locus', 'TP', 'Best_Density'))
-
-    #initialize locus-wise tp fp table for orthanq
-    orthanq_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
-    orthanq_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
-    orthanq_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
-    orthanq_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
-
-    #validate low samples
-    sample_list_low = ground_truth_low_coverage["Run Accession"].to_list()
-    orthanq_validation_table_low = validate_orthanq(orthanq_input, orthanq_validation_table_low, orthanq_tp_fp_table_low, ground_truth_low_coverage, sample_list_low, orthanq_tp_fp_A, orthanq_tp_fp_B, orthanq_tp_fp_C, orthanq_tp_fp_DQB1)
-    final_orthanq_low = orthanq_validation_table_low[0]
-
-    ##high 
-    #initialize the table to output TP and FP samples
-    orthanq_validation_table_high= pd.DataFrame(columns=('Locus', 'N', 'Orthanq_Call_Rate', 'Orthanq_Accuracy'))
-    orthanq_tp_fp_table_high = pd.DataFrame(columns=('Sample', 'Locus', 'TP', 'Best_Density'))
-
-    #validate high samples
+    # ##low
+    # #initialize the table to output TP and FP samples
+    # orthanq_validation_table_low= pd.DataFrame(columns=('Locus', 'N', 'Orthanq_Call_Rate', 'Orthanq_Accuracy'))
+    # orthanq_tp_fp_table_low = pd.DataFrame(columns=('Sample', 'Locus', 'TP', 'Best_Density'))
 
     # #initialize locus-wise tp fp table for orthanq
-    orthanq_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
-    orthanq_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
-    orthanq_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
-    orthanq_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
+    # orthanq_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
+    # orthanq_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
+    # orthanq_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
+    # orthanq_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
 
-    sample_list_evaluated = ground_truth_evaluated["Run Accession"].to_list()
-    orthanq_validation_table_high = validate_orthanq(orthanq_input, orthanq_validation_table_high, orthanq_tp_fp_table_high, ground_truth_evaluated, sample_list_evaluated, orthanq_tp_fp_A, orthanq_tp_fp_B, orthanq_tp_fp_C, orthanq_tp_fp_DQB1)
-    final_orthanq_high = orthanq_validation_table_high[0]
+    # #validate low samples
+    # sample_list_low = ground_truth_low_coverage["Run Accession"].to_list()
+    # orthanq_validation_table_low = validate_orthanq(orthanq_input, orthanq_validation_table_low, orthanq_tp_fp_table_low, ground_truth_low_coverage, sample_list_low, orthanq_tp_fp_A, orthanq_tp_fp_B, orthanq_tp_fp_C, orthanq_tp_fp_DQB1)
+    # final_orthanq_low = orthanq_validation_table_low[0]
 
-    ##all
+    # ##high 
+    # #initialize the table to output TP and FP samples
+    # orthanq_validation_table_high= pd.DataFrame(columns=('Locus', 'N', 'Orthanq_Call_Rate', 'Orthanq_Accuracy'))
+    # orthanq_tp_fp_table_high = pd.DataFrame(columns=('Sample', 'Locus', 'TP', 'Best_Density'))
+
+    # #validate high samples
+
+    # # #initialize locus-wise tp fp table for orthanq
+    # orthanq_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
+    # orthanq_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
+    # orthanq_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
+    # orthanq_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
+
+    # sample_list_evaluated = ground_truth_evaluated["Run Accession"].to_list()
+    # orthanq_validation_table_high = validate_orthanq(orthanq_input, orthanq_validation_table_high, orthanq_tp_fp_table_high, ground_truth_evaluated, sample_list_evaluated, orthanq_tp_fp_A, orthanq_tp_fp_B, orthanq_tp_fp_C, orthanq_tp_fp_DQB1)
+    # final_orthanq_high = orthanq_validation_table_high[0]
+
+    # ##all
     #initialize the table to output TP and FP samples
     orthanq_validation_table_all= pd.DataFrame(columns=('Locus', 'N', 'Orthanq_Call_Rate', 'Orthanq_Accuracy'))
     orthanq_tp_fp_table_all = pd.DataFrame(columns=('Sample', 'Locus', 'TP', 'Best_Density'))
@@ -345,8 +345,8 @@ with open(snakemake.log[0], "w") as f:
     orthanq_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
 
     #validate all samples
-    sample_list_all = ground_truth_all["Run Accession"].to_list()
-    orthanq_validation_results_all = validate_orthanq(orthanq_input, orthanq_validation_table_all, orthanq_tp_fp_table_all, ground_truth_all, sample_list_all, orthanq_tp_fp_A, orthanq_tp_fp_B, orthanq_tp_fp_C, orthanq_tp_fp_DQB1)
+    sample_list_all = ground_truth_evaluated["Run Accession"].to_list()
+    orthanq_validation_results_all = validate_orthanq(orthanq_input, orthanq_validation_table_all, orthanq_tp_fp_table_all, ground_truth_evaluated, sample_list_all, orthanq_tp_fp_A, orthanq_tp_fp_B, orthanq_tp_fp_C, orthanq_tp_fp_DQB1)
 
     final_orthanq_all = orthanq_validation_results_all[0]
     final_tp_fp_table_all = orthanq_validation_results_all[1]
@@ -355,7 +355,6 @@ with open(snakemake.log[0], "w") as f:
     orthanq_parsed_table = pd.read_csv(snakemake.input.orthanq_final_table, sep="\t", keep_default_na=False)
     merged_with_orthanq_predictions_A = pd.merge(orthanq_validation_results_all[2], orthanq_parsed_table[["sample", "A"]], how='left', on=['sample'])
     merged_with_orthanq_predictions_B = pd.merge(orthanq_validation_results_all[3], orthanq_parsed_table[["sample", "B"]], how='left', on=['sample'])
-    print(merged_with_orthanq_predictions_B["ground"])
     merged_with_orthanq_predictions_C = pd.merge(orthanq_validation_results_all[4], orthanq_parsed_table[["sample", "C"]], how='left', on=['sample'])
     merged_with_orthanq_predictions_DQB1 = pd.merge(orthanq_validation_results_all[5], orthanq_parsed_table[["sample", "DQB1"]], how='left', on=['sample'])
 
@@ -364,7 +363,6 @@ with open(snakemake.log[0], "w") as f:
     allele_freqs = pd.read_csv(snakemake.input.allele_freqs)
     final_orthanq_tp_fp_A = check_alleles_in_database(merged_with_orthanq_predictions_A, allele_freqs, "A") #2 for A, 3 for B, 4 for C, 5 for DQB1orthanq_validation_results_all[5]
     final_orthanq_tp_fp_B = check_alleles_in_database(merged_with_orthanq_predictions_B, allele_freqs, "B")
-    print(final_orthanq_tp_fp_B["ground"])
     final_orthanq_tp_fp_C = check_alleles_in_database(merged_with_orthanq_predictions_C, allele_freqs, "C")
     final_orthanq_tp_fp_DQB1 = check_alleles_in_database(merged_with_orthanq_predictions_DQB1, allele_freqs, "DQB1")
 
@@ -396,13 +394,13 @@ with open(snakemake.log[0], "w") as f:
 
     #write the validation table
 
-    final_orthanq_high.to_csv(
-        snakemake.output.validation_high, sep="\t", index=False, header=True
-    )
+    # final_orthanq_high.to_csv(
+    #     snakemake.output.validation_high, sep="\t", index=False, header=True
+    # )
 
-    final_orthanq_low.to_csv(
-        snakemake.output.validation_low, sep="\t", index=False, header=True
-    )
+    # final_orthanq_low.to_csv(
+    #     snakemake.output.validation_low, sep="\t", index=False, header=True
+    # )
 
     final_orthanq_all.to_csv(
         snakemake.output.validation_all, sep="\t", index=False, header=True

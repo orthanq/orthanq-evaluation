@@ -7,8 +7,9 @@ with open(snakemake.log[0], "w") as f:
     f = open(snakemake.input.template)
 
     # open the validation table
-    validation_low = pd.read_table(snakemake.input.validation_low, sep="\t", keep_default_na=False)
-    validation_high = pd.read_table(snakemake.input.validation_high, sep="\t", keep_default_na=False)
+    # validation_low = pd.read_table(snakemake.input.validation_low, sep="\t", keep_default_na=False)
+    # validation_high = pd.read_table(snakemake.input.validation_high, sep="\t", keep_default_na=False)
+    validation_all = pd.read_table(snakemake.input.validation_all, sep="\t", keep_default_na=False)
 
     # validation = pd.read_table("results/comparison/validation.tsv", sep="\t")
     
@@ -53,21 +54,20 @@ with open(snakemake.log[0], "w") as f:
         print(jsonData)
         return jsonData
 
-    #evaluation plot for low coverage
-    json_data_low = create_evaluation_plot(validation_low, f)
+    # #evaluation plot for low coverage
+    # json_data_low = create_evaluation_plot(validation_low, f)
+
+    # #write json to file
+    # output_path_low = snakemake.output.plot_low
+
+    # with open(output_path_low, "w") as text_file:
+    #     text_file.write(json_data_low)
+
+    #evaluation plot
+    json_data = create_evaluation_plot(validation_all, f)
 
     #write json to file
-    output_path_low = snakemake.output.plot_low
+    output_path_all = snakemake.output.plot_all
 
-    with open(output_path_low, "w") as text_file:
-        text_file.write(json_data_low)
-
-    #evaluation plot for high coverage
-    f = open(snakemake.input.template)
-    json_data_high = create_evaluation_plot(validation_high, f)
-
-    #write json to file
-    output_path_high = snakemake.output.plot_high
-
-    with open(output_path_high, "w") as text_file:
-        text_file.write(json_data_high)
+    with open(output_path_all, "w") as text_file:
+        text_file.write(json_data)
