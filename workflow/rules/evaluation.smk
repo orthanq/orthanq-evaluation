@@ -689,7 +689,7 @@ rule datavzrd_evaluation_tables:
 rule datavzrd_config_sample_sheet:
     input:
         template="resources/datavzrd/sample_sheet.yaml",
-        sample_sheet="resources/ground_truth/merged_sample_sheet_w_read_info.csv"
+        sample_sheet="resources/ground_truth/merged_sample_sheet_w_read_info_2.csv"
     output:
         "results/datavzrd/sample_sheet.yaml"
     log:
@@ -700,7 +700,7 @@ rule datavzrd_config_sample_sheet:
 rule datavzrd_sample_sheet:
     input:
         config="results/datavzrd/sample_sheet.yaml",
-        sample_sheet="resources/ground_truth/merged_sample_sheet_w_read_info.csv"
+        sample_sheet="resources/ground_truth/merged_sample_sheet_w_read_info_2.csv"
     output:
         report(
             directory("results/datavzrd-report/sample_sheet"),

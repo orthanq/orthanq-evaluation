@@ -14,19 +14,11 @@ views:
       Samples/individuals have entries for SRA IDs ("Run_Accession"), read length and count information.
     render-table:
       columns:
-        Read Length 1:
+        Read Length:
           plot:
             ticks:
               scale: linear
-        Read Length 2:
-          plot:
-            ticks:
-              scale: linear
-        Read Count 1:
-          plot:
-            ticks:
-              scale: linear
-        Read Count 2:
+        Read Count:
           plot:
             ticks:
               scale: linear
