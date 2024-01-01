@@ -1,4 +1,5 @@
 resources/*
+!resources/HLA_regions
 !resources/scenarios
 !resources/datavzrd
 !resources/HLA_exons
