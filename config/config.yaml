@@ -1,18 +1,17 @@
 #full path for the genomic HLA sequences and associated xml file. (here IMGT v3.32 is used.)
-allele_db: /projects/koesterlab/orthanq/orthanq-evaluation/resources/IMGTHLA-3.32.0-alpha/hla_gen.fasta
-allele_db_xml: /projects/koesterlab/orthanq/orthanq-evaluation/resources/IMGTHLA-3.32.0-alpha/xml/hla.xml
+lineage_collection: /projects/koesterlab/orthanq/sars-cov-2-data/orthanq-evaluation/resources/ncbi_dataset/6_lineages.fasta
 
 #arcasHLA database version
 arcasHLA_version: "3.32.0"
 
 #simulate reads or call for HLA types given a sample
-simulation: False
+simulation: True
 
 #samples
 samples: config/samples2.tsv
 
-#alleles
-hla: config/alleles.tsv
+#viral lineages
+viruses: config/lineages.tsv
 
 #number of total reads in the sample
 n_reads: 2000

@@ -1,28 +1,28 @@
 rule art_simulation:
     input:
-        "resources/HLA-alleles/{allele}.fasta"
+        "resources/lineages/{lineage}.fasta"
     output:
-        "results/art/{allele}_1.fq",
-        "results/art/{allele}_2.fq"
+        "results/art/{lineage}_1.fq",
+        "results/art/{lineage}_2.fq"
     log:
-        "logs/art/{allele}.log",
+        "logs/art/{lineage}.log",
     #threads: config["threads"]["art"]
     conda:
         "../envs/art.yaml"
     params: config["f_coverage"]
     shell:
         "art_illumina -ss HS25 -i {input} -p -l 150 -s 10 -m 200 -f {params} --noALN --rndSeed 31303889 -o"
-        " results/art/{wildcards.allele}_ 2> {log}"
+        " results/art/{wildcards.lineage}_ 2> {log}"
 
 rule get_fractions:
     input:
-        fq1="results/art/{allele}_1.fq",
-        fq2="results/art/{allele}_2.fq" 
+        fq1="results/art/{lineage}_1.fq",
+        fq2="results/art/{lineage}_2.fq" 
     output:
-        out_fq1="results/fractions/{sample}-{allele}-{num}_1.fq",
-        out_fq2="results/fractions/{sample}-{allele}-{num}_2.fq"
+        out_fq1="results/fractions/{sample}-{lineage}-{num}_1.fq",
+        out_fq2="results/fractions/{sample}-{lineage}-{num}_2.fq"
     log:
-        "logs/seqtk/{sample}-{allele}-{num}.log",
+        "logs/seqtk/{sample}-{lineage}-{num}.log",
     params:
         "{num}"
     conda:
@@ -33,14 +33,14 @@ rule get_fractions:
  
 rule concat_fractions: 
     input:
-        fq1=lambda wc: expand("results/fractions/{{sample}}-{allele}-{num}_1.fq",
+        fq1=lambda wc: expand("results/fractions/{{sample}}-{lineage}-{num}_1.fq",
             zip,
-            allele=simulated_sample.loc[simulated_sample['sample_name'] == wc.sample]['hla'],
+            lineage=simulated_sample.loc[simulated_sample['sample_name'] == wc.sample]['lineage'],
             num=simulated_sample.loc[simulated_sample['sample_name'] == wc.sample]['num_reads']
             ),
-        fq2=lambda wc: expand("results/fractions/{{sample}}-{allele}-{num}_2.fq",
+        fq2=lambda wc: expand("results/fractions/{{sample}}-{lineage}-{num}_2.fq",
             zip,
-            allele=simulated_sample.loc[simulated_sample['sample_name'] == wc.sample]['hla'],
+            lineage=simulated_sample.loc[simulated_sample['sample_name'] == wc.sample]['lineage'],
             num=simulated_sample.loc[simulated_sample['sample_name'] == wc.sample]['num_reads']
             ),
     output:

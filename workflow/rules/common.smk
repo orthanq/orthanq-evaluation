@@ -2,24 +2,28 @@ import pandas as pd
 
 configfile: "config/config.yaml"
 n_reads = config["n_reads"]
-alleles = pd.read_csv(config["hla"], sep ="\t")
-samples = pd.read_csv(config["samples"], sep="\t").set_index(
-    ["sample_name"], drop=False
-)
-#loci = ["A","DPA1","DRB4","V","B","DPB1","DRB5","W","C","DQA1", "E", "DQA2", "F", "S", "DMA", "DQB1", "G", "TAP1", "DMB", "DRA", "HFE", "TAP2", "DOA", "DRB1", "T", "DOB", "DRB3", "MICA", "U"]
-loci = ["A","B","C","DQB1"]
+
+#in case of simulation:
+lineages = pd.read_csv(config["viruses"], sep ="\t")
+
+#the following line needs to be implemented for the analysis part of the workflow
+# samples = pd.read_csv(config["samples"], sep="\t").set_index(
+#     ["sample_name"], drop=False
+# )
+
+# loci = ["A","B","C","DQB1"]
 
 # input function for simulation sample
 def create_sample(): #n: number of samples in the end, k: number of fractions
-    alleles['sample_name'] = "Sample" + "_" + '_'.join(str(row['hla']) + "-" + str(row['fraction']) for _, row in alleles.iterrows())
-    # print(alleles)
-    alleles['num_reads'] = alleles['fraction']*n_reads #assume the mixture will have 2000 reads
-    alleles['num_reads'] = alleles['num_reads'].astype(int).astype('str')
-    del alleles['fraction'] 
-    return alleles
+    lineages['sample_name'] = "Sample" + "_" + '_'.join(str(row['lineage']) + "-" + str(row['fraction']) for _, row in lineages.iterrows())
+    # print(lineages)
+    lineages['num_reads'] = lineages['fraction']*n_reads #assume the mixture will have 2000 reads
+    lineages['num_reads'] = lineages['num_reads'].astype(int).astype('str')
+    del lineages['fraction'] 
+    return lineages
 
 simulated_sample = create_sample()
-# print(simulated_sample)
+print(simulated_sample)
 
 # input function to retrieve fastq samples
 def get_fastq_input(wildcards):

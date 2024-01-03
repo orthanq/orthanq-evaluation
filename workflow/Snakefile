@@ -19,20 +19,21 @@ if config["simulation"] == True:
     rule all:
         input:
             [
-                f"results/fractions/{row['sample_name']}-{row['hla']}-{row['num_reads']}_1.fq"
+                f"results/fractions/{row['sample_name']}-{row['lineage']}-{row['num_reads']}_1.fq"
                 for _, row in simulated_sample.iterrows()
             ],
-            expand("results/orthanq-candidates/{hla}.vcf.gz.tbi", hla=loci),
-            expand(
-                "results/calls/{sample}_{hla}.bcf",
-                sample=simulated_sample.sample_name.unique(),
-                hla=loci,
-            ),
-            expand(
-                "results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv",
-                sample=simulated_sample.sample_name.unique(),
-                hla=loci,
-            ),
+            "results/orthanq-candidates/candidates.vcf",
+            expand("results/vg/alignment/{sample}_vg.bam", sample=simulated_sample.sample_name.unique()),
+            # expand(
+            #     "results/calls/{sample}_{hla}.bcf",
+            #     sample=simulated_sample.sample_name.unique(),
+            #     hla=loci,
+            # ),
+            # expand(
+            #     "results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv",
+            #     sample=simulated_sample.sample_name.unique(),
+            #     hla=loci,
+            # ),
             # expand("results/kallisto/quant_results_{sample}_{hla}/abundance.h5",
             #     sample=simulated_sample.sample_name.unique(),
             #     hla=loci)
@@ -64,14 +65,14 @@ if config["simulation"] == False:
             # ),
             # expand("results/orthanq-candidates/{hla}.vcf.gz.tbi",hla=loci),
             # expand("results/orthanq-candidates-intersected/{hla}.vcf.gz.tbi",hla=loci),
-            expand("results/bwa_alignment/{sample}_mapped.bai",sample=samples.sample_name),
-            expand("results/bwa_alignment/{sample}_mapped_extracted.bam",sample=samples.sample_name),
-            expand("results/extracted_reads/{sample}.1.fq",sample=samples.sample_name),
-            expand(
-                "results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv",
-                sample=samples.sample_name,
-                hla=loci,
-            ),
+            # expand("results/bwa_alignment/{sample}_mapped.bai",sample=samples.sample_name),
+            # expand("results/bwa_alignment/{sample}_mapped_extracted.bam",sample=samples.sample_name),
+            # expand("results/extracted_reads/{sample}.1.fq",sample=samples.sample_name),
+            # expand(
+            #     "results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv",
+            #     sample=samples.sample_name,
+            #     hla=loci,
+            # ),
             # "results/orthanq/final_report.csv",
             "results/comparison/comparison.tsv",
             # expand("results/kallisto/quant_results_{sample}_{hla}/abundance.h5",

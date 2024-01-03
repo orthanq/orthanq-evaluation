@@ -7,4 +7,6 @@ dependencies:
   - pkg-config
   - gsl =2.7
   - cmake
+  - minimap2
+  - samtools
 

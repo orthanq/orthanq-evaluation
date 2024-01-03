@@ -2,13 +2,13 @@ rule varlociraptor_preprocess:
     input:
         ref="results/refs/hs_genome.fasta",
         fai = "results/refs/hs_genome.fasta.fai",
-        candidates = "results/orthanq-candidates-intersected/{hla}.vcf",
+        candidates = "results/orthanq-candidates/candidates.vcf",
         bam="results/vg/alignment/{sample}_vg.sorted.bam",
         bai="results/vg/alignment/{sample}_vg.sorted.bam.bai"
     output:
-        "results/observations/{sample}_{hla}.bcf"
+        "results/observations/{sample}.bcf"
     log:
-        "logs/varlociraptor/preprocess/{sample}_{hla}.log",
+        "logs/varlociraptor/preprocess/{sample}.log",
     conda:
         "../envs/varlociraptor.yaml"
     shell:
@@ -18,12 +18,12 @@ rule varlociraptor_preprocess:
 
 rule varlociraptor_call:
     input:
-        obs="results/observations/{sample}_{hla}.bcf",
+        obs="results/observations/{sample}.bcf",
         scenario="resources/scenarios/scenario.yaml",
     output:
-        "results/calls/{sample}_{hla}.bcf"
+        "results/calls/{sample}.bcf"
     log:
-        "logs/varlociraptor/call/{sample}_{hla}.log",
+        "logs/varlociraptor/call/{sample}.log",
     conda:
         "../envs/varlociraptor.yaml" 
     shell:
@@ -32,19 +32,17 @@ rule varlociraptor_call:
 
 rule orthanq_call:
     input:
-        calls = "results/calls/{sample}_{hla}.bcf",
-        candidate_variants = "results/orthanq-candidates-intersected/{hla}.vcf",
-        counts = "results/kallisto/quant_results_{sample}_{hla}",
-        xml = config["allele_db_xml"]
+        calls = "results/calls/{sample}.bcf",
+        candidate_variants = "results/orthanq-candidates/candidates.vcf",
     output:
-        "results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv"
+        "results/orthanq/{sample}/{sample}.tsv"
     conda:
         "../envs/orthanq.yaml"
     log:
-        "logs/orthanq-call/{sample}_{hla}.log"
+        "logs/orthanq-call/{sample}.log"
     shell:
         "../orthanq/target/release/orthanq call --haplotype-calls {input.calls} --haplotype-variants {input.candidate_variants} "
-        "--haplotype-counts {input.counts}/abundance.h5 --xml {input.xml} --max-haplotypes 5 --prior diploid --output {output} 2> {log}"
+        "--haplotype-counts {input.counts}/abundance.h5 --max-haplotypes 5 --prior diploid --output {output} 2> {log}"
 
 rule arcasHLA_reference:
     output:
@@ -111,19 +109,19 @@ rule HLA_LA:
     shell:
         "HLA-LA.pl --bam {input.bam} --sampleID {wildcards.sample} --graph {params.graph} --customGraphDir {params.graphdir} --workingDir {params.workdir} --maxThreads {threads} > {log} 2>&1"
 
-rule parse_and_validate:
-    input:
-        orthanq=expand("results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv", 
-        sample=samples.sample_name,
-        hla=loci
-        ),
-        ground_truth="resources/ground_truth/HLA-ground-truth-CEU-for-paper.tsv"
-    output:
-        validation="results/comparison/comparison.tsv"
-    log:
-        "logs/comparison/compare_and_validate.log"
-    script:
-        "../scripts/parse_and_validate_diploid_subclonal.py"
+# rule parse_and_validate:
+#     input:
+#         orthanq=expand("results/orthanq/{sample}/{sample}.tsv", 
+#         sample=samples.sample_name,
+#         hla=loci
+#         ),
+#         ground_truth="resources/ground_truth/HLA-ground-truth-CEU-for-paper.tsv"
+#     output:
+#         validation="results/comparison/comparison.tsv"
+#     log:
+#         "logs/comparison/compare_and_validate.log"
+#     script:
+#         "../scripts/parse_and_validate_diploid_subclonal.py"
 
 # rule parse_HLAs:
 #     input:
