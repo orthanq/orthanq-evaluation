@@ -9,7 +9,7 @@ configfile: "config/config.yaml"
 
 ruleorder: orthanq_candidates > orthanq_call
 
-if config["simulation"] == True:
+if config["simulation"]:
 
     include: "rules/common.smk"
     include: "rules/simulation.smk"
@@ -22,68 +22,6 @@ if config["simulation"] == True:
                 f"results/fractions/{row['sample_name']}-{row['lineage']}-{row['num_reads']}_1.fq"
                 for _, row in simulated_sample.iterrows()
             ],
-            "results/orthanq-candidates/candidates.vcf",
-            expand("results/vg/alignment/{sample}_vg.bam", sample=simulated_sample.sample_name.unique()),
-            # expand(
-            #     "results/calls/{sample}_{hla}.bcf",
-            #     sample=simulated_sample.sample_name.unique(),
-            #     hla=loci,
-            # ),
-            # expand(
-            #     "results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv",
-            #     sample=simulated_sample.sample_name.unique(),
-            #     hla=loci,
-            # ),
-            # expand("results/kallisto/quant_results_{sample}_{hla}/abundance.h5",
-            #     sample=simulated_sample.sample_name.unique(),
-            #     hla=loci)
-            # "results/orthanq/final_report.csv"
-            # "results/vg/autoindex/idx.giraffe.gbz",
-            # expand("results/vg/alignment/{sample}_vg.bam", sample=simulated_sample.sample_name.unique())
+            expand("results/orthanq/{sample}/{sample}.tsv", sample=simulated_sample.sample_name.unique())
 
-if config["simulation"] == False:
-
-    include: "rules/common.smk"
-    include: "rules/quantification-mapping.smk"
-    include: "rules/calling.smk"
-
-    rule all:
-        input:
-            # "results/refs/hs_genome.fasta",
-            # "results/bwakit-genome/hs38DH.fa",
-            # expand("results/processed_mapped/{sample}.aln.sam", sample=samples.sample_name),
-            # expand("results/orthanq-candidates/{hla}.vcf", hla=loci),
-            # expand(
-            #     "results/calls/{sample}_{hla}.bcf",
-            #     sample=samples.sample_name,
-            #     hla=loci,
-            # ),
-            # expand(
-            #     "results/arcasHLA/{sample}_{hla}/{sample}.genotype.json",
-            #     sample=samples.sample_name,
-            #     hla=loci,
-            # ),
-            # expand("results/orthanq-candidates/{hla}.vcf.gz.tbi",hla=loci),
-            # expand("results/orthanq-candidates-intersected/{hla}.vcf.gz.tbi",hla=loci),
-            # expand("results/bwa_alignment/{sample}_mapped.bai",sample=samples.sample_name),
-            # expand("results/bwa_alignment/{sample}_mapped_extracted.bam",sample=samples.sample_name),
-            # expand("results/extracted_reads/{sample}.1.fq",sample=samples.sample_name),
-            # expand(
-            #     "results/orthanq/{sample}_{hla}/{sample}_{hla}.tsv",
-            #     sample=samples.sample_name,
-            #     hla=loci,
-            # ),
-            # "results/orthanq/final_report.csv",
-            "results/comparison/comparison.tsv",
-            # expand("results/kallisto/quant_results_{sample}_{hla}/abundance.h5",
-            #     sample=samples.sample_name,
-            #     hla=loci)
-            # expand(
-            #     "results/HLA-LA/{sample}/hla/R1_bestguess_G.txt",
-            #     sample=samples.sample_name
-            # ),
-            # "results/orthanq/final_report.csv",
-            # "results/comparison/comparison.tsv",
-            # "results/datavzrd/validation_datavzrd.yaml",
-            # "results/datavzrd-report/validation"
-
+#todo: implement the other case

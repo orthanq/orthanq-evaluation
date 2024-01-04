@@ -1,17 +1,3 @@
-# ruleorder: tabix_exons > bcftools_merge
-
-# rule bwakit_index:
-#     output:
-#         "results/bwakit-genome/hs38DH.fa",
-#         "results/bwakit-genome/hs38DH.fa.alt"
-#     log:
-#         "logs/bwakit/bwakit-index.log"
-#     conda:
-#         "../envs/bwakit.yaml"
-#     threads: 20
-#     shell:
-#         "mkdir -p results/bwakit-genome && cd results/bwakit-genome && run-gen-ref hs38DH && bwa index hs38DH.fa"
-
 rule genome_index:
     input:
         "resources/reference/NC_045512.2.fasta"
@@ -23,10 +9,6 @@ rule genome_index:
     wrapper:
         "v1.25.0/bio/samtools/faidx" #update wrapper version
 
-##orthanq_candidates generates both candidate variants and individual genome sequences for each locus(to be used for quantification indices in the downstream processing)
-#the alleles are filtered out according to the following criteria:
-#if the allele has a full name equivalent (e.g. A*24:02:02:02) in the database and it's higher than 0.05, it's IN.
-#if the allele doesn't have a full name equivalent (e.g. A*24:02:02), then look for the first three fields, if still not then look for first two fields (A*24:02)
 rule orthanq_candidates:
     input:
         lineage_collection = config["lineage_collection"],
@@ -39,7 +21,8 @@ rule orthanq_candidates:
     log:
         "logs/orthanq-candidates/candidates.log"
     shell:
-        "/projects/koesterlab/orthanq/orthanq/target/release/orthanq candidates --alleles {input.lineage_collection} --genome {input.genome} "
+        "cd /projects/koesterlab/orthanq/orthanq/ ; "
+        " cargo run candidates virus --alleles {input.lineage_collection} --genome {input.genome} "
         "--output results/orthanq-candidates 2> {log}"
 
 rule bgzip:
@@ -49,7 +32,6 @@ rule bgzip:
         "results/orthanq-candidates/candidates.vcf.gz"
     params:
         extra="", # optional
-    threads: 1
     log:
         "logs/bgzip/candidates.log",
     wrapper:
@@ -92,7 +74,7 @@ rule vg_giraffe:
         "logs/vg/alignment/{sample}.log"
     conda:
         "../envs/vg.yaml"
-    threads: 30
+    threads: 40
     shell:
         "vg giraffe -Z results/vg/autoindex/idx.giraffe.gbz -f {input.reads[0]} -f {input.reads[1]} --output-format BAM -t {threads}  > {output} 2> {log}"
 
@@ -119,30 +101,3 @@ rule samtools_index:
     threads: 4
     wrapper:
         "v1.22.0/bio/samtools/index"
-
-# rule kallisto_index:
-#     input:
-#         fasta = "resources/IMGTHLA-3.32.0-alpha/fasta/{hla}_gen.fasta"
-#     output:
-#         index = "results/kallisto-index/{hla}.idx"
-#     params:
-#         extra = "--kmer-size=31"
-#     log:
-#         "logs/kallisto/index/{hla}.log"
-#     threads: 20
-#     wrapper:
-#         "v1.25.0/bio/kallisto/index"
-
-# rule kallisto_quant:
-#     input:
-#         fastq = get_fastq_input,
-#         index = "results/kallisto-index/{hla}.idx"
-#     output:
-#         directory('results/kallisto/quant_results_{sample}_{hla}')
-#     params:
-#         extra = "-b 5 --seed=42 --pseudobam"
-#     log:
-#         "logs/kallisto/kallisto_quant_{sample}_{hla}.log"
-#     threads: 20
-#     wrapper:
-#         "v1.25.0/bio/kallisto/quant"
