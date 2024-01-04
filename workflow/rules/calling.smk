@@ -43,5 +43,5 @@ rule orthanq_call:
     params:
         prior = config["orthanq_prior"]
     shell:
-        "../../orthanq/target/debug/orthanq candidates call --haplotype-calls {input.calls} --haplotype-variants {input.candidate_variants} "
+        "../../orthanq/target/debug/orthanq call virus --haplotype-calls {input.calls} --haplotype-variants {input.candidate_variants} "
         "--prior {params} --output {output} 2> {log}"
