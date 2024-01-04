@@ -1,5 +1,5 @@
 #full path for the genomic HLA sequences and associated xml file. (here IMGT v3.32 is used.)
-lineage_collection: /projects/koesterlab/orthanq/sars-cov-2-data/orthanq-evaluation/resources/ncbi_dataset/6_lineages.fasta
+lineage_collection: /projects/koesterlab/orthanq/orthanq-virus-application/orthanq-evaluation/resources/ncbi_dataset/6_lineages.fasta
 
 #arcasHLA database version
 arcasHLA_version: "3.32.0"

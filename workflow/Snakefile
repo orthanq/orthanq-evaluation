@@ -13,7 +13,7 @@ if config["simulation"]:
 
     include: "rules/common.smk"
     include: "rules/simulation.smk"
-    include: "rules/quantification-mapping.smk"
+    include: "rules/alignment.smk"
     include: "rules/calling.smk"
 
     rule all:
