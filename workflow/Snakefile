@@ -22,6 +22,7 @@ if config["simulation"]:
                 f"results/fractions/{row['sample_name']}-{row['lineage']}-{row['num_reads']}_1.fq"
                 for _, row in simulated_sample.iterrows()
             ],
+            "results/orthanq-candidates/candidates.vcf.gz.tbi",
             expand("results/orthanq/{sample}/{sample}.tsv", sample=simulated_sample.sample_name.unique())
 
 #todo: implement the other case

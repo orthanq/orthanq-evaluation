@@ -1,3 +1,5 @@
+ruleorder: tabix > vg_autoindex
+
 rule genome_index:
     input:
         "resources/reference/NC_045512.2.fasta"
@@ -52,7 +54,8 @@ rule tabix:
 rule vg_autoindex:
     input:
         genome="resources/reference/NC_045512.2.fasta",
-        variants="results/orthanq-candidates/candidates.vcf",
+        variants="results/orthanq-candidates/candidates.vcf.gz",
+        variants_tbi="results/orthanq-candidates/candidates.vcf.gz.tbi",
     output:
         "results/vg/autoindex/idx.giraffe.gbz"
     log:
