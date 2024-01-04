@@ -21,8 +21,7 @@ rule orthanq_candidates:
     log:
         "logs/orthanq-candidates/candidates.log"
     shell:
-        "cd /projects/koesterlab/orthanq/orthanq/ ; "
-        " cargo run candidates virus --alleles {input.lineage_collection} --genome {input.genome} "
+        "../../orthanq/target/debug/orthanq candidates virus --alleles {input.lineage_collection} --genome {input.genome} "
         "--output results/orthanq-candidates 2> {log}"
 
 rule bgzip:

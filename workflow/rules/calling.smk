@@ -43,6 +43,5 @@ rule orthanq_call:
     params:
         prior = config["orthanq_prior"]
     shell:
-        "cd /projects/koesterlab/orthanq/orthanq/ ; "
-        " cargo run call --haplotype-calls {input.calls} --haplotype-variants {input.candidate_variants} "
+        "../../orthanq/target/debug/orthanq candidates call --haplotype-calls {input.calls} --haplotype-variants {input.candidate_variants} "
         "--prior {params} --output {output} 2> {log}"
