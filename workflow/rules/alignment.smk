@@ -1,5 +1,3 @@
-ruleorder: tabix > vg_autoindex
-
 rule genome_index:
     input:
         "resources/reference/NC_045512.2.fasta"
