@@ -115,8 +115,8 @@ with open(snakemake.log[0], "w") as f:
 
                         #fill up the orthanq_tp_fp_table with 0 for FP as default
                         if not (((orthanq_tp_fp_table["Sample"] == sample_name) & (orthanq_tp_fp_table["Locus"] == locus_in_orthanq)).any()):
-                            row_to_add = pd.DataFrame([[sample_name, locus_in_orthanq, 0, best_density]],
-                                columns=['Sample', 'Locus', 'TP', 'Best_Density'])
+                            row_to_add = pd.DataFrame([[sample_name, locus_in_orthanq, "FP", best_density]],
+                                columns=['Sample', 'Locus', 'Prediction', 'Best_Density'])
                             orthanq_tp_fp_table = pd.concat([orthanq_tp_fp_table, row_to_add], ignore_index=True)
 
                         #only include predictions having density above determined threshold
@@ -179,7 +179,7 @@ with open(snakemake.log[0], "w") as f:
                                     collected += 1.0
 
                                     #fill up the orthanq_tp_fp_table with 1 for TP
-                                    orthanq_tp_fp_table.loc[(orthanq_tp_fp_table.Sample == sample_name) & (orthanq_tp_fp_table.Locus == locus_in_orthanq) & (orthanq_tp_fp_table.Best_Density == best_density),'TP'] = 1
+                                    orthanq_tp_fp_table.loc[(orthanq_tp_fp_table.Sample == sample_name) & (orthanq_tp_fp_table.Locus == locus_in_orthanq) & (orthanq_tp_fp_table.Best_Density == best_density),'Prediction'] = "TP"
                                     print("inner loop collected: ", collected)
                                     #fill in the table for tp fp info
                                     if locus_in_orthanq == "A":
@@ -215,6 +215,9 @@ with open(snakemake.log[0], "w") as f:
                             for index,row in orthanq_tp_fp_DQB1.iterrows():
                                 if locus==locus_in_orthanq and locus=="DQB1" and row["orthanq evaluation"] == "":
                                     orthanq_tp_fp_DQB1.loc[index, "orthanq evaluation"] = "no call"
+                            #also, make the general tp_fp table no call
+                            orthanq_tp_fp_table.loc[(orthanq_tp_fp_table.Sample == sample_name) & (orthanq_tp_fp_table.Locus == locus_in_orthanq) & (orthanq_tp_fp_table.Best_Density == best_density),'Prediction'] = "no call"
+
                     else:
                         #if the df is empty for a result then, then make it a no call, locus==locus_in_orthanq check avoids multiple assignments
                         for index,row in orthanq_tp_fp_A.iterrows():
@@ -229,7 +232,8 @@ with open(snakemake.log[0], "w") as f:
                         for index,row in orthanq_tp_fp_DQB1.iterrows():
                             if locus==locus_in_orthanq and locus=="DQB1" and row["orthanq evaluation"] == "":
                                 orthanq_tp_fp_DQB1.loc[index, "orthanq evaluation"] = "no call"
-                        
+                        #also, make the general tp_fp table no call
+                        orthanq_tp_fp_table.loc[(orthanq_tp_fp_table.Sample == sample_name) & (orthanq_tp_fp_table.Locus == locus_in_orthanq) & (orthanq_tp_fp_table.Best_Density == best_density),'Prediction'] = "no call"
             print("collected: ",collected)
 
             #calculate accuracy and call rate
@@ -336,7 +340,7 @@ with open(snakemake.log[0], "w") as f:
     # ##all
     #initialize the table to output TP and FP samples
     orthanq_validation_table_all= pd.DataFrame(columns=('Locus', 'N', 'Orthanq_Call_Rate', 'Orthanq_Accuracy'))
-    orthanq_tp_fp_table_all = pd.DataFrame(columns=('Sample', 'Locus', 'TP', 'Best_Density'))
+    orthanq_tp_fp_table_all = pd.DataFrame(columns=('Sample', 'Locus', 'Prediction', 'Best_Density'))
 
     #initialize locus-wise tp fp table for orthanq
     orthanq_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))

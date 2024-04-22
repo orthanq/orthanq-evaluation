@@ -42,8 +42,8 @@ rule orthanq_call:
         candidate_variants = "results/orthanq-candidates-intersected/{hla}.vcf",
         xml = config["allele_db_xml"]
     output:
-        "results/orthanq/{sample}_{hla}/{sample}_{hla}.csv",
-        "results/orthanq/{sample}_{hla}/3_field_solutions.json"
+        table="results/orthanq/{sample}_{hla}/{sample}_{hla}.csv",
+        three_field_solutions="results/orthanq/{sample}_{hla}/3_field_solutions.json"
     conda:
         "../envs/orthanq.yaml"
     log:
@@ -54,4 +54,4 @@ rule orthanq_call:
         prior = config["orthanq_prior"]
     shell:
         "../orthanq/target/release/orthanq call --haplotype-calls {input.calls} --haplotype-variants "
-        " {input.candidate_variants} --xml {input.xml} --prior {params} --output {output} 2> {log}"
+        " {input.candidate_variants} --xml {input.xml} --prior {params} --output {output.table} 2> {log}"
