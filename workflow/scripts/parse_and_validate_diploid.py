@@ -16,12 +16,9 @@ with open(snakemake.log[0], "w") as f:
 
     #orthanq results
     orthanq_input = snakemake.input.orthanq
-    # print(orthanq_input)
 
     # read sample sheets with truth values for evaluated and low coverage samples
     ground_truth_evaluated = pd.read_csv(snakemake.input.ground_truth_evaluated, sep = "\t")
-    # ground_truth_low_coverage = pd.read_csv(snakemake.input.ground_truth_low_coverage, sep = "\t")
-    # ground_truth_all = pd.concat([ground_truth_evaluated, ground_truth_low_coverage], ignore_index=True)
 
     def truth_for_sample(locus, values_in_truth, ground_truth, sample_name):
         for (chr_index,chr_number) in enumerate([1, 2]):
@@ -113,7 +110,7 @@ with open(snakemake.log[0], "w") as f:
                         #enter the best density to the orthanq_tp_fp_table
                         best_density = results['density'][0]
 
-                        #fill up the orthanq_tp_fp_table with 0 for FP as default
+                        #initialize the orthanq tp fp table 
                         if not (((orthanq_tp_fp_table["Sample"] == sample_name) & (orthanq_tp_fp_table["Locus"] == locus_in_orthanq)).any()):
                             row_to_add = pd.DataFrame([[sample_name, locus_in_orthanq, "FP", best_density]],
                                 columns=['Sample', 'Locus', 'Prediction', 'Best_Density'])
@@ -125,62 +122,51 @@ with open(snakemake.log[0], "w") as f:
                         sum_of_densities = best_results["density"].sum()
                         print("sum_of_densities: ", sum_of_densities)
                         print(best_results)
-                        if sum_of_densities > threshold and best_results.shape[0] <= 5: #this number is configurable:
-                            #count the number of samples that are called
+
+                        #loop over best results (rows that share the same best odds score, i.e. same density and solutions but different haplotypes)
+                        counter_fp = 0
+                        for (i,row) in best_results.iterrows():
+
+                            #collect first two fields
+                            predictions = []
+                            for h in haplotypes:
+                                h_splt = h.split(":")
+                                first_field = h_splt[0].split("*")[1]
+                                two_field = locus_in_orthanq + "*" + first_field + ":" + h_splt[1]
+                                if row[h] == 0.5:
+                                    predictions.append(two_field)
+                                if row[h] == 1.0:
+                                    predictions.append(two_field)
+                                    predictions.append(two_field)
+ 
+                            print("predictions: ", predictions)
+                            print("values_in_truth: ", values_in_truth)
+
+                            allele_match_check = 0 #should be 2 to pass
+                            values_in_truth_clone = values_in_truth.copy() #an explicit copy is necessary as we need to keep values in truth for the next iteration
+                            for p in predictions:
+                                for c_key, c_values in values_in_truth_clone.copy().items():
+                                    print(p)
+                                    print(c_values)
+                                    if p in c_values:
+                                        allele_match_check += 1
+                                        values_in_truth_clone.pop(c_key)
+                                        break #necessary to avoid checking for the other chr just after the match here
+
+                            print("allele_match_check: ", allele_match_check)
                             if locus == locus_in_orthanq:
-                                samples_called += 1
-                            #loop over best results (rows that share the same best odds score, i.e. same density and solutions but different haplotypes)
-                            for (i,_) in best_results.iterrows():
-                                #collect first two fields and cumulative fractions of haplotypes
-                                #required to group haplotypes with identical two field values (ground truth contains two field information)
-                                two_field_fractions = {}
-                                for haplo in haplotypes:
-                                    haplo_splt = haplo.split(":")
-                                    first_field = haplo_splt[0].split("*")[1]
-                                    two_field = locus_in_orthanq + "*" + first_field + ":" + haplo_splt[1]
-                                    if two_field in two_field_fractions:
-                                        two_field_fractions[two_field] += best_results[haplo][i]
-                                    else:
-                                        two_field_fractions[two_field] = best_results[haplo][i]
-                                print("two_field_fractions: ",two_field_fractions)
-                                
-                                #fill in two field fractions
-                                alleles=[]
-                                for key,value in two_field_fractions.items():
-                                    if value >= 0.5:
-                                        alleles.append(key)
-                                
-                                #if the prediction is the same for both alleles, then add one more allele to the allele list, to show it as a diploid sample in the final table.     
-                                if len(alleles) == 1:
-                                    alleles.append(alleles[0])
+                                if allele_match_check == 2 and (sum_of_densities > threshold and best_results.shape[0] <= 5): #this number is configurable:: 
+                                    #count the number of samples that are called
+                                    if counter_fp == 0:
+                                        samples_called += 1
 
-                                #collect the fractions of haplotypes matching with ground truth
-                                #loop over values in truth and stop when one matches an allele from the output of orthanq
-                                #prev_value is used to stop collecting the fraction from the identical allele match
-                                #1-)the ground truth might have multiple possible alleles for single haplotypes (chromosomes)
-                                #in that case, collect all allele-fraction combinations to collected_fractions
-                                #and take account the allele that has the highest fraction
-                                
-                                prev_value = ""
-                                fractions = 0.0
-                                for chr_index, (_,chr_values) in enumerate(values_in_truth.items()):
-                                    for chr_value in chr_values:
-                                        collected_fractions = {}
-                                        if chr_value in two_field_fractions.keys() and chr_value != prev_value:
-                                            collected_fractions[chr_value]=two_field_fractions[chr_value]
-                                        if collected_fractions:
-                                            fractions += collected_fractions[max(collected_fractions)] ##get a random one, max() can be used (orders allele names alphabetically), it doesn't matter anyways in case of diploid priors
-                                            prev_value = max(collected_fractions)
-                                print("fractions: ",fractions)
-
-                                #score only haplotypes that make up more than 50%
-                                #also enter the entry to the tp_fp table to use in the plots in further rules
-                                if fractions > 0.5: 
+                                    #count TP for accuracy calculation
                                     collected += 1.0
-
-                                    #fill up the orthanq_tp_fp_table with 1 for TP
-                                    orthanq_tp_fp_table.loc[(orthanq_tp_fp_table.Sample == sample_name) & (orthanq_tp_fp_table.Locus == locus_in_orthanq) & (orthanq_tp_fp_table.Best_Density == best_density),'Prediction'] = "TP"
                                     print("inner loop collected: ", collected)
+
+                                    #fill up the orthanq_tp_fp_table with TP
+                                    orthanq_tp_fp_table.loc[(orthanq_tp_fp_table.Sample == sample_name) & (orthanq_tp_fp_table.Locus == locus_in_orthanq) & (orthanq_tp_fp_table.Best_Density == best_density),'Prediction'] = "TP"
+                                    
                                     #fill in the table for tp fp info
                                     if locus_in_orthanq == "A":
                                         orthanq_tp_fp_A.loc[orthanq_tp_fp_A['sample'] == sample_name, 'orthanq evaluation'] = 'TP'
@@ -191,33 +177,57 @@ with open(snakemake.log[0], "w") as f:
                                     if locus_in_orthanq == "DQB1":
                                         orthanq_tp_fp_DQB1.loc[orthanq_tp_fp_DQB1['sample'] == sample_name, 'orthanq evaluation'] = 'TP'
                                     break ##break as soon as the collected gets +1 
-                                else: # if the fractions don't exceed the threshold, then they are false positives.
-                                    if locus==locus_in_orthanq:
-                                        if locus_in_orthanq == "A":
-                                            orthanq_tp_fp_A.loc[orthanq_tp_fp_A['sample'] == sample_name, 'orthanq evaluation'] = 'FP'
-                                        if locus_in_orthanq == "B":
-                                            orthanq_tp_fp_B.loc[orthanq_tp_fp_B['sample'] == sample_name, 'orthanq evaluation'] = 'FP'
-                                        if locus_in_orthanq == "C":
-                                            orthanq_tp_fp_C.loc[orthanq_tp_fp_C['sample'] == sample_name, 'orthanq evaluation'] = 'FP'
-                                        if locus_in_orthanq == "DQB1":
-                                            orthanq_tp_fp_DQB1.loc[orthanq_tp_fp_DQB1['sample'] == sample_name, 'orthanq evaluation'] = 'FP'
-                        else:
-                            #if sum of densities remain under the threshold, then make it a no call, locus==locus_in_orthanq check avoids multiple assignments
-                            for index,row in orthanq_tp_fp_A.iterrows():
-                                if locus==locus_in_orthanq and locus=="A" and row["orthanq evaluation"] == "":
-                                    orthanq_tp_fp_A.loc[index, "orthanq evaluation"] = "no call"
-                            for index,row in orthanq_tp_fp_B.iterrows():
-                                if locus==locus_in_orthanq and locus=="B" and row["orthanq evaluation"] == "":
-                                    orthanq_tp_fp_B.loc[index, "orthanq evaluation"] = "no call"
-                            for index,row in orthanq_tp_fp_C.iterrows():
-                                if locus==locus_in_orthanq and locus=="C" and row["orthanq evaluation"] == "":
-                                    orthanq_tp_fp_C.loc[index, "orthanq evaluation"] = "no call"
-                            for index,row in orthanq_tp_fp_DQB1.iterrows():
-                                if locus==locus_in_orthanq and locus=="DQB1" and row["orthanq evaluation"] == "":
-                                    orthanq_tp_fp_DQB1.loc[index, "orthanq evaluation"] = "no call"
-                            #also, make the general tp_fp table no call
-                            orthanq_tp_fp_table.loc[(orthanq_tp_fp_table.Sample == sample_name) & (orthanq_tp_fp_table.Locus == locus_in_orthanq) & (orthanq_tp_fp_table.Best_Density == best_density),'Prediction'] = "no call"
+                                
+                                elif allele_match_check == 2  and (not (sum_of_densities > threshold and best_results.shape[0] <= 5)): #this number is configurable:: 
+                                    #fractions exceed the threshold but but it's an considered uncalled, locus==locus_in_orthanq check avoids multiple assignments
+                                    for index,row in orthanq_tp_fp_A.iterrows():
+                                        if locus==locus_in_orthanq and locus=="A" and row["orthanq evaluation"] == "":
+                                            orthanq_tp_fp_A.loc[index, "orthanq evaluation"] = "true & uncalled"
+                                    for index,row in orthanq_tp_fp_B.iterrows():
+                                        if locus==locus_in_orthanq and locus=="B" and row["orthanq evaluation"] == "":
+                                            orthanq_tp_fp_B.loc[index, "orthanq evaluation"] = "true & uncalled"
+                                    for index,row in orthanq_tp_fp_C.iterrows():
+                                        if locus==locus_in_orthanq and locus=="C" and row["orthanq evaluation"] == "":
+                                            orthanq_tp_fp_C.loc[index, "orthanq evaluation"] = "true & uncalled"
+                                    for index,row in orthanq_tp_fp_DQB1.iterrows():
+                                        if locus==locus_in_orthanq and locus=="DQB1" and row["orthanq evaluation"] == "":
+                                            orthanq_tp_fp_DQB1.loc[index, "orthanq evaluation"] = "true & uncalled"
+                                    #also, make the general tp_fp table true & uncalled
+                                    orthanq_tp_fp_table.loc[(orthanq_tp_fp_table.Sample == sample_name) & (orthanq_tp_fp_table.Locus == locus_in_orthanq) & (orthanq_tp_fp_table.Best_Density == best_density),'Prediction'] = "true & uncalled"
+                                    break
 
+                                elif (allele_match_check != 2 ) and (sum_of_densities > threshold and best_results.shape[0] <= 5): #this number is configurable:: 
+                                    if counter_fp == 0: #this counter is to avoid same density solutions to add to samples_called all the time
+                                        #count the number of samples that are called
+                                        samples_called += 1
+                                        counter_fp += 1
+                                    if locus_in_orthanq == "A":
+                                        orthanq_tp_fp_A.loc[orthanq_tp_fp_A['sample'] == sample_name, 'orthanq evaluation'] = 'FP'
+                                    if locus_in_orthanq == "B":
+                                        orthanq_tp_fp_B.loc[orthanq_tp_fp_B['sample'] == sample_name, 'orthanq evaluation'] = 'FP'
+                                    if locus_in_orthanq == "C":
+                                        orthanq_tp_fp_C.loc[orthanq_tp_fp_C['sample'] == sample_name, 'orthanq evaluation'] = 'FP'
+                                    if locus_in_orthanq == "DQB1":
+                                        orthanq_tp_fp_DQB1.loc[orthanq_tp_fp_DQB1['sample'] == sample_name, 'orthanq evaluation'] = 'FP'
+                                    #fill up the orthanq_tp_fp_table with FP
+                                    orthanq_tp_fp_table.loc[(orthanq_tp_fp_table.Sample == sample_name) & (orthanq_tp_fp_table.Locus == locus_in_orthanq) & (orthanq_tp_fp_table.Best_Density == best_density),'Prediction'] = "FP"
+                            
+                                elif (allele_match_check != 2 ) and (not (sum_of_densities > threshold and best_results.shape[0] <= 5)): #this number is configurable:: 
+                                    #if sum of densities remain under the threshold, then make it a no call, locus==locus_in_orthanq check avoids multiple assignments
+                                    for index,row in orthanq_tp_fp_A.iterrows():
+                                        if locus==locus_in_orthanq and locus=="A" and row["orthanq evaluation"] == "":
+                                            orthanq_tp_fp_A.loc[index, "orthanq evaluation"] = "false & uncalled"
+                                    for index,row in orthanq_tp_fp_B.iterrows():
+                                        if locus==locus_in_orthanq and locus=="B" and row["orthanq evaluation"] == "":
+                                            orthanq_tp_fp_B.loc[index, "orthanq evaluation"] = "false & uncalled"
+                                    for index,row in orthanq_tp_fp_C.iterrows():
+                                        if locus==locus_in_orthanq and locus=="C" and row["orthanq evaluation"] == "":
+                                            orthanq_tp_fp_C.loc[index, "orthanq evaluation"] = "false & uncalled"
+                                    for index,row in orthanq_tp_fp_DQB1.iterrows():
+                                        if locus==locus_in_orthanq and locus=="DQB1" and row["orthanq evaluation"] == "":
+                                            orthanq_tp_fp_DQB1.loc[index, "orthanq evaluation"] = "false & uncalled"
+                                    #ill up the orthanq_tp_fp_table with false & uncalled
+                                    orthanq_tp_fp_table.loc[(orthanq_tp_fp_table.Sample == sample_name) & (orthanq_tp_fp_table.Locus == locus_in_orthanq) & (orthanq_tp_fp_table.Best_Density == best_density),'Prediction'] = "false & uncalled"
                     else:
                         #if the df is empty for a result then, then make it a no call, locus==locus_in_orthanq check avoids multiple assignments
                         for index,row in orthanq_tp_fp_A.iterrows():
@@ -304,40 +314,7 @@ with open(snakemake.log[0], "w") as f:
                 else: # if the break is not entered above, then else is executed in this for/else construct.
                     predictions_table.loc[i, "orthanq evaluation"] = "allele not considered in the truth set" #it's enough if one the alleles don't break the if above
         return predictions_table
-    # ##low
-    # #initialize the table to output TP and FP samples
-    # orthanq_validation_table_low= pd.DataFrame(columns=('Locus', 'N', 'Orthanq_Call_Rate', 'Orthanq_Accuracy'))
-    # orthanq_tp_fp_table_low = pd.DataFrame(columns=('Sample', 'Locus', 'TP', 'Best_Density'))
 
-    # #initialize locus-wise tp fp table for orthanq
-    # orthanq_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
-    # orthanq_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
-    # orthanq_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
-    # orthanq_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
-
-    # #validate low samples
-    # sample_list_low = ground_truth_low_coverage["Run Accession"].to_list()
-    # orthanq_validation_table_low = validate_orthanq(orthanq_input, orthanq_validation_table_low, orthanq_tp_fp_table_low, ground_truth_low_coverage, sample_list_low, orthanq_tp_fp_A, orthanq_tp_fp_B, orthanq_tp_fp_C, orthanq_tp_fp_DQB1)
-    # final_orthanq_low = orthanq_validation_table_low[0]
-
-    # ##high 
-    # #initialize the table to output TP and FP samples
-    # orthanq_validation_table_high= pd.DataFrame(columns=('Locus', 'N', 'Orthanq_Call_Rate', 'Orthanq_Accuracy'))
-    # orthanq_tp_fp_table_high = pd.DataFrame(columns=('Sample', 'Locus', 'TP', 'Best_Density'))
-
-    # #validate high samples
-
-    # # #initialize locus-wise tp fp table for orthanq
-    # orthanq_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
-    # orthanq_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
-    # orthanq_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
-    # orthanq_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
-
-    # sample_list_evaluated = ground_truth_evaluated["Run Accession"].to_list()
-    # orthanq_validation_table_high = validate_orthanq(orthanq_input, orthanq_validation_table_high, orthanq_tp_fp_table_high, ground_truth_evaluated, sample_list_evaluated, orthanq_tp_fp_A, orthanq_tp_fp_B, orthanq_tp_fp_C, orthanq_tp_fp_DQB1)
-    # final_orthanq_high = orthanq_validation_table_high[0]
-
-    # ##all
     #initialize the table to output TP and FP samples
     orthanq_validation_table_all= pd.DataFrame(columns=('Locus', 'N', 'Orthanq_Call_Rate', 'Orthanq_Accuracy'))
     orthanq_tp_fp_table_all = pd.DataFrame(columns=('Sample', 'Locus', 'Prediction', 'Best_Density'))
@@ -397,14 +374,6 @@ with open(snakemake.log[0], "w") as f:
     final_orthanq_tp_fp_DQB1 = final_orthanq_tp_fp_DQB1[['sample', 'ground', 'orthanq', 'orthanq evaluation']]
 
     #write the validation table
-
-    # final_orthanq_high.to_csv(
-    #     snakemake.output.validation_high, sep="\t", index=False, header=True
-    # )
-
-    # final_orthanq_low.to_csv(
-    #     snakemake.output.validation_low, sep="\t", index=False, header=True
-    # )
 
     final_orthanq_all.to_csv(
         snakemake.output.validation_all, sep="\t", index=False, header=True
