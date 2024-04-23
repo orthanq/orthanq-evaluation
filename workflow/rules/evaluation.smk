@@ -297,12 +297,9 @@ rule validate_orthanq:
         hla=loci
         ),
         ground_truth_evaluated="resources/ground_truth/1K_CEU_evaluated.tsv",
-        # ground_truth_low_coverage="resources/ground_truth/1K_CEU_low_coverage.tsv",
         allele_freqs="resources/allele_freqs/allele_frequencies.csv",
         orthanq_final_table="results/orthanq/final_report.csv"
     output:
-        # validation_low="results/validation/orthanq_validation_low.tsv",
-        # validation_high="results/validation/orthanq_validation_high.tsv",
         validation_all="results/validation/orthanq_validation_all.tsv",
         tp_fp_table="results/validation/tp_fp_table_all.tsv",
         orthanq_A_tp_fp="results/orthanq/A_tp_fp.tsv",
@@ -328,8 +325,6 @@ rule plot_tp_fp:
 
 rule validate_tools:
     input:
-        orthanq_low="results/validation/orthanq_validation_low.tsv",
-        orthanq_high="results/validation/orthanq_validation_high.tsv",
         orthanq_all="results/validation/orthanq_validation_all.tsv",
         orthanq_A_tp_fp="results/orthanq/A_tp_fp.tsv",
         orthanq_B_tp_fp="results/orthanq/B_tp_fp.tsv",
@@ -337,14 +332,10 @@ rule validate_tools:
         orthanq_DQB1_tp_fp="results/orthanq/DQB1_tp_fp.tsv",
         hla_la="results/HLA-LA/final_report.csv",
         arcasHLA="results/arcasHLA/final_report.csv",
-        # ground_truth="resources/ground_truth/1K_CEU_evaluated.tsv",
         optitype="results/optitype/final_report.csv",
         samples_evaluated="resources/ground_truth/1K_CEU_evaluated.tsv",
-        # samples_low_coverage="resources/ground_truth/1K_CEU_low_coverage.tsv",
         allele_freqs="resources/allele_freqs/allele_frequencies.csv"
     output:
-        # validation_low="results/validation/validation_low.tsv",
-        # validation_high="results/validation/validation_high.tsv",
         validation_all="results/validation/validation_all.tsv",
         A_tp_fp="results/validation/A_tp_fp.tsv",
         B_tp_fp="results/validation/B_tp_fp.tsv",
