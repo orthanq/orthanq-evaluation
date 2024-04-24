@@ -41,7 +41,7 @@ with open(snakemake.log[0], "w") as f:
                 values_in_truth["{0}".format(chr_index)] = [locus + "*" + value_in_truth]
         return values_in_truth
 
-    def validate_orthanq(orthanq_input, validation_table, orthanq_tp_fp_table, ground_truth, sample_list, orthanq_tp_fp_A, orthanq_tp_fp_B, orthanq_tp_fp_C, orthanq_tp_fp_DQB1):
+    def validate_orthanq(orthanq_input, threshold, validation_table, orthanq_tp_fp_table, ground_truth, sample_list, orthanq_tp_fp_A, orthanq_tp_fp_B, orthanq_tp_fp_C, orthanq_tp_fp_DQB1):
         #loop over loci and orthanq results
         loci = ['A', 'B', 'C', 'DQB1']
         for locus in loci:   
@@ -117,7 +117,6 @@ with open(snakemake.log[0], "w") as f:
                             orthanq_tp_fp_table = pd.concat([orthanq_tp_fp_table, row_to_add], ignore_index=True)
 
                         #only include predictions having density above determined threshold
-                        threshold = 0.7
                         sum_of_densities = 0
                         sum_of_densities = best_results["density"].sum()
                         print("sum_of_densities: ", sum_of_densities)
@@ -327,7 +326,8 @@ with open(snakemake.log[0], "w") as f:
 
     #validate all samples
     sample_list_all = ground_truth_evaluated["Run Accession"].to_list()
-    orthanq_validation_results_all = validate_orthanq(orthanq_input, orthanq_validation_table_all, orthanq_tp_fp_table_all, ground_truth_evaluated, sample_list_all, orthanq_tp_fp_A, orthanq_tp_fp_B, orthanq_tp_fp_C, orthanq_tp_fp_DQB1)
+    threshold_in_paper = 0.7
+    orthanq_validation_results_all = validate_orthanq(orthanq_input, threshold_in_paper, orthanq_validation_table_all, orthanq_tp_fp_table_all, ground_truth_evaluated, sample_list_all, orthanq_tp_fp_A, orthanq_tp_fp_B, orthanq_tp_fp_C, orthanq_tp_fp_DQB1)
 
     final_orthanq_all = orthanq_validation_results_all[0]
     final_tp_fp_table_all = orthanq_validation_results_all[1]
@@ -399,4 +399,42 @@ with open(snakemake.log[0], "w") as f:
 
     final_orthanq_tp_fp_DQB1.to_csv(
         snakemake.output.orthanq_DQB1_tp_fp, sep="\t", index=False, header=True
+    )
+
+    #### Addition: write accuracy-callrate-threshold table to file (request from first review) ###
+    
+    #initialize dataframe
+    threshold_results = {'threshold': [], 'locus': [], 'call_rate': [], 'accuracy': []}
+
+    #try varying thresholds from 0.0 to 1.0
+    thresholds = (x * 0.1 for x in range(0, 11))
+    print("thresholds:", thresholds)
+    for x in thresholds:
+        print(x)
+        #first, initialize required dfs
+        orthanq_validation_table = pd.DataFrame(columns=('Locus', 'N', 'Orthanq_Call_Rate', 'Orthanq_Accuracy'))
+        orthanq_tp_fp_table_all = pd.DataFrame(columns=('Sample', 'Locus', 'Prediction', 'Best_Density'))
+        orthanq_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
+        orthanq_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
+        orthanq_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
+        orthanq_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
+
+        #get validation results for the given threshold
+        validation_all_tables = validate_orthanq(orthanq_input, x, orthanq_validation_table_all, orthanq_tp_fp_table_all, ground_truth_evaluated, sample_list_all, orthanq_tp_fp_A, orthanq_tp_fp_B, orthanq_tp_fp_C, orthanq_tp_fp_DQB1)
+
+        #get validation table with accuracy and call rate
+        validation_results = validation_all_tables[0]
+
+        #loop over loci and append values to the results table
+        for row in validation_results.itertuples():
+            threshold_results['threshold'].append(x)
+            threshold_results['locus'].append(row.Locus)
+            threshold_results['call_rate'].append(row.Orthanq_Call_Rate)
+            threshold_results['accuracy'].append(row.Orthanq_Accuracy)
+
+    print("threshold_results: ", threshold_results)
+    threshold_results_df = pd.DataFrame(threshold_results)
+
+    threshold_results_df.to_csv(
+        snakemake.output.threshold_results, sep="\t", index=False, header=True
     )

@@ -306,6 +306,7 @@ rule validate_orthanq:
         orthanq_B_tp_fp="results/orthanq/B_tp_fp.tsv",
         orthanq_C_tp_fp="results/orthanq/C_tp_fp.tsv",
         orthanq_DQB1_tp_fp="results/orthanq/DQB1_tp_fp.tsv",
+        threshold_results="results/threshold_results/threshold_results.tsv"
     log:
         "logs/validate_orthanq/validate_orthanq.log"
     script:
@@ -396,6 +397,18 @@ rule plot_lp_pruned:
     script:
         "../scripts/plot_lp_pruned.py"   
 
+rule plot_validation_threshold:
+    input:
+        threshold_results="results/threshold_results/threshold_results.tsv"
+    output:
+        threshold_results_line_plot="results/threshold_results/threshold_results_plot.json"
+    conda:
+        "../envs/altair.yaml"
+    log:
+        "logs/plot_threshold_accuracy/plot_threshold_accuracy.log"
+    script:
+        "../scripts/plot_threshold_accuracy.py"   
+
 rule vg2svg_orthanq:
     input:
         three_field="results/orthanq/{sample}_{hla}/3_field_solutions.json",
@@ -438,12 +451,14 @@ rule vg2svg_evaluation:
         runtimes_plot = "results/runtimes/runtimes.json",
         evaluation_all = "results/evaluation/evaluation_plot_all.json",
         tp_fp_plot = "results/validation/tp_fp_table_all.json",
-        lp_pruned="results/calculate_lp_pruned/pruned.json"
+        lp_pruned="results/calculate_lp_pruned/pruned.json",
+        threshold_results_line_plot="results/threshold_results/threshold_results_plot.json"
     output:
         runtimes_svg="results/vega/runtimes.svg",
         evaluation_all_svg="results/vega/evaluation_all.svg",
         tp_fp_plot_svg = "results/vega/tp_fp_table_all.svg",
-        lp_pruned_svg="results/calculate_lp_pruned/pruned.svg",
+        lp_pruned_svg="results/vega/lp_pruned.svg",
+        threshold_results_line_plot_svg="results/vega/threshold_results.svg",
         runtimes_html=report("results/vega/runtimes.html", category="Runtime performance", labels={
             "type": "figure"
         }),
@@ -457,7 +472,10 @@ rule vg2svg_evaluation:
         lp_pruned_html=report("results/vega/lp_pruned.html", category="Linear program pruning", labels={
             "type": "figure"
         }),
-        
+        threshold_results_line_plot_html=report("results/vega/threshold_results.html", category="Accuracy", labels={
+            "name": "threshold results",
+            "type": "figure"
+        }),
     log:
         "logs/vg2svg/evaluation_plots.log",
     conda:
@@ -470,8 +488,9 @@ rule vg2svg_evaluation:
         "vl2svg {input.tp_fp_plot} {output.tp_fp_plot_svg} 2>> {log} && "
         "vl-convert vl2html --input {input.tp_fp_plot} --output {output.tp_fp_plot_html} 2>> {log} && "
         "vl2svg {input.lp_pruned} {output.lp_pruned_svg} 2>> {log} && "
-        "vl-convert vl2html --input {input.lp_pruned} --output {output.lp_pruned_html} 2>> {log} "
-
+        "vl-convert vl2html --input {input.lp_pruned} --output {output.lp_pruned_html} 2>> {log} &&"
+        "vl2svg {input.threshold_results_line_plot} {output.threshold_results_line_plot_svg} 2>> {log} && "
+        "vl-convert vl2html --input {input.threshold_results_line_plot} --output {output.threshold_results_line_plot_html} 2>> {log} "
 
 rule datavzrd_config_runtimes:
     input:
