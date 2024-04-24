@@ -371,6 +371,31 @@ rule gather_benchmark:
     script:
         "../scripts/runtimes.py"
 
+rule calculate_lp_pruned:
+    input:
+        orthanq=expand("results/orthanq/{sample}_{hla}/{sample}_{hla}.csv", 
+        sample=samples.sample_name,
+        hla=loci
+        ),
+    output:
+        pruned_haplotypes="results/calculate_lp_pruned/pruned_table.tsv"
+    log:
+        "logs/calculate_lp_pruned/calculate_lp_pruned.log"
+    script:
+        "../scripts/calculate_lp_pruned.py"    
+
+rule plot_lp_pruned:
+    input:
+        pruned_table="results/calculate_lp_pruned/pruned_table.tsv"
+    output:
+        pruned_json="results/calculate_lp_pruned/pruned.json"
+    conda:
+        "../envs/altair.yaml"
+    log:
+        "logs/plot_lp_pruned/plot_lp_pruned.log"
+    script:
+        "../scripts/plot_lp_pruned.py"   
+
 rule vg2svg_orthanq:
     input:
         three_field="results/orthanq/{sample}_{hla}/3_field_solutions.json",
@@ -412,11 +437,13 @@ rule vg2svg_evaluation:
     input:
         runtimes_plot = "results/runtimes/runtimes.json",
         evaluation_all = "results/evaluation/evaluation_plot_all.json",
-        tp_fp_plot = "results/validation/tp_fp_table_all.json"
+        tp_fp_plot = "results/validation/tp_fp_table_all.json",
+        lp_pruned="results/calculate_lp_pruned/pruned.json"
     output:
         runtimes_svg="results/vega/runtimes.svg",
         evaluation_all_svg="results/vega/evaluation_all.svg",
         tp_fp_plot_svg = "results/vega/tp_fp_table_all.svg",
+        lp_pruned_svg="results/calculate_lp_pruned/pruned.svg",
         runtimes_html=report("results/vega/runtimes.html", category="Runtime performance", labels={
             "type": "figure"
         }),
@@ -426,7 +453,11 @@ rule vg2svg_evaluation:
         }),
         tp_fp_plot_html=report("results/vega/tp_fp_table_all.html", category="Orthanq density accuracy", labels={
             "figure": "log-scaled density plot"
-        })
+        }),
+        lp_pruned_html=report("results/vega/lp_pruned.html", category="Linear program pruning", labels={
+            "type": "figure"
+        }),
+        
     log:
         "logs/vg2svg/evaluation_plots.log",
     conda:
@@ -437,7 +468,10 @@ rule vg2svg_evaluation:
         "vl2svg {input.evaluation_all} {output.evaluation_all_svg} 2>> {log} && "
         "vl-convert vl2html --input {input.evaluation_all} --output {output.evaluation_all_html} 2>> {log} && "
         "vl2svg {input.tp_fp_plot} {output.tp_fp_plot_svg} 2>> {log} && "
-        "vl-convert vl2html --input {input.tp_fp_plot} --output {output.tp_fp_plot_html} 2>> {log} "
+        "vl-convert vl2html --input {input.tp_fp_plot} --output {output.tp_fp_plot_html} 2>> {log} && "
+        "vl2svg {input.lp_pruned} {output.lp_pruned_svg} 2>> {log} && "
+        "vl-convert vl2html --input {input.lp_pruned} --output {output.lp_pruned_html} 2>> {log} "
+
 
 rule datavzrd_config_runtimes:
     input:
