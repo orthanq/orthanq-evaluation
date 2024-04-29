@@ -41,7 +41,7 @@ with open(snakemake.log[0], "w") as f:
                 values_in_truth["{0}".format(chr_index)] = [locus + "*" + value_in_truth]
         return values_in_truth
 
-    def validate_orthanq(orthanq_input, threshold, validation_table, orthanq_tp_fp_table, ground_truth, sample_list, orthanq_tp_fp_A, orthanq_tp_fp_B, orthanq_tp_fp_C, orthanq_tp_fp_DQB1):
+    def validate_orthanq(orthanq_input, threshold_check, threshold_density, threshold_number_of_haplotypes, validation_table, orthanq_tp_fp_table, ground_truth, sample_list, orthanq_tp_fp_A, orthanq_tp_fp_B, orthanq_tp_fp_C, orthanq_tp_fp_DQB1):
         #loop over loci and orthanq results
         loci = ['A', 'B', 'C', 'DQB1']
         for locus in loci:   
@@ -153,8 +153,22 @@ with open(snakemake.log[0], "w") as f:
                                         break #necessary to avoid checking for the other chr just after the match here
 
                             print("allele_match_check: ", allele_match_check)
+
+                            #threshold check
+                            if threshold_check:
+                                threshold_haplotypes_bool = best_results.shape[0] <= threshold_number_of_haplotypes
+                                threshold_density_bool = sum_of_densities > threshold_density
+                            else:
+                                threshold_haplotypes_bool = True
+                                threshold_density_bool = True
+                            print("threshold_number_of_haplotypes: ", threshold_number_of_haplotypes)
+                            print("threshold_density: ", threshold_density)
+                            print("threshold_haplotypes: ",threshold_haplotypes_bool)
+                            print("threshold_density_bool: ",threshold_density_bool)
+
                             if locus == locus_in_orthanq:
-                                if allele_match_check == 2 and (sum_of_densities > threshold and best_results.shape[0] <= 5): #this number is configurable:: 
+                                if allele_match_check == 2 and (threshold_density_bool and threshold_haplotypes_bool): #this number is configurable:: 
+                                    print("first")
                                     #count the number of samples that are called
                                     if counter_fp == 0:
                                         samples_called += 1
@@ -177,7 +191,8 @@ with open(snakemake.log[0], "w") as f:
                                         orthanq_tp_fp_DQB1.loc[orthanq_tp_fp_DQB1['sample'] == sample_name, 'orthanq evaluation'] = 'TP'
                                     break ##break as soon as the collected gets +1 
                                 
-                                elif allele_match_check == 2  and (not (sum_of_densities > threshold and best_results.shape[0] <= 5)): #this number is configurable:: 
+                                elif allele_match_check == 2  and (not (threshold_density_bool and threshold_haplotypes_bool)): #this number is configurable:: 
+                                    print("second")
                                     #fractions exceed the threshold but but it's an considered uncalled, locus==locus_in_orthanq check avoids multiple assignments
                                     for index,row in orthanq_tp_fp_A.iterrows():
                                         if locus==locus_in_orthanq and locus=="A" and row["orthanq evaluation"] == "":
@@ -195,7 +210,8 @@ with open(snakemake.log[0], "w") as f:
                                     orthanq_tp_fp_table.loc[(orthanq_tp_fp_table.Sample == sample_name) & (orthanq_tp_fp_table.Locus == locus_in_orthanq) & (orthanq_tp_fp_table.Best_Density == best_density),'Prediction'] = "true & uncalled"
                                     break
 
-                                elif (allele_match_check != 2 ) and (sum_of_densities > threshold and best_results.shape[0] <= 5): #this number is configurable:: 
+                                elif (allele_match_check != 2 ) and (threshold_density_bool and threshold_haplotypes_bool): #this number is configurable:: 
+                                    print("third")
                                     if counter_fp == 0: #this counter is to avoid same density solutions to add to samples_called all the time
                                         #count the number of samples that are called
                                         samples_called += 1
@@ -211,7 +227,8 @@ with open(snakemake.log[0], "w") as f:
                                     #fill up the orthanq_tp_fp_table with FP
                                     orthanq_tp_fp_table.loc[(orthanq_tp_fp_table.Sample == sample_name) & (orthanq_tp_fp_table.Locus == locus_in_orthanq) & (orthanq_tp_fp_table.Best_Density == best_density),'Prediction'] = "FP"
                             
-                                elif (allele_match_check != 2 ) and (not (sum_of_densities > threshold and best_results.shape[0] <= 5)): #this number is configurable:: 
+                                elif (allele_match_check != 2 ) and (not (threshold_density_bool and threshold_haplotypes_bool)): #this number is configurable:: 
+                                    print("fourth")
                                     #if sum of densities remain under the threshold, then make it a no call, locus==locus_in_orthanq check avoids multiple assignments
                                     for index,row in orthanq_tp_fp_A.iterrows():
                                         if locus==locus_in_orthanq and locus=="A" and row["orthanq evaluation"] == "":
@@ -228,6 +245,7 @@ with open(snakemake.log[0], "w") as f:
                                     #ill up the orthanq_tp_fp_table with false & uncalled
                                     orthanq_tp_fp_table.loc[(orthanq_tp_fp_table.Sample == sample_name) & (orthanq_tp_fp_table.Locus == locus_in_orthanq) & (orthanq_tp_fp_table.Best_Density == best_density),'Prediction'] = "false & uncalled"
                     else:
+                        print("empty df sample name", sample_name)
                         #if the df is empty for a result then, then make it a no call, locus==locus_in_orthanq check avoids multiple assignments
                         for index,row in orthanq_tp_fp_A.iterrows():
                             if locus==locus_in_orthanq and locus=="A" and row["orthanq evaluation"] == "":
@@ -326,8 +344,11 @@ with open(snakemake.log[0], "w") as f:
 
     #validate all samples
     sample_list_all = ground_truth_evaluated["Run Accession"].to_list()
-    threshold_in_paper = 0.7
-    orthanq_validation_results_all = validate_orthanq(orthanq_input, threshold_in_paper, orthanq_validation_table_all, orthanq_tp_fp_table_all, ground_truth_evaluated, sample_list_all, orthanq_tp_fp_A, orthanq_tp_fp_B, orthanq_tp_fp_C, orthanq_tp_fp_DQB1)
+    threshold_density_in_paper = 0.7
+    threshold_n_haplotypes_in_paper = 5
+    threshold_haplotype_check = True
+
+    orthanq_validation_results_all = validate_orthanq(orthanq_input, threshold_haplotype_check, threshold_density_in_paper, threshold_n_haplotypes_in_paper, orthanq_validation_table_all, orthanq_tp_fp_table_all, ground_truth_evaluated, sample_list_all, orthanq_tp_fp_A, orthanq_tp_fp_B, orthanq_tp_fp_C, orthanq_tp_fp_DQB1)
 
     final_orthanq_all = orthanq_validation_results_all[0]
     final_tp_fp_table_all = orthanq_validation_results_all[1]
@@ -404,35 +425,63 @@ with open(snakemake.log[0], "w") as f:
     #### Addition: write accuracy-callrate-threshold table to file (request from first review) ###
     
     #initialize dataframe
-    threshold_results = {'threshold': [], 'locus': [], 'call_rate': [], 'accuracy': []}
+    threshold_results = {'threshold_density': [], 'threshold_haplotypes': [] ,'locus': [], 'call_rate': [], 'accuracy': []}
 
     #try varying thresholds from 0.0 to 1.0
-    thresholds = (x * 0.1 for x in range(0, 11))
-    print("thresholds:", thresholds)
-    for x in thresholds:
-        print(x)
-        #first, initialize required dfs
-        orthanq_validation_table = pd.DataFrame(columns=('Locus', 'N', 'Orthanq_Call_Rate', 'Orthanq_Accuracy'))
-        orthanq_tp_fp_table_all = pd.DataFrame(columns=('Sample', 'Locus', 'Prediction', 'Best_Density'))
-        orthanq_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
-        orthanq_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
-        orthanq_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
-        orthanq_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
+    thresholds_density = (x * 0.1 for x in range(0, 11))
+    # thresholds_density = (x * 0.1 for x in range(0, 2)) #for testing
 
-        #get validation results for the given threshold
-        validation_all_tables = validate_orthanq(orthanq_input, x, orthanq_validation_table_all, orthanq_tp_fp_table_all, ground_truth_evaluated, sample_list_all, orthanq_tp_fp_A, orthanq_tp_fp_B, orthanq_tp_fp_C, orthanq_tp_fp_DQB1)
+    thresholds_n_haplotypes = [5, 6, 7, 8, 9, 10]
+    # thresholds_n_haplotypes = [5, 6] #for testing
 
-        #get validation table with accuracy and call rate
-        validation_results = validation_all_tables[0]
+    print("thresholds:", thresholds_density)
+    for t_density in thresholds_density:
+        for t_haplotype in thresholds_n_haplotypes:
+            print("t_density: ", t_density)
+            print("t_haplotype: ", t_haplotype)
 
-        #loop over loci and append values to the results table
-        for row in validation_results.itertuples():
-            threshold_results['threshold'].append(x)
-            threshold_results['locus'].append(row.Locus)
-            threshold_results['call_rate'].append(row.Orthanq_Call_Rate)
-            threshold_results['accuracy'].append(row.Orthanq_Accuracy)
+            #first, initialize required dfs
+            orthanq_validation_table = pd.DataFrame(columns=('Locus', 'N', 'Orthanq_Call_Rate', 'Orthanq_Accuracy'))
+            orthanq_tp_fp_table_all = pd.DataFrame(columns=('Sample', 'Locus', 'Prediction', 'Best_Density'))
+            orthanq_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
+            orthanq_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
+            orthanq_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
+            orthanq_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
+
+            #get validation results for the given threshold
+            threshold_haplotype_check = True
+            validation_all_tables = validate_orthanq(orthanq_input, threshold_haplotype_check, t_density, t_haplotype, orthanq_validation_table_all, orthanq_tp_fp_table_all, ground_truth_evaluated, sample_list_all, orthanq_tp_fp_A, orthanq_tp_fp_B, orthanq_tp_fp_C, orthanq_tp_fp_DQB1)
+
+            #get validation table with accuracy and call rate
+            validation_results = validation_all_tables[0]
+
+            #loop over loci and append values to the results table
+            for row in validation_results.itertuples():
+                threshold_results['threshold_density'].append(t_density)
+                threshold_results['threshold_haplotypes'].append(t_haplotype)
+                threshold_results['locus'].append(row.Locus)
+                threshold_results['call_rate'].append(row.Orthanq_Call_Rate)
+                threshold_results['accuracy'].append(row.Orthanq_Accuracy)
 
     print("threshold_results: ", threshold_results)
+
+    ##lastly, add the case with no threshold at all, values for threshold_density adn threshold_haplotypes do not matter as long as they're boyh False.
+    orthanq_validation_table = pd.DataFrame(columns=('Locus', 'N', 'Orthanq_Call_Rate', 'Orthanq_Accuracy'))
+    orthanq_tp_fp_table_all = pd.DataFrame(columns=('Sample', 'Locus', 'Prediction', 'Best_Density'))
+    orthanq_tp_fp_A = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
+    orthanq_tp_fp_B = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
+    orthanq_tp_fp_C = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
+    orthanq_tp_fp_DQB1 = pd.DataFrame(columns=('sample', 'ground', 'orthanq evaluation'))
+    threshold_haplotype_check = False
+    validation_all_tables = validate_orthanq(orthanq_input, threshold_haplotype_check, 0.0, 0, orthanq_validation_table_all, orthanq_tp_fp_table_all, ground_truth_evaluated, sample_list_all, orthanq_tp_fp_A, orthanq_tp_fp_B, orthanq_tp_fp_C, orthanq_tp_fp_DQB1)
+    validation_results = validation_all_tables[0]
+    for row in validation_results.itertuples():
+        threshold_results['threshold_density'].append("no threshold")
+        threshold_results['threshold_haplotypes'].append("no threshold")
+        threshold_results['locus'].append(row.Locus)
+        threshold_results['call_rate'].append(row.Orthanq_Call_Rate)
+        threshold_results['accuracy'].append(row.Orthanq_Accuracy)
+
     threshold_results_df = pd.DataFrame(threshold_results)
 
     threshold_results_df.to_csv(
