@@ -497,9 +497,10 @@ rule datavzrd_config_runtimes:
         template="resources/datavzrd/runtimes.yaml",
         runtimes_table = "results/runtimes/runtimes.csv",
     output:
-        "results/datavzrd/runtimes.yaml"
+        temp("results/datavzrd/runtimes.yaml")
     log:
         "logs/datavzrd-config/runtimes.log"
+    group: "runtimes"
     template_engine:
         "yte"
 
@@ -517,6 +518,7 @@ rule datavzrd_runtimes:
         ),
     log:
         "logs/datavzrd/runtimes.log",
+    group: "runtimes"
     wrapper:
         "v2.13.0/utils/datavzrd"
 
@@ -525,9 +527,10 @@ rule datavzrd_config_orthanq:
         template="resources/datavzrd/orthanq.yaml",
         orthanq="results/orthanq/final_report.csv",
     output:
-        "results/datavzrd/orthanq.yaml"
+        temp("results/datavzrd/orthanq.yaml")
     log:
         "logs/datavzrd-config/orthanq.log"
+    group: "orthanq"
     template_engine:
         "yte"
 
@@ -546,6 +549,7 @@ rule datavzrd_orthanq:
         ),
     log:
         "logs/datavzrd/orthanq.log",
+    group: "orthanq"
     wrapper:
         "v2.13.0/utils/datavzrd"
 
@@ -554,9 +558,10 @@ rule datavzrd_config_optitype:
         template="resources/datavzrd/optitype.yaml",
         optitype="results/optitype/final_report.csv",
     output:
-        "results/datavzrd/optitype.yaml"
+        temp("results/datavzrd/optitype.yaml")
     log:
         "logs/datavzrd-config/optitype.log"
+    group: "optitype"
     template_engine:
         "yte"
 
@@ -575,6 +580,7 @@ rule datavzrd_optitype:
         ),
     log:
         "logs/datavzrd/optitype.log",
+    group: "optitype"
     wrapper:
         "v2.13.0/utils/datavzrd"
 
@@ -583,9 +589,10 @@ rule datavzrd_config_arcashla:
         template="resources/datavzrd/arcashla.yaml",
         arcasHLA="results/arcasHLA/final_report.csv",
     output:
-        "results/datavzrd/arcashla.yaml"
+        temp("results/datavzrd/arcashla.yaml")
     log:
         "logs/datavzrd-config/arcashla.log"
+    group: "arcashla"
     template_engine:
         "yte"
 
@@ -604,6 +611,7 @@ rule datavzrd_arcashla:
         ),
     log:
         "logs/datavzrd/arcashla.log",
+    group: "arcashla"    
     wrapper:
         "v2.13.0/utils/datavzrd"
 
@@ -613,9 +621,10 @@ rule datavzrd_config_hla_la:
         template="resources/datavzrd/hla_la.yaml",
         hla_la="results/HLA-LA/final_report.csv",
     output:
-        "results/datavzrd/hla_la.yaml"
+        temp("results/datavzrd/hla_la.yaml")
     log:
         "logs/datavzrd-config/hla_la.log"
+    group: "hla_la"
     template_engine:
         "yte"
 
@@ -634,6 +643,7 @@ rule datavzrd_hla_la:
         ),
     log:
         "logs/datavzrd/hla_la.log",
+    group: "hla_la"
     wrapper:
         "v2.13.0/utils/datavzrd"
 
@@ -671,9 +681,10 @@ rule datavzrd_config_comparison:
         template="resources/datavzrd/accuracy_comparison.yaml",
         validation="results/validation/validation_all.tsv",
     output:
-        "results/datavzrd/accuracy_comparison_all.yaml"
+        temp("results/datavzrd/accuracy_comparison_all.yaml")
     log:
         "logs/datavzrd-config/accuracy_comparison_all.log"
+    group: "comparison"
     template_engine:
         "yte"
 
@@ -692,6 +703,7 @@ rule datavzrd_comparison:
         ),
     log:
         "logs/datavzrd/accuracy_comparison_all.log",
+    group: "comparison"
     wrapper:
         "v2.13.0/utils/datavzrd"
 
@@ -703,9 +715,10 @@ rule datavzrd_config_evaluation_tables:
         C_tp_fp="results/validation/C_tp_fp.tsv",
         DQB1_tp_fp="results/validation/DQB1_tp_fp.tsv"
     output:
-        "results/datavzrd/evaluation_tables.yaml"
+        temp("results/datavzrd/evaluation_tables.yaml")
     log:
         "logs/datavzrd-config/evaluation_tables.log"
+    group: "evaluation_tables"
     template_engine:
         "yte"
 
@@ -727,6 +740,7 @@ rule datavzrd_evaluation_tables:
         ),
     log:
         "logs/datavzrd/evaluation_tables.log",
+    group: "evaluation_tables"
     wrapper:
         "v2.13.0/utils/datavzrd"
 
@@ -735,9 +749,10 @@ rule datavzrd_config_sample_sheet:
         template="resources/datavzrd/sample_sheet.yaml",
         sample_sheet="resources/ground_truth/merged_sample_sheet_w_read_info_2.csv"
     output:
-        "results/datavzrd/sample_sheet.yaml"
+        temp("results/datavzrd/sample_sheet.yaml")
     log:
         "logs/datavzrd-config/template.log"
+    group: "sample_sheet"
     template_engine:
         "yte"
 
@@ -757,6 +772,7 @@ rule datavzrd_sample_sheet:
         ),
     log:
         "logs/datavzrd/sample_sheet.log",
+    group: "sample_sheet"
     wrapper:
         "v2.13.0/utils/datavzrd"
         
