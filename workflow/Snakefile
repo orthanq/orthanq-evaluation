@@ -65,7 +65,8 @@ elif config["simulation"] == False and config["subclonal_sample_creation"] == Fa
             "resources/ground_truth/merged_sample_sheet_w_read_info_2.csv",
             "results/validation/validation_all.tsv",
             "results/vega/evaluation_all.html",
-            "results/vega/evaluation_all.svg",
+            ["results/vega/runtimes.svg", "results/vega/evaluation_all.svg", "results/vega/tp_fp_table_all.svg", "results/vega/lp_pruned.svg", "results/vega/threshold_results.svg"],
+            "results/vega/threshold_results.svg",
             "results/validation/orthanq_validation_all.tsv",
             "results/calculate_lp_pruned/pruned.json",
             "results/datavzrd-report/sample_sheet", 
@@ -76,7 +77,6 @@ elif config["simulation"] == False and config["subclonal_sample_creation"] == Fa
             "results/datavzrd-report/hla_la",
             "results/datavzrd-report/accuracy_comparison",
             "results/datavzrd-report/evaluation_tables",
-            
 
 elif config["subclonal_sample_creation"]:
     include: "rules/common.smk"
