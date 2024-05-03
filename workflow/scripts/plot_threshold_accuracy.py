@@ -41,13 +41,13 @@ with open(snakemake.log[0], "w") as f:
 
     def line_plot(table, locus, column_name):
         chart = alt.Chart(table).mark_line(point=True, tooltip=True).encode(
-                                        x=alt.X('threshold_density',
-                                                axis=alt.Axis(
-                                                            title="threshold density", labels=True),
-                                                scale=alt.Scale(domain=[0.0,0.9])),
-                                        y= alt.Y(column_name, scale=alt.Scale(domain=[0.6,1.0])),
-                                        color=("threshold_haplotypes:N")).transform_filter(
-                                            alt.datum.locus == locus).properties(title=locus)
+                                    x=alt.X('threshold_density',
+                                            axis=alt.Axis(
+                                                        title="min density", labels=True),
+                                            scale=alt.Scale(domain=[0.0,0.9])),
+                                    y= alt.Y(column_name, scale=alt.Scale(domain=[0.6,1.0])),
+                                    color=alt.Color("threshold_haplotypes:N",legend=alt.Legend(title="max ambiguous solutions") )).transform_filter(
+                                        alt.datum.locus == locus).properties(title=locus)
         return chart
 
     #add density values to the no_threshold table to make a lineplot

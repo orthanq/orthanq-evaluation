@@ -431,7 +431,7 @@ with open(snakemake.log[0], "w") as f:
     thresholds_density = (x * 0.1 for x in range(0, 11))
     # thresholds_density = (x * 0.1 for x in range(0, 2)) #for testing
 
-    thresholds_n_haplotypes = [5, 6, 7, 8, 9, 10]
+    thresholds_n_haplotypes = [5, 8, 10, 15, 20]
     # thresholds_n_haplotypes = [5, 6] #for testing
 
     print("thresholds:", thresholds_density)
