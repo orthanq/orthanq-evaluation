@@ -690,8 +690,8 @@ rule datavzrd_config_comparison:
 
 rule datavzrd_comparison:
     input:
-        config="results/datavzrd/accuracy_comparison.yaml",
-        validation="results/validation/validation.tsv",
+        config="results/datavzrd/accuracy_comparison_all.yaml",
+        validation="results/validation/validation_all.tsv",
     output:
         report(
             directory("results/datavzrd-report/accuracy_comparison"),
