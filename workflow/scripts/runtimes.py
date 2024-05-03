@@ -74,26 +74,56 @@ with open(snakemake.log[0], "w") as f:
         return tool_runtimes
 
     #create a plot for final table
-    def create_plot(tool_runtimes):
-        runtime = alt.Chart(tool_runtimes).mark_line(point=True, tooltip=True).encode(
-            x=alt.X('sample:N', axis=alt.Axis(labels=False, title=None)).sort(field="order", order= "descending"),
-            y=alt.Y('runtime in minutes:Q', title="runtime [m]").scale(type="log"),
-            color='tool:N',
-        ).transform_joinaggregate(
-            order='min(runtime in minutes)',
-            groupby=["sample"]
-        )
-        max_rss_mem_in_GB = alt.Chart(tool_runtimes).mark_line(point=True, tooltip=True).encode(
-            x=alt.X('sample:N', axis=alt.Axis(labels=False)).sort(field="order", order= "descending"),
-            y=alt.Y('max RSS mem in GB:Q', title="RSS memory consumption [GB]").scale(type="log"),
-            color='tool:N',
-        ).transform_joinaggregate(
-            order='min(runtime in minutes)',
-            groupby=["sample"]
-        )
-        final = runtime & max_rss_mem_in_GB
-        return final
+    # def create_lineplot(tool_runtimes):
+    #     runtime = alt.Chart(tool_runtimes).mark_line(point=True, tooltip=True).encode(
+    #         x=alt.X('sample:N', axis=alt.Axis(labels=False, title=None)).sort(field="order", order= "descending"),
+    #         y=alt.Y('runtime in minutes:Q', title="runtime [m]").scale(type="log"),
+    #         color='tool:N',
+    #     ).transform_joinaggregate(
+    #         order='min(runtime in minutes)',
+    #         groupby=["sample"]
+    #     )
+    #     max_rss_mem_in_GB = alt.Chart(tool_runtimes).mark_line(point=True, tooltip=True).encode(
+    #         x=alt.X('sample:N', axis=alt.Axis(labels=False)).sort(field="order", order= "descending"),
+    #         y=alt.Y('max RSS mem in GB:Q', title="RSS memory consumption [GB]").scale(type="log"),
+    #         color='tool:N',
+    #     ).transform_joinaggregate(
+    #         order='min(runtime in minutes)',
+    #         groupby=["sample"]
+    #     )
+    #     final = runtime & max_rss_mem_in_GB
+    #     return final
 
+    def create_boxplot(tool_runtimes):
+
+        runtime_boxplot = alt.Chart(tool_runtimes).mark_boxplot(extent="min-max").encode(
+        alt.X("tool:N"),
+        alt.Y("runtime in minutes:Q", title="runtime [m]").scale(type="log"),
+        alt.Color("tool:N")
+    )
+        runtime_scatterplot = alt.Chart(tool_runtimes).mark_circle(size=9,opacity=0.2).transform_calculate(jitter="random()").encode(
+            x='tool:N',
+            y='runtime in minutes:Q',
+            xOffset='jitter:Q',
+        color=alt.value("black")
+        )
+        runtimes = alt.layer(runtime_boxplot,runtime_scatterplot)
+
+        max_rss_mem_in_GB_boxplot = alt.Chart(tool_runtimes).mark_boxplot(extent="min-max").encode(
+        alt.X("tool:N"),
+        alt.Y("max RSS mem in GB:Q", title="RSS memory consumption [GB]").scale(type="log"),
+        alt.Color("tool:N"),
+    )
+        max_rss_mem_in_GB_scatterplot = alt.Chart(tool_runtimes).mark_circle(size=9,opacity=0.2).transform_calculate(jitter="random()").encode(
+            x='tool:N',
+            y='max RSS mem in GB:Q',
+            xOffset='jitter:Q',
+        color=alt.value("black"),
+        )
+        runtimes = alt.layer(runtime_boxplot,runtime_scatterplot)
+        memory = alt.layer(max_rss_mem_in_GB_boxplot, max_rss_mem_in_GB_scatterplot)
+        final = runtimes | memory
+        return final
     ## genotyping/calling with preprocessing combined ##
     for subdir, dirs, files in os.walk(path):
             for dir in dirs:
@@ -155,7 +185,7 @@ with open(snakemake.log[0], "w") as f:
     # tool_runtimes.to_csv("runtimes.csv", index=False)
 
     #create plot
-    runtimes_plot = create_plot(tool_runtimes)
+    runtimes_plot = create_boxplot(tool_runtimes)
 
     #write to json
     runtimes_plot.save(snakemake.output.runtimes_plot)
