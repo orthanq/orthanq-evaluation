@@ -776,3 +776,32 @@ rule datavzrd_sample_sheet:
     wrapper:
         "v2.13.0/utils/datavzrd"
         
+rule datavzrd_config_tp_fp_table:
+    input:
+        template="resources/datavzrd/tp_fp_table.yaml",
+        tp_fp_table="results/validation/tp_fp_table_all.tsv"
+    output:
+        temp("results/datavzrd/tp_fp_table_all.yaml")
+    log:
+        "logs/datavzrd-config/tp_fp_table_all.log"
+    group: "tp_fp_table_all"
+    template_engine:
+        "yte"
+
+rule datavzrd_tp_fp_table:
+    input:
+        config="results/datavzrd/tp_fp_table_all.yaml",
+        tp_fp_table="results/validation/tp_fp_table_all.tsv"
+    output:
+        report(
+            directory("results/datavzrd-report/tp_fp_table"),
+            htmlindex="index.html",
+            category="Orthanq density accuracy", labels={
+            "table": "all predictions density table"
+        }
+        ),
+    log:
+        "logs/datavzrd/tp_fp_table_all.log",
+    group: "tp_fp_table_all"
+    wrapper:
+        "v2.13.0/utils/datavzrd"

@@ -77,7 +77,8 @@ elif config["simulation"] == False and config["subclonal_sample_creation"] == Fa
             "results/datavzrd-report/hla_la",
             "results/datavzrd-report/accuracy_comparison",
             "results/datavzrd-report/evaluation_tables",
-
+            "results/datavzrd-report/tp_fp_table"
+            
 elif config["subclonal_sample_creation"]:
     include: "rules/common.smk"
     include: "rules/simulation.smk"
