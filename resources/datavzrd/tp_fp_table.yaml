@@ -1,0 +1,12 @@
+name: All predictions density table
+datasets:
+  density table:
+    path: ?input.tp_fp_table
+    offer-excel: true
+views:
+  density table:
+    dataset: density table
+    desc: |
+      ### Density table
+      Density table for all predictions made by Orthanq.
+    page-size: 25
