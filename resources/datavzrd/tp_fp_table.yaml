@@ -1,6 +1,7 @@
 name: All predictions density table
 datasets:
   density table:
+    separator: "\t"
     path: ?input.tp_fp_table
     offer-excel: true
 views:
@@ -10,3 +11,12 @@ views:
       ### Density table
       Density table for all predictions made by Orthanq.
     page-size: 25
+    render-table:
+      columns:
+        Best_Density:
+          plot:
+            ticks:
+              scale: linear
+              domain:
+                - 0
+                - 1

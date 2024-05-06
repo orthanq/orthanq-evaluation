@@ -467,7 +467,8 @@ rule vg2svg_evaluation:
             "type": "figure"
         }),
         tp_fp_plot_html=report("results/vega/tp_fp_table_all.html", category="Orthanq density accuracy", labels={
-            "figure": "log-scaled density plot"
+            "name": "log-scaled density plot",
+            "type": "figure"
         }),
         lp_pruned_html=report("results/vega/lp_pruned.html", category="Linear program pruning", labels={
             "type": "figure"
@@ -797,7 +798,8 @@ rule datavzrd_tp_fp_table:
             directory("results/datavzrd-report/tp_fp_table"),
             htmlindex="index.html",
             category="Orthanq density accuracy", labels={
-            "table": "all predictions density table"
+            "name": "all predictions density table",
+            "type": "table"
         }
         ),
     log:
