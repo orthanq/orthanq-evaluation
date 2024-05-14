@@ -1,0 +1,7 @@
+name: bedops
+channels:
+   - conda-forge
+   - bioconda
+dependencies:
+   - bedops
+   - samtools=1.3

@@ -65,7 +65,7 @@ elif config["simulation"] == False and config["subclonal_sample_creation"] == Fa
             "resources/ground_truth/merged_sample_sheet_w_read_info_2.csv",
             "results/validation/validation_all.tsv",
             "results/vega/evaluation_all.html",
-            ["results/vega/runtimes.svg", "results/vega/evaluation_all.svg", "results/vega/tp_fp_table_all.svg", "results/vega/lp_pruned.svg", "results/vega/threshold_results.svg"],
+            ["results/vega/runtimes.svg", "results/vega/evaluation_all.svg", "results/vega/tp_fp_table_all.svg", "results/vega/lp_pruned.svg", "results/vega/threshold_results.svg", "results/vega/coverage_boxplot.svg"],
             "results/vega/threshold_results.svg",
             "results/validation/orthanq_validation_all.tsv",
             "results/calculate_lp_pruned/pruned.json",
@@ -77,8 +77,11 @@ elif config["simulation"] == False and config["subclonal_sample_creation"] == Fa
             "results/datavzrd-report/hla_la",
             "results/datavzrd-report/accuracy_comparison",
             "results/datavzrd-report/evaluation_tables",
-            "results/datavzrd-report/tp_fp_table"
-            
+            "results/datavzrd-report/tp_fp_table",
+            expand("results/count_coverage_per_gene/{sample}_{gene}.bed", sample=samples.sample_name, gene=["A", "B", "C", "DQB1"]),
+            "results/count_coverage_per_gene/read_counts.csv",
+            "results/count_coverage_per_gene/coverage_boxplot.json"
+
 elif config["subclonal_sample_creation"]:
     include: "rules/common.smk"
     include: "rules/simulation.smk"

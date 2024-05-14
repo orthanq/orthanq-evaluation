@@ -409,6 +409,50 @@ rule plot_validation_threshold:
     script:
         "../scripts/plot_threshold_accuracy.py"   
 
+# find read counts per locus for mapq > 20 (just for demonstration purposes, to be put in the rebuttal)
+rule extract_read_count_hla_genes:
+    input:
+        bam="results/vg/alignment/{sample}_vg.sorted.reheadered.extracted.bam",
+        region="resources/HLA_regions/genes/{gene}.bed"
+    output:
+        bed="results/count_coverage_per_gene/{sample}_{gene}.bed"
+    conda:
+        "../envs/bedops.yaml"
+    log:
+        "logs/count_coverage_per_gene/{sample}_{gene}.log"
+    shell:
+        "set +o pipefail; "
+        " samtools view -h -q 20 {input.bam} | "
+        "bam2bed --reduced - | bedmap --echo --count --delim '\t' {input.region} - > {output} 2> {log}"
+
+rule export_read_count_to_table:
+    input:
+        read_counts=expand("results/count_coverage_per_gene/{sample}_{gene}.bed", sample=samples.sample_name, gene=["A", "B", "C", "DQB1"])
+    output:
+        table="results/count_coverage_per_gene/read_counts.csv"
+    log:
+        "logs/count_coverage_per_gene/export_read_count_to_table.log"
+    script:
+        "../scripts/export_read_count_to_table.py"
+
+rule plot_coverage:
+    input:
+        tp_fp_table="results/validation/tp_fp_table_all.tsv",
+        read_counts_global="resources/ground_truth/merged_sample_sheet_w_read_info_2.csv",
+        read_counts_per_locus="results/count_coverage_per_gene/read_counts.csv",
+        A_coord="resources/HLA_regions/genes/A.bed",
+        B_coord="resources/HLA_regions/genes/B.bed",
+        C_coord="resources/HLA_regions/genes/C.bed",
+        DQB1_coord="resources/HLA_regions/genes/DQB1.bed"
+    output:
+        boxplot_json="results/count_coverage_per_gene/coverage_boxplot.json"
+    log:
+        "logs/count_coverage_per_gene/plot_coverage.log"
+    conda:
+        "../envs/altair.yaml"
+    script:
+        "../scripts/plot_coverage.py"
+
 rule vg2svg_orthanq:
     input:
         three_field="results/orthanq/{sample}_{hla}/3_field_solutions.json",
@@ -452,13 +496,15 @@ rule vg2svg_evaluation:
         evaluation_all = "results/evaluation/evaluation_plot_all.json",
         tp_fp_plot = "results/validation/tp_fp_table_all.json",
         lp_pruned="results/calculate_lp_pruned/pruned.json",
-        threshold_results_line_plot="results/threshold_results/threshold_results_plot.json"
+        threshold_results_line_plot="results/threshold_results/threshold_results_plot.json",
+        coverage_boxplot_json="results/count_coverage_per_gene/coverage_boxplot.json"
     output:
         runtimes_svg="results/vega/runtimes.svg",
         evaluation_all_svg="results/vega/evaluation_all.svg",
         tp_fp_plot_svg = "results/vega/tp_fp_table_all.svg",
         lp_pruned_svg="results/vega/lp_pruned.svg",
         threshold_results_line_plot_svg="results/vega/threshold_results.svg",
+        coverage_boxplot_svg="results/vega/coverage_boxplot.svg",
         runtimes_html=report("results/vega/runtimes.html", category="Runtime performance", labels={
             "type": "figure"
         }),
@@ -477,6 +523,7 @@ rule vg2svg_evaluation:
             "name": "threshold results",
             "type": "figure"
         }),
+        coverage_boxplot_html="results/vega/coverage_boxplot.html"
     log:
         "logs/vg2svg/evaluation_plots.log",
     conda:
@@ -491,7 +538,9 @@ rule vg2svg_evaluation:
         "vl2svg {input.lp_pruned} {output.lp_pruned_svg} 2>> {log} && "
         "vl-convert vl2html --input {input.lp_pruned} --output {output.lp_pruned_html} 2>> {log} &&"
         "vl2svg {input.threshold_results_line_plot} {output.threshold_results_line_plot_svg} 2>> {log} && "
-        "vl-convert vl2html --input {input.threshold_results_line_plot} --output {output.threshold_results_line_plot_html} 2>> {log} "
+        "vl-convert vl2html --input {input.threshold_results_line_plot} --output {output.threshold_results_line_plot_html} 2>> {log} && "
+        "vl2svg {input.coverage_boxplot_json} {output.coverage_boxplot_svg} 2>> {log} && "
+        "vl-convert vl2html --input {input.coverage_boxplot_json} --output {output.coverage_boxplot_html} 2>> {log} "
 
 rule datavzrd_config_runtimes:
     input:
