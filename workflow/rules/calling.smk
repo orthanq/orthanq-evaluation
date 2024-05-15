@@ -43,7 +43,12 @@ rule orthanq_call:
         xml = config["allele_db_xml"]
     output:
         table="results/orthanq/{sample}_{hla}/{sample}_{hla}.csv",
-        three_field_solutions="results/orthanq/{sample}_{hla}/3_field_solutions.json"
+        three_field_solutions="results/orthanq/{sample}_{hla}/3_field_solutions.json",
+        two_field_solutions="results/orthanq/{sample}_{hla}/2_field_solutions.json",
+        final_solutions="results/orthanq/{sample}_{hla}/final_solution.json",
+        lp_solution="results/orthanq/{sample}_{hla}/lp_solution.json",
+        two_field_table="results/orthanq/{sample}_{hla}/2-field.csv",
+        g_groups="results/orthanq/{sample}_{hla}/G_groups.csv"
     conda:
         "../envs/orthanq.yaml"
     log:
@@ -53,5 +58,5 @@ rule orthanq_call:
     params:
         prior = config["orthanq_prior"]
     shell:
-        "../orthanq/target/release/orthanq call --haplotype-calls {input.calls} --haplotype-variants "
+        "../orthanq/target/release/orthanq call hla --haplotype-calls {input.calls} --haplotype-variants "
         " {input.candidate_variants} --xml {input.xml} --prior {params} --output {output.table} 2> {log}"

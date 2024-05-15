@@ -58,8 +58,30 @@ elif config["simulation"] == False and config["subclonal_sample_creation"] == Fa
             # expand("results/orthanq/{sample}_{hla}/{sample}_{hla}.csv",sample=samples.sample_name,
             #     hla=loci,
             # ),
-            expand("results/orthanq/{sample}_{hla}/3_field_solutions.html",sample=samples.sample_name,
-                hla=loci
+            expand("results/orthanq/{sample}_{hla}/{sample}_{hla}.csv",sample=samples.sample_name,
+                hla=loci,
+            ),
+            expand("results/orthanq/{sample}_{hla}/final_solution.{ext}",sample=samples.sample_name,
+                hla=loci,
+                ext=["json", "html"]
+            ),
+            expand("results/orthanq/{sample}_{hla}/lp_solution.{ext}",sample=samples.sample_name,
+                hla=loci,
+                ext=["json", "html"]
+            ),
+            expand("results/orthanq/{sample}_{hla}/2-field.csv",sample=samples.sample_name,
+                hla=loci,
+            ),
+            expand("results/orthanq/{sample}_{hla}/G_groups.csv",sample=samples.sample_name,
+                hla=loci,
+            ),
+            expand("results/orthanq/{sample}_{hla}/{digit}_field_solutions.json",sample=samples.sample_name,
+                hla=loci,
+                digit=[2,3]
+            ),
+            expand("results/orthanq/{sample}_{hla}/{digit}_field_solutions.html",sample=samples.sample_name,
+                hla=loci,
+                digit=[2,3]
             ),
             expand("results/read_count_and_length/{sample}.csv", sample=samples.sample_name),
             "resources/ground_truth/merged_sample_sheet_w_read_info_2.csv",
