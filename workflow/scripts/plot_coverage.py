@@ -80,6 +80,8 @@ with open(snakemake.log[0], "w") as f:
         print("Sequencing method,", row["Sequencing method"])
         print("Read Length,", row["Read Length"])
         print("read_count,", row["read_count"])
+        print("called,", row["called"])
+
         if row["Sequencing method"] == "WGS":
             if row["Locus"] == "A":
                 coverage = row["read_count"]*(2*row["Read Length"])/A_length
@@ -104,18 +106,17 @@ with open(snakemake.log[0], "w") as f:
 
     print("merged updated")
     print(merged)
-    def plot_layered(df):
-        coverage_boxplot = alt.Chart(df).mark_boxplot(ticks=True).encode(
-            alt.X("Locus:N"),
-            alt.Y("coverage:Q"),
+    def plot_layered(df, title_top, title_y, label_bool, y_tick_size):
+        coverage_boxplot = alt.Chart(df, title=title_top).mark_boxplot(ticks=True, extent="min-max").encode(
+            alt.X("called:N", title=None, axis=alt.Axis(labels=False, tickSize=0)),
+            alt.Y("coverage:Q", title=title_y, axis=alt.Axis(labels=label_bool, tickSize=y_tick_size)),
             alt.Color("called:N"),
-            alt.XOffset("called:N"),
             )
-        coverage_scatterplot = alt.Chart(df).mark_circle(size=9,opacity=0.2).transform_calculate(jitter="random()").encode(
-                x='Locus:N',
+        coverage_scatterplot = alt.Chart(df).mark_circle(size=12,opacity=0.4).transform_calculate(jitter="random()").encode(
+                x='called:N',
                 y='coverage:Q',
                 xOffset='jitter:Q',
-            color=alt.value("black"),
+                color=alt.value("black"),
             )
         coverage_plot = alt.layer(coverage_boxplot,coverage_scatterplot)     
         return coverage_plot
@@ -125,8 +126,14 @@ with open(snakemake.log[0], "w") as f:
     C_locus = merged[merged["Locus"] == "C"]
     DQB1_locus = merged[merged["Locus"] == "DQB1"]
 
-    plot = plot_layered(A_locus) | plot_layered(B_locus) | plot_layered(C_locus) | plot_layered(DQB1_locus)
+    plot_A = plot_layered(A_locus, "A", "coverage",True, 5)
+    plot_B = plot_layered(B_locus, "B", None, False, 0)
+    plot_C = plot_layered(C_locus, "C", None, False, 0) 
+    plot_DQB1 = plot_layered(DQB1_locus, "DQB1", None, False, 0)
 
-    # plot.save("boxplot.json")
-    plot.save(snakemake.output.boxplot_json)
+    final_plot = alt.hconcat(plot_A, plot_B, plot_C, plot_DQB1).resolve_scale(y='shared')
+    final_plot
+
+# final_plot.save("boxplot.json")
+final_plot.save(snakemake.output.boxplot_json)
 
