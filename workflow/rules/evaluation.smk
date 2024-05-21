@@ -542,21 +542,21 @@ rule vg2svg_evaluation:
         "vl2svg {input.coverage_boxplot_json} {output.coverage_boxplot_svg} 2>> {log} && "
         "vl-convert vl2html --input {input.coverage_boxplot_json} --output {output.coverage_boxplot_html} 2>> {log} "
 
-rule datavzrd_config_runtimes:
-    input:
-        template="resources/datavzrd/runtimes.yaml",
-        runtimes_table = "results/runtimes/runtimes.csv",
-    output:
-        temp("results/datavzrd/runtimes.yaml")
-    log:
-        "logs/datavzrd-config/runtimes.log"
-    group: "runtimes"
-    template_engine:
-        "yte"
+# rule datavzrd_config_runtimes:
+#     input:
+#         template="resources/datavzrd/runtimes.yaml",
+#         runtimes_table = "results/runtimes/runtimes.csv",
+#     output:
+#         temp("results/datavzrd/runtimes.yaml")
+#     log:
+#         "logs/datavzrd-config/runtimes.log"
+#     group: "runtimes"
+#     template_engine:
+#         "yte"
 
 rule datavzrd_runtimes:
     input:
-        config="results/datavzrd/runtimes.yaml",
+        config="resources/datavzrd/runtimes.yaml",
         runtimes_table = "results/runtimes/runtimes.csv",
     output:
         report(
@@ -570,23 +570,23 @@ rule datavzrd_runtimes:
         "logs/datavzrd/runtimes.log",
     group: "runtimes"
     wrapper:
-        "v2.13.0/utils/datavzrd"
+        "v3.10.2/utils/datavzrd"
 
-rule datavzrd_config_orthanq:
-    input:
-        template="resources/datavzrd/orthanq.yaml",
-        orthanq="results/orthanq/final_report.csv",
-    output:
-        temp("results/datavzrd/orthanq.yaml")
-    log:
-        "logs/datavzrd-config/orthanq.log"
-    group: "orthanq"
-    template_engine:
-        "yte"
+# rule datavzrd_config_orthanq:
+#     input:
+#         template="resources/datavzrd/orthanq.yaml",
+#         orthanq="results/orthanq/final_report.csv",
+#     output:
+#         temp("results/datavzrd/orthanq.yaml")
+#     log:
+#         "logs/datavzrd-config/orthanq.log"
+#     group: "orthanq"
+#     template_engine:
+#         "yte"
 
 rule datavzrd_orthanq:
     input:
-        config="results/datavzrd/orthanq.yaml",
+        config="resources/datavzrd/orthanq.yaml",
         orthanq="results/orthanq/final_report.csv",
     output:
         report(
@@ -601,23 +601,23 @@ rule datavzrd_orthanq:
         "logs/datavzrd/orthanq.log",
     group: "orthanq"
     wrapper:
-        "v2.13.0/utils/datavzrd"
+        "v3.10.2/utils/datavzrd"
 
-rule datavzrd_config_optitype:
-    input:
-        template="resources/datavzrd/optitype.yaml",
-        optitype="results/optitype/final_report.csv",
-    output:
-        temp("results/datavzrd/optitype.yaml")
-    log:
-        "logs/datavzrd-config/optitype.log"
-    group: "optitype"
-    template_engine:
-        "yte"
+# rule datavzrd_config_optitype:
+#     input:
+#         template="resources/datavzrd/optitype.yaml",
+#         optitype="results/optitype/final_report.csv",
+#     output:
+#         temp("results/datavzrd/optitype.yaml")
+#     log:
+#         "logs/datavzrd-config/optitype.log"
+#     group: "optitype"
+#     template_engine:
+#         "yte"
 
 rule datavzrd_optitype:
     input:
-        config="results/datavzrd/optitype.yaml",
+        config="resources/datavzrd/optitype.yaml",
         optitype="results/optitype/final_report.csv",
     output:
         report(
@@ -632,23 +632,23 @@ rule datavzrd_optitype:
         "logs/datavzrd/optitype.log",
     group: "optitype"
     wrapper:
-        "v2.13.0/utils/datavzrd"
+        "v3.10.2/utils/datavzrd"
 
-rule datavzrd_config_arcashla:
-    input:
-        template="resources/datavzrd/arcashla.yaml",
-        arcasHLA="results/arcasHLA/final_report.csv",
-    output:
-        temp("results/datavzrd/arcashla.yaml")
-    log:
-        "logs/datavzrd-config/arcashla.log"
-    group: "arcashla"
-    template_engine:
-        "yte"
+# rule datavzrd_config_arcashla:
+#     input:
+#         template="resources/datavzrd/arcashla.yaml",
+#         arcasHLA="results/arcasHLA/final_report.csv",
+#     output:
+#         temp("results/datavzrd/arcashla.yaml")
+#     log:
+#         "logs/datavzrd-config/arcashla.log"
+#     group: "arcashla"
+#     template_engine:
+#         "yte"
 
 rule datavzrd_arcashla:
     input:
-        config="results/datavzrd/arcashla.yaml",
+        config="resources/datavzrd/arcashla.yaml",
         arcasHLA="results/arcasHLA/final_report.csv",
     output:
         report(
@@ -663,24 +663,24 @@ rule datavzrd_arcashla:
         "logs/datavzrd/arcashla.log",
     group: "arcashla"    
     wrapper:
-        "v2.13.0/utils/datavzrd"
+        "v3.10.2/utils/datavzrd"
 
 
-rule datavzrd_config_hla_la:
-    input:
-        template="resources/datavzrd/hla_la.yaml",
-        hla_la="results/HLA-LA/final_report.csv",
-    output:
-        temp("results/datavzrd/hla_la.yaml")
-    log:
-        "logs/datavzrd-config/hla_la.log"
-    group: "hla_la"
-    template_engine:
-        "yte"
+# rule datavzrd_config_hla_la:
+#     input:
+#         template="resources/datavzrd/hla_la.yaml",
+#         hla_la="results/HLA-LA/final_report.csv",
+#     output:
+#         temp("results/datavzrd/hla_la.yaml")
+#     log:
+#         "logs/datavzrd-config/hla_la.log"
+#     group: "hla_la"
+#     template_engine:
+#         "yte"
 
 rule datavzrd_hla_la:
     input:
-        config="results/datavzrd/hla_la.yaml",
+        config="resources/datavzrd/hla_la.yaml",
         hla_la="results/HLA-LA/final_report.csv",
     output:
         report(
@@ -695,52 +695,24 @@ rule datavzrd_hla_la:
         "logs/datavzrd/hla_la.log",
     group: "hla_la"
     wrapper:
-        "v2.13.0/utils/datavzrd"
+        "v3.10.2/utils/datavzrd"
 
-# rule datavzrd_config_comparison_low:
+
+# rule datavzrd_config_comparison:
 #     input:
-#         template="resources/datavzrd/accuracy_comparison_low.yaml",
-#         validation="results/validation/validation_low.tsv",
+#         template="resources/datavzrd/accuracy_comparison.yaml",
+#         validation="results/validation/validation_all.tsv",
 #     output:
-#         "results/datavzrd/accuracy_comparison_low.yaml"
+#         temp("results/datavzrd/accuracy_comparison_all.yaml")
 #     log:
-#         "logs/datavzrd-config/accuracy_comparison_low.log"
+#         "logs/datavzrd-config/accuracy_comparison_all.log"
+#     group: "comparison"
 #     template_engine:
 #         "yte"
 
-# rule datavzrd_comparison_low:
-#     input:
-#         config="results/datavzrd/accuracy_comparison_low.yaml",
-#         validation="results/validation/validation_low.tsv",
-#     output:
-#         report(
-#             directory("results/datavzrd-report/accuracy_comparison_low"),
-#             htmlindex="index.html",
-#             category="Accuracy", labels={
-#             "name": "accuracy comparison (low coverage)",
-#             "type": "table"
-#         }
-#         ),
-#     log:
-#         "logs/datavzrd/accuracy_comparison_low.log",
-#     wrapper:
-#         "v2.13.0/utils/datavzrd"
-
-rule datavzrd_config_comparison:
-    input:
-        template="resources/datavzrd/accuracy_comparison.yaml",
-        validation="results/validation/validation_all.tsv",
-    output:
-        temp("results/datavzrd/accuracy_comparison_all.yaml")
-    log:
-        "logs/datavzrd-config/accuracy_comparison_all.log"
-    group: "comparison"
-    template_engine:
-        "yte"
-
 rule datavzrd_comparison:
     input:
-        config="results/datavzrd/accuracy_comparison_all.yaml",
+        config="resources/datavzrd/accuracy_comparison.yaml",
         validation="results/validation/validation_all.tsv",
     output:
         report(
@@ -755,26 +727,26 @@ rule datavzrd_comparison:
         "logs/datavzrd/accuracy_comparison_all.log",
     group: "comparison"
     wrapper:
-        "v2.13.0/utils/datavzrd"
+        "v3.10.2/utils/datavzrd"
 
-rule datavzrd_config_evaluation_tables:
-    input:
-        template="resources/datavzrd/evaluation_tables.yaml",
-        A_tp_fp="results/validation/A_tp_fp.tsv",
-        B_tp_fp="results/validation/B_tp_fp.tsv",
-        C_tp_fp="results/validation/C_tp_fp.tsv",
-        DQB1_tp_fp="results/validation/DQB1_tp_fp.tsv"
-    output:
-        temp("results/datavzrd/evaluation_tables.yaml")
-    log:
-        "logs/datavzrd-config/evaluation_tables.log"
-    group: "evaluation_tables"
-    template_engine:
-        "yte"
+# rule datavzrd_config_evaluation_tables:
+#     input:
+#         template="resources/datavzrd/evaluation_tables.yaml",
+#         A_tp_fp="results/validation/A_tp_fp.tsv",
+#         B_tp_fp="results/validation/B_tp_fp.tsv",
+#         C_tp_fp="results/validation/C_tp_fp.tsv",
+#         DQB1_tp_fp="results/validation/DQB1_tp_fp.tsv"
+#     output:
+#         temp("results/datavzrd/evaluation_tables.yaml")
+#     log:
+#         "logs/datavzrd-config/evaluation_tables.log"
+#     group: "evaluation_tables"
+#     template_engine:
+#         "yte"
 
 rule datavzrd_evaluation_tables:
     input:
-        config="results/datavzrd/evaluation_tables.yaml",
+        config="resources/datavzrd/evaluation_tables.yaml",
         A_tp_fp="results/validation/A_tp_fp.tsv",
         B_tp_fp="results/validation/B_tp_fp.tsv",
         C_tp_fp="results/validation/C_tp_fp.tsv",
@@ -792,23 +764,23 @@ rule datavzrd_evaluation_tables:
         "logs/datavzrd/evaluation_tables.log",
     group: "evaluation_tables"
     wrapper:
-        "v2.13.0/utils/datavzrd"
+        "v3.10.2/utils/datavzrd"
 
-rule datavzrd_config_sample_sheet:
-    input:
-        template="resources/datavzrd/sample_sheet.yaml",
-        sample_sheet="resources/ground_truth/merged_sample_sheet_w_read_info_2.csv"
-    output:
-        temp("results/datavzrd/sample_sheet.yaml")
-    log:
-        "logs/datavzrd-config/template.log"
-    group: "sample_sheet"
-    template_engine:
-        "yte"
+# rule datavzrd_config_sample_sheet:
+#     input:
+#         template="resources/datavzrd/sample_sheet.yaml",
+#         sample_sheet="resources/ground_truth/merged_sample_sheet_w_read_info_2.csv"
+#     output:
+#         temp("results/datavzrd/sample_sheet.yaml")
+#     log:
+#         "logs/datavzrd-config/template.log"
+#     group: "sample_sheet"
+#     template_engine:
+#         "yte"
 
 rule datavzrd_sample_sheet:
     input:
-        config="results/datavzrd/sample_sheet.yaml",
+        config="resources/datavzrd/sample_sheet.yaml",
         sample_sheet="resources/ground_truth/merged_sample_sheet_w_read_info_2.csv"
     output:
         report(
@@ -824,23 +796,23 @@ rule datavzrd_sample_sheet:
         "logs/datavzrd/sample_sheet.log",
     group: "sample_sheet"
     wrapper:
-        "v2.13.0/utils/datavzrd"
+        "v3.10.2/utils/datavzrd"
         
-rule datavzrd_config_tp_fp_table:
-    input:
-        template="resources/datavzrd/tp_fp_table.yaml",
-        tp_fp_table="results/validation/tp_fp_table_all.tsv"
-    output:
-        temp("results/datavzrd/tp_fp_table_all.yaml")
-    log:
-        "logs/datavzrd-config/tp_fp_table_all.log"
-    group: "tp_fp_table_all"
-    template_engine:
-        "yte"
+# rule datavzrd_config_tp_fp_table:
+#     input:
+#         template="resources/datavzrd/tp_fp_table.yaml",
+#         tp_fp_table="results/validation/tp_fp_table_all.tsv"
+#     output:
+#         temp("results/datavzrd/tp_fp_table_all.yaml")
+#     log:
+#         "logs/datavzrd-config/tp_fp_table_all.log"
+#     group: "tp_fp_table_all"
+#     template_engine:
+#         "yte"
 
 rule datavzrd_tp_fp_table:
     input:
-        config="results/datavzrd/tp_fp_table_all.yaml",
+        config="resources/datavzrd/tp_fp_table.yaml",
         tp_fp_table="results/validation/tp_fp_table_all.tsv"
     output:
         report(
@@ -855,4 +827,4 @@ rule datavzrd_tp_fp_table:
         "logs/datavzrd/tp_fp_table_all.log",
     group: "tp_fp_table_all"
     wrapper:
-        "v2.13.0/utils/datavzrd"
+        "v3.10.2/utils/datavzrd"
