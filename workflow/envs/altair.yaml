@@ -1,5 +1,6 @@
 channels:
   - conda-forge
+  - bioconda
 dependencies:
-  - altair
-  - pandas
+  - altair =5.3
+  - pandas =2.2

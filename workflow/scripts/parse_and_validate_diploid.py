@@ -6,6 +6,10 @@
 # For accuracy, we count, for each tool: TP / (TP+FP).
 # For call rate, we count, for each tool: (TP + FP) / (TP + FP + 'no call')
 
+##todo!!: Before doing the validation after finding the best density, in order to be fair to Orthanq, first check HLA types of all records that sum up to 1 and add that sample for call rate calculation. 
+#For accuracy calculation, if there is a match for the first two fields, in both solutions, then accept it 
+
+
 import pandas as pd
 import os
 import json
