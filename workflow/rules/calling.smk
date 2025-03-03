@@ -58,5 +58,5 @@ rule orthanq_call:
     params:
         prior = config["orthanq_prior"]
     shell:
-        "../orthanq/target/release/orthanq call hla --extend-haplotypes --num-extend-haplotypes 3 --lp-cutoff 0.01 --haplotype-calls "
+        "../orthanq/target/release/orthanq call hla --extend-haplotypes --num-extend-haplotypes 3 --haplotype-calls "
         " {input.calls} --haplotype-variants {input.candidate_variants} --xml {input.xml} --prior {params} --output {output.table} 2> {log}"
