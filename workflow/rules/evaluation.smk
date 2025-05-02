@@ -191,13 +191,14 @@ rule optitype:
         # optiype config file, optional
         config="",
         # additional parameters
-        extra=""
+        extra="",
+        outdir=lambda wildcards, output: os.path.dirname(output.pdf)
     threads: 40
     conda:
         "../envs/optitype.yaml"
     shell: #in case user configs have both uppercase and lowercase no_proxy values (optitype throws errors in this case)
         "unset http_proxy ftp_proxy https_proxy no_proxy; "
-        "OptiTypePipeline.py -i {input.reads[0]} {input.reads[1]} --dna --outdir results/optitype --prefix {wildcards.sample}"
+        "OptiTypePipeline.py -i {input.reads[0]} {input.reads[1]} --dna --outdir {params.outdir} --prefix {wildcards.sample}"
 
 rule merge_sample_sheets:
     input:
@@ -366,7 +367,7 @@ rule gather_benchmark:
         runtimes_table = "results/runtimes/runtimes.csv",
         runtimes_plot = "results/runtimes/runtimes.json",
     conda:
-        "../envs/gather_benchmarks.yaml"
+        "../envs/altair.yaml"
     log:
         "logs/runtimes/runtimes.log"
     script:
