@@ -20,7 +20,7 @@ if config["simulation"] == False and config["subclonal_sample_creation"] == Fals
 
     rule all:
         input:
-            expand("results/orthanq-candidates/{hla}.vcf.gz.tbi", hla=loci),
+            # expand("results/orthanq-candidates/{hla}.vcf.gz.tbi", hla=loci),
             expand("results/orthanq/{sample}_{hla}/best_solution.html",sample=samples.sample_name,
                 hla=loci
             ),
