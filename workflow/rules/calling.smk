@@ -42,13 +42,16 @@ rule orthanq_call:
         candidate_variants = "results/orthanq-candidates-intersected/{hla}.vcf",
         xml = config["allele_db_xml"]
     output:
-        table="results/orthanq/{sample}_{hla}/{sample}_{hla}.csv",
+        table="results/orthanq/{sample}_{hla}/predictions.csv",
         three_field_solutions="results/orthanq/{sample}_{hla}/3_field_solutions.json",
         two_field_solutions="results/orthanq/{sample}_{hla}/2_field_solutions.json",
-        final_solutions="results/orthanq/{sample}_{hla}/final_solution.json",
-        lp_solution="results/orthanq/{sample}_{hla}/lp_solution.json",
+        final_solutions="results/orthanq/{sample}_{hla}/best_solution.json",
+        lp_solution_json="results/orthanq/{sample}_{hla}/lp_solution.json",
+        lp_solution_tsv="results/orthanq/{sample}_{hla}/lp_solution.tsv",
         two_field_table="results/orthanq/{sample}_{hla}/2-field.csv",
-        g_groups="results/orthanq/{sample}_{hla}/G_groups.csv"
+        g_groups="results/orthanq/{sample}_{hla}/G_groups.csv",
+        arrow_plot="results/orthanq/{sample}_{hla}/arrow_plot.json",
+        outdir = directory("results/orthanq/{sample}_{hla}"),
     conda:
         "../envs/orthanq.yaml"
     log:
@@ -58,5 +61,5 @@ rule orthanq_call:
     params:
         prior = config["orthanq_prior"]
     shell:
-        "../orthanq/target/release/orthanq call hla --extend-haplotypes --num-extend-haplotypes 3 --lp-cutoff 0.0 --haplotype-calls "
-        " {input.calls} --haplotype-variants {input.candidate_variants} --xml {input.xml} --prior {params} --output {output.table} 2> {log}"
+        "orthanq call hla --haplotype-calls {input.calls} --haplotype-variants {input.candidate_variants}"
+        " --xml {input.xml} --prior {params.prior} --output {output.outdir} 2> {log}"

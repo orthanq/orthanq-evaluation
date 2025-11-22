@@ -1,6 +1,6 @@
 #full path for the genomic HLA sequences and associated xml file. (here IMGT v3.32 is used.)
-allele_db: /projects/koesterlab/orthanq/orthanq-evaluation/resources/IMGTHLA-3.32.0-alpha/hla_gen.fasta
-allele_db_xml: /projects/koesterlab/orthanq/orthanq-evaluation/resources/IMGTHLA-3.32.0-alpha/xml/hla.xml
+allele_db: resources/IMGTHLA-3.32.0-alpha/fasta/hla_gen.fasta
+allele_db_xml: resources/IMGTHLA-3.32.0-alpha/xml/hla.xml
 
 #arcasHLA database version
 arcasHLA_version: "3.32.0"
@@ -12,7 +12,7 @@ simulation: False
 subclonal_sample_creation: False
 
 #samples
-samples: config/samples.tsv
+samples: config/giab.tsv
 
 #fastq dir containing all samples, included and excluded from evaluation ( only necessary for read count and length info in sample sheet)
 all_fastq_dir: /projects/koesterlab/orthanq/HapMap_data #part1

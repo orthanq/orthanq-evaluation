@@ -11,35 +11,7 @@ ruleorder: orthanq_candidates > orthanq_call
 
 report: "report/workflow.rst"
 
-if config["simulation"] and config["subclonal_sample_creation"] == False:
-
-    include: "rules/common.smk"
-    include: "rules/simulation.smk"
-    include: "rules/candidate_generation.smk"
-    include: "rules/alignment.smk"
-    include: "rules/calling.smk"
-
-    rule all:
-        input:
-            [
-                f"results/fractions/{row['sample_name']}-{row['hla']}-{row['num_reads']}_1.fq"
-                for _, row in simulated_sample.iterrows()
-            ],
-            expand("results/orthanq-candidates/{hla}.vcf.gz.tbi", hla=loci),
-            expand(
-                "results/calls/{sample}_{hla}.bcf",
-                sample=simulated_sample.sample_name.unique(),
-                hla=loci,
-            ),
-            expand(
-                "results/orthanq/{sample}_{hla}/{sample}_{hla}.csv",
-                sample=simulated_sample.sample_name.unique(),
-                hla=loci,
-            ),
-            # todo: configure the workflow to target simulated samples as well
-            # "results/orthanq/final_report.csv"
-
-elif config["simulation"] == False and config["subclonal_sample_creation"] == False:
+if config["simulation"] == False and config["subclonal_sample_creation"] == False:
     include: "rules/common.smk"
     include: "rules/candidate_generation.smk"
     include: "rules/alignment.smk"
@@ -48,71 +20,19 @@ elif config["simulation"] == False and config["subclonal_sample_creation"] == Fa
 
     rule all:
         input:
-            # expand("results/arcasHLA/{sample}_{hla}/{sample}_mapped.genotype.json",
-            # sample=samples.sample_name,
-            # hla=loci
-            # ),
-            # expand("results/optitype/{sample}_result.tsv",sample=samples.sample_name),
-            # expand("results/HLA-LA/{sample}/hla/R1_bestguess_G.txt",sample=samples.sample_name),
-            # expand("results/vg/alignment/{sample}_vg.bam",sample=samples.sample_name),
-            # expand("results/orthanq/{sample}_{hla}/{sample}_{hla}.csv",sample=samples.sample_name,
-            #     hla=loci,
-            # ),
-            expand("results/orthanq/{sample}_{hla}/{sample}_{hla}.csv",sample=samples.sample_name,
-                hla=loci,
+            expand("results/orthanq-candidates/{hla}.vcf.gz.tbi", hla=loci),
+            expand("results/orthanq/{sample}_{hla}/best_solution.html",sample=samples.sample_name,
+                hla=loci
             ),
-            expand("results/orthanq/{sample}_{hla}/final_solution.{ext}",sample=samples.sample_name,
+            expand("results/orthanq/{sample}_{hla}/lp_solution.html",sample=samples.sample_name,
                 hla=loci,
-                ext=["json", "html"]
+                ext="json"
             ),
-            expand("results/orthanq/{sample}_{hla}/lp_solution.{ext}",sample=samples.sample_name,
-                hla=loci,
-                ext=["json", "html"]
+            expand("results/orthanq/{sample}_{hla}/arrow_plot.html",sample=samples.sample_name,
+                hla=loci
             ),
-            expand("results/orthanq/{sample}_{hla}/2-field.csv",sample=samples.sample_name,
-                hla=loci,
-            ),
-            expand("results/orthanq/{sample}_{hla}/G_groups.csv",sample=samples.sample_name,
-                hla=loci,
-            ),
-            expand("results/orthanq/{sample}_{hla}/{digit}_field_solutions.json",sample=samples.sample_name,
-                hla=loci,
-                digit=[2,3]
-            ),
-            expand("results/orthanq/{sample}_{hla}/{digit}_field_solutions.html",sample=samples.sample_name,
-                hla=loci,
-                digit=[2,3]
-            ),
-            expand("results/read_count_and_length/{sample}.csv", sample=samples.sample_name),
-            "resources/ground_truth/merged_sample_sheet_w_read_info_2.csv",
-            "results/validation/validation_all.tsv",
-            "results/vega/evaluation_all.html",
-            ["results/vega/runtimes.svg", "results/vega/evaluation_all.svg", "results/vega/tp_fp_table_all.svg", "results/vega/lp_pruned.svg", "results/vega/threshold_results.svg", "results/vega/coverage_boxplot.svg"],
-            "results/vega/threshold_results.svg",
             "results/validation/orthanq_validation_all.tsv",
-            "results/calculate_lp_pruned/pruned.json",
-            "results/datavzrd-report/sample_sheet", 
-            "results/datavzrd-report/runtimes",
             "results/datavzrd-report/orthanq",
-            "results/datavzrd-report/optitype",
-            "results/datavzrd-report/arcashla",
-            "results/datavzrd-report/hla_la",
-            "results/datavzrd-report/accuracy_comparison",
-            "results/datavzrd-report/evaluation_tables",
-            "results/datavzrd-report/tp_fp_table",
-            expand("results/count_coverage_per_gene/{sample}_{gene}.bed", sample=samples.sample_name, gene=["A", "B", "C", "DQB1"]),
-            "results/count_coverage_per_gene/read_counts.csv",
-            "results/count_coverage_per_gene/coverage_boxplot.json"
+            # "results/datavzrd-report/runtimes"
 
-elif config["subclonal_sample_creation"]:
-    include: "rules/common.smk"
-    include: "rules/simulation.smk"
-    include: "rules/candidate_generation.smk"
-    include: "rules/alignment.smk"
-    include: "rules/calling.smk"
-    include: "rules/clonal_sample_creation.smk"
 
-    rule all:
-        input:
-            "results/mixed/subclonal_sample_1.fq",
-            expand("results/orthanq/subclonal_{hla}/subclonal_{hla}.csv", hla=loci)
