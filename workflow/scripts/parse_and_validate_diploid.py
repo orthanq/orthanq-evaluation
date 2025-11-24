@@ -57,7 +57,7 @@ with open(snakemake.log[0], "w") as f:
                 #collect ground truth in values_in_truth, handle special cases e.g. 23:01/02/04
 
                 #retrieve sample and locus names
-                splitted = os.path.basename(orthanq_input[index]).split("_")
+                splitted = os.path.dirname(orthanq_input[index]).split("_")
                 sample_name = splitted[0]
 
                 if sample_name in sample_list and sample_name != "D1":
