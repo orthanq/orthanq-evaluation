@@ -1,5 +1,6 @@
 channels:
   - conda-forge
   - bioconda
+  - nodefaults
 dependencies:
-  - orthanq =1.19
+  - bwa =0.7.19

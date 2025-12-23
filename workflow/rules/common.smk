@@ -50,3 +50,7 @@ def get_fastq_input(wildcards):
         return simulated
     elif config["subclonal_sample_creation"]:
         return ["results/subclonal/subclonal_1.fq", "results/subclonal/subclonal_2.fq"]
+
+#download pangenome
+# def get_pangenome_url(wildcards):
+#     return "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/freeze1/minigraph-cactus/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38.{wildcards.ext}"

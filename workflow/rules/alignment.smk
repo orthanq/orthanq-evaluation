@@ -11,18 +11,17 @@ rule bwa_index:
     output:
         idx=multiext("results/bwa-index/hs_genome", ".amb", ".ann", ".bwt", ".pac", ".sa")
     log:
-        "logs/bwa_index/hs_genome.log"
-    params:
-        prefix="results/bwa-index/hs_genome",
-        algorithm="bwtsw",
+        "logs/bwa_index.log",
+    params: algorithm="bwtsw",
+    cache: True
     wrapper:
-        "v2.0.0/bio/bwa/index" 
-
+        "v8.0.2/bio/bwa/index" 
+        
 rule bwa_mem:
     input:
         reads = get_fastq_input,
         #reads = ["results/mixed/{sample}_1.fq", "results/mixed/{sample}_2.fq"],
-        idx = multiext("results/bwa-index/hs_genome", ".amb", ".ann", ".bwt", ".pac", ".sa")
+        idx = rules.bwa_index.output
     output:
         "results/bwa_alignment/{sample}_mapped.bam"
     log:
@@ -36,7 +35,7 @@ rule bwa_mem:
         sort_order="coordinate", 
     threads: 40
     wrapper:
-        "v2.0.0/bio/bwa/mem"
+        "v8.0.2/bio/bwa/mem"
 
 rule samtools_index_bwa:
     input:
@@ -47,7 +46,7 @@ rule samtools_index_bwa:
         "logs/samtools_index_bwa/{sample}.log"
     threads: 10
     wrapper:
-        "v2.0.0/bio/samtools/index"
+        "v8.0.2/bio/samtools/index"
 
 # Step 2: extract reads that map to HLA loci
 rule samtools_view:
@@ -66,9 +65,9 @@ rule samtools_view:
         extra=lambda wc, input: "-L {}".format(input.regions)
     resources:
         mem_mb=60000
-    threads: 40
+    threads: 20
     wrapper:
-        "v2.0.0/bio/samtools/view"
+        "v8.0.2/bio/samtools/view"
 
 rule samtools_fastq_separate:
     input:
@@ -81,32 +80,64 @@ rule samtools_fastq_separate:
     benchmark:    
         "benchmarks/bam_to_fastq/{sample}.tsv"
     params:
-        sort="-m 4G",
+        collate="",
         fastq="-n",
-    threads: 40
+    threads: 10
     wrapper:
-        "v2.0.0/bio/samtools/fastq/separate"
+        "v8.0.2/bio/samtools/fastq/separate"
 
+rule get_pangenome:
+    output:
+        "resources/vg-pangenome/hprc-v1.1-mc-grch38.{ext}",
+    params:
+        url=lambda wc: f"https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/freeze1/minigraph-cactus/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38.{wc.ext}",
+    wildcard_constraints:
+        ext="gbz|dist",
+    log:
+        "logs/pangenome/{ext}.log",
+    cache: "omit-software"
+    shell:
+        "curl -o {output} {params.url} 2> {log}"
+
+rule get_pangenome_minimizer:
+    output:
+        "resources/vg-pangenome/hprc-v1.1-mc-grch38.shortread.withzip.{ext}",
+    params:
+        url=lambda wc: f"https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/freeze1/minigraph-cactus/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38.{wc.ext}",
+    wildcard_constraints:
+        ext="min",
+    log:
+        "logs/pangenome/{ext}.log",
+    cache: "omit-software"
+    shell:
+        "curl -o {output} {params.url} 2> {log}"
+        
 # Step 3: map extracted reads to the pangenome with vg giraffe
+# providing .shortread withzip/min may still result in the rebuild of the .shortread.zipcodes file. zipcodes aren't available for a download on the hprc servers.
 rule vg_giraffe:
     input:
         reads_1 = "results/extracted_reads/{sample}.1.fq",
         reads_2 = "results/extracted_reads/{sample}.2.fq",
-        idx = "resources/vg-pangenome/hprc-v1.0-mc-grch38.xg"
+        graph_gbz = "resources/vg-pangenome/hprc-v1.1-mc-grch38.gbz",
+        graph_dist = "resources/vg-pangenome/hprc-v1.1-mc-grch38.dist",
+        graph_min = "resources/vg-pangenome/hprc-v1.1-mc-grch38.shortread.withzip.min"
     output:
-        "results/vg/alignment/{sample}_vg.bam"
+        bam="results/vg/alignment/{sample}_vg.bam",
+        indexes=multiext(
+                f"resources/vg-pangenome/hprc-v1.1-mc-grch38.{{sample}}",
+                ".shortread.withzip.min",
+                ".shortread.zipcodes",
+            )
     log:
         "logs/vg/alignment/{sample}.log"
     benchmark:    
-        "benchmarks/vg_giraffe/{sample}.tsv"
+        "benchmarks/vg_giraffe/{sample}.tsv"    
+    threads: 4
     conda:
         "../envs/vg.yaml"
-    resources:
-      io=1
-    threads: 40
     shell:
-        "vg giraffe -x {input.idx} -f {input.reads_1} -f {input.reads_2} --output-format BAM -t {threads}  > {output} 2> {log}"
-
+        "vg giraffe -Z {input.graph_gbz} -d {input.graph_dist} -m {input.graph_min} -f {input.reads_1} -f {input.reads_2} -t {threads} -p --output-format BAM > {output.bam} 2> {log}"
+        
 rule samtools_sort:
     input:
         "results/vg/alignment/{sample}_vg.bam"

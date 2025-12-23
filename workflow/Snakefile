@@ -1,9 +1,11 @@
 #set the environment variable to conda library folder to prevent libhdf5 not being found by snakemake
-LD_LIBRARY_PATH = "$CONDA_PREFIX/lib"
-shell.prefix("""
-set -euo pipefail;
-export LD_LIBRARY_PATH=\"{LD_LIBRARY_PATH}\";
-""".format(LD_LIBRARY_PATH=LD_LIBRARY_PATH))
+# set -euo pipefail;
+
+# LD_LIBRARY_PATH = "$CONDA_PREFIX/lib"
+# shell.prefix("""
+# set -euo pipefail;
+# export LD_LIBRARY_PATH=\"{LD_LIBRARY_PATH}\";
+# """.format(LD_LIBRARY_PATH=LD_LIBRARY_PATH))
 
 configfile: "config/config.yaml"
 
@@ -31,7 +33,7 @@ if config["simulation"] == False and config["subclonal_sample_creation"] == Fals
             expand("results/orthanq/{sample}_{hla}/arrow_plot.html",sample=samples.sample_name,
                 hla=loci
             ),
-            "results/validation/orthanq_validation_all.tsv",
+            # "results/validation/orthanq_validation_all.tsv",
             "results/datavzrd-report/orthanq",
             # "results/datavzrd-report/runtimes"
 

@@ -49,19 +49,19 @@ rule orthanq_candidates:
         alleles = config["allele_db"],
         genome = "results/refs/hs_genome.fasta",
         xml = config["allele_db_xml"],
-        allele_freqs = "resources/allele_freqs/allele_frequencies.csv"
     output:
         candidate_variants = expand("results/orthanq-candidates/{hla}.vcf",hla=loci),
-        #fasta = expand("results/orthanq-candidates/{hla}.fasta",hla=loci)
     conda:
         "../envs/orthanq.yaml"
+    params:
+        output_folder=lambda wc, output: os.path.dirname(output.candidate_variants[0]),
     log:
         "logs/orthanq-candidates/candidates.log"
     benchmark:    
         "benchmarks/orthanq_candidates/orthanq_candidates.tsv"  
     shell:
-        "../orthanq/target/release/orthanq candidates --alleles {input.alleles} --genome {input.genome} "
-        "--xml {input.xml} --allele-freq {input.allele_freqs} --wes --output results/orthanq-candidates 2> {log}" # --wes option for protein level hla type variant generation, --wgs for individual types 
+        "orthanq candidates hla --alleles {input.alleles} --genome {input.genome} "
+        "--xml {input.xml} --output {params.output_folder}  2> {log}"
 
 rule bgzip:
     input:
