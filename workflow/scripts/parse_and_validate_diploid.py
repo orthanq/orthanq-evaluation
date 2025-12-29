@@ -57,9 +57,9 @@ with open(snakemake.log[0], "w") as f:
                 #collect ground truth in values_in_truth, handle special cases e.g. 23:01/02/04
 
                 #retrieve sample and locus names
-                splitted = os.path.dirname(orthanq_input[index]).split("_")
+                folder_name = os.path.basename(os.path.dirname(orthanq_input[index]))
+                splitted = folder_name.split("_")
                 sample_name = splitted[0]
-
                 if sample_name in sample_list and sample_name != "D1":
                     values_in_truth = {}
                     values_in_truth = truth_for_sample(locus, values_in_truth, ground_truth, sample_name)
@@ -303,8 +303,6 @@ with open(snakemake.log[0], "w") as f:
         for index,row in orthanq_tp_fp_DQB1.iterrows():
             if row["orthanq evaluation"] == "":
                 orthanq_tp_fp_DQB1.loc[index, "orthanq evaluation"] = "FP"
-        print("orthanq_tp_fp_B")
-        print(orthanq_tp_fp_B)
         return validation_table, orthanq_tp_fp_table, orthanq_tp_fp_A, orthanq_tp_fp_B, orthanq_tp_fp_C, orthanq_tp_fp_DQB1
     
     #check if the predicted alleles are in the allele freq table and below or above the freq filter
@@ -353,9 +351,11 @@ with open(snakemake.log[0], "w") as f:
     threshold_haplotype_check = True
 
     orthanq_validation_results_all = validate_orthanq(orthanq_input, threshold_haplotype_check, threshold_density_in_paper, threshold_n_haplotypes_in_paper, orthanq_validation_table_all, orthanq_tp_fp_table_all, ground_truth_evaluated, sample_list_all, orthanq_tp_fp_A, orthanq_tp_fp_B, orthanq_tp_fp_C, orthanq_tp_fp_DQB1)
+    print("validation completed.")
 
     final_orthanq_all = orthanq_validation_results_all[0]
     final_tp_fp_table_all = orthanq_validation_results_all[1]
+    print(final_orthanq_all)
 
     #merge orthanq predictions from the final table of orthanq, here it wasn't possible because we break the loop during validation so we don't get to see the other solutions.
     orthanq_parsed_table = pd.read_csv(snakemake.input.orthanq_final_table, sep="\t", keep_default_na=False)
@@ -371,12 +371,16 @@ with open(snakemake.log[0], "w") as f:
     final_orthanq_tp_fp_B = check_alleles_in_database(merged_with_orthanq_predictions_B, allele_freqs, "B")
     final_orthanq_tp_fp_C = check_alleles_in_database(merged_with_orthanq_predictions_C, allele_freqs, "C")
     final_orthanq_tp_fp_DQB1 = check_alleles_in_database(merged_with_orthanq_predictions_DQB1, allele_freqs, "DQB1")
+    print("final_orthanq_tp_fp_A 1")
+    print(final_orthanq_tp_fp_A)
 
     #rename the locus columns to "orthanq"
     final_orthanq_tp_fp_A = final_orthanq_tp_fp_A.rename(columns={"A": "orthanq"})
     final_orthanq_tp_fp_B = final_orthanq_tp_fp_B.rename(columns={"B": "orthanq"})
     final_orthanq_tp_fp_C = final_orthanq_tp_fp_C.rename(columns={"C": "orthanq"})
     final_orthanq_tp_fp_DQB1 = final_orthanq_tp_fp_DQB1.rename(columns={"DQB1": "orthanq"})
+    print("final_orthanq_tp_fp_A 2")
+    print(final_orthanq_tp_fp_A)
 
     #if the "orthanq" field is empty, make "orthanq evaluation" to "no call"
     for index,row in final_orthanq_tp_fp_A.iterrows():
@@ -397,17 +401,18 @@ with open(snakemake.log[0], "w") as f:
     final_orthanq_tp_fp_B = final_orthanq_tp_fp_B[['sample', 'ground', 'orthanq', 'orthanq evaluation']]
     final_orthanq_tp_fp_C = final_orthanq_tp_fp_C[['sample', 'ground', 'orthanq', 'orthanq evaluation']]
     final_orthanq_tp_fp_DQB1 = final_orthanq_tp_fp_DQB1[['sample', 'ground', 'orthanq', 'orthanq evaluation']]
-
+    print("final_orthanq_tp_fp_A 3")
+    print(final_orthanq_tp_fp_A)
     #write the validation table
 
     final_orthanq_all.to_csv(
         snakemake.output.validation_all, sep="\t", index=False, header=True
     )
 
-    #write the orthanq_tp_fp_table table for all
-    final_tp_fp_table_all.to_csv(
-        snakemake.output.tp_fp_table, sep="\t", index=False, header=True
-    )
+    # #write the orthanq_tp_fp_table table for all
+    # final_tp_fp_table_all.to_csv(
+    #     snakemake.output.tp_fp_table, sep="\t", index=False, header=True
+    # )
 
     #write locus wise tables
     final_orthanq_tp_fp_A.to_csv(

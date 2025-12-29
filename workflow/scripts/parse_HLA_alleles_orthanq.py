@@ -12,13 +12,13 @@ with open(snakemake.log[0], "w") as f:
     sys.stderr = sys.stdout = f
     for index in range(len(orthanq_input)):
         if "D1_S1_L001" in orthanq_input[index]:
-            splitted = os.path.dirname(orthanq_input[index]).split("_")
+            splitted =  os.path.basename(os.path.dirname(orthanq_input[index])).split("_")
             sample_name = splitted[0] + splitted[1] + splitted[2] 
             locus_name = splitted[3].split(".")[0]
             #rename sample name for giab to the accesssion id
             sample_name = "SRR2962669"
         else:
-            splitted = os.path.dirname(orthanq_input[index]).split("_")
+            splitted =  os.path.basename(os.path.dirname(orthanq_input[index])).split("_")
             sample_name = splitted[0]
             locus_name = splitted[1].split(".")[0]
         if not sample_name in orthanq_final_table['sample'].tolist():
