@@ -33,7 +33,7 @@ if config["simulation"] == False and config["subclonal_sample_creation"] == Fals
             expand("results/orthanq/{sample}_{hla}/arrow_plot.html",sample=samples.sample_name,
                 hla=loci
             ),
-            # "results/validation/orthanq_validation_all.tsv",
+            "results/validation/orthanq_validation_all.tsv",
             "results/datavzrd-report/orthanq",
             # "results/datavzrd-report/runtimes"
 

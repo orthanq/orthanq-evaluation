@@ -13,7 +13,7 @@ rule bwa_index:
     log:
         "logs/bwa_index.log",
     params: algorithm="bwtsw",
-    cache: True
+    # cache: True
     wrapper:
         "v8.0.2/bio/bwa/index" 
         
@@ -29,7 +29,7 @@ rule bwa_mem:
     benchmark:    
         "benchmarks/bwa_mem/{sample}.tsv"
     params:
-        index="results/bwa-index/hs_genome",
+        # index="results/bwa-index/hs_genome",
         extra=r"-R '@RG\tID:{sample}\tSM:{sample}'",
         sorting="samtools",             
         sort_order="coordinate", 
@@ -119,12 +119,14 @@ rule vg_giraffe:
         reads_1 = "results/extracted_reads/{sample}.1.fq",
         reads_2 = "results/extracted_reads/{sample}.2.fq",
         graph_gbz = "resources/vg-pangenome/hprc-v1.1-mc-grch38.gbz",
-        graph_dist = "resources/vg-pangenome/hprc-v1.1-mc-grch38.dist",
-        graph_min = "resources/vg-pangenome/hprc-v1.1-mc-grch38.shortread.withzip.min"
+        # graph_dist = "resources/vg-pangenome/hprc-v1.1-mc-grch38.dist",
+        # graph_min = "resources/vg-pangenome/hprc-v1.1-mc-grch38.shortread.withzip.min"
     output:
         bam="results/vg/alignment/{sample}_vg.bam",
         indexes=multiext(
-                f"resources/vg-pangenome/hprc-v1.1-mc-grch38.{{sample}}",
+                "resources/vg-pangenome/hprc-v1.1-mc-grch38.{sample}",
+                ".gbz",
+                ".dist",
                 ".shortread.withzip.min",
                 ".shortread.zipcodes",
             )
@@ -132,12 +134,40 @@ rule vg_giraffe:
         "logs/vg/alignment/{sample}.log"
     benchmark:    
         "benchmarks/vg_giraffe/{sample}.tsv"    
-    threads: 4
+    threads: 26
     conda:
         "../envs/vg.yaml"
     shell:
-        "vg giraffe -Z {input.graph_gbz} -d {input.graph_dist} -m {input.graph_min} -f {input.reads_1} -f {input.reads_2} -t {threads} -p --output-format BAM > {output.bam} 2> {log}"
-        
+        "vg giraffe -Z {input.graph_gbz} -f {input.reads_1} -f {input.reads_2} -t {threads} -p --output-format BAM > {output.bam} 2> {log}"
+
+
+# rule map_reads_vg:
+#     input:
+#         reads=["results/extracted_reads/{sample}.1.fq", "results/extracted_reads/{sample}.2.fq"],
+#         graph=access.random("resources/vg-pangenome/hprc-v1.1-mc-grch38.gbz"),
+#     output:
+#         bam="results/vg/alignment/{sample}_vg.bam",
+#         # indexes=temp(
+#         #     multiext(
+#         #         "resources/vg-pangenome/hprc-v1.1-mc-grch38.{sample}",
+#         #         ".gbz",
+#         #         ".dist",
+#         #         ".shortread.withzip.min",
+#         #         ".shortread.zipcodes",
+#         #     )
+#         # ),
+#     log:
+#         "logs/mapped/vg/{sample}.log",
+#     benchmark:
+#         "benchmarks/vg_giraffe/{sample}.tsv"
+#     params:
+#         sorting="none",
+#     # resources:
+#     #     mem_mb=60000
+#     threads: 26
+#     wrapper:
+#         "v6.1.0/bio/vg/giraffe"
+
 rule samtools_sort:
     input:
         "results/vg/alignment/{sample}_vg.bam"
